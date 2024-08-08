@@ -3,12 +3,6 @@ import fetch from 'node-fetch'
 import cfg from '../../../../lib/config/config.js'
 import ApiTool from './apiTool.js'
 
-const game_region = {
-  gs: ['cn_gf01', 'cn_qd01', 'os_usa', 'os_euro', 'os_asia', 'os_cht'],
-  sr: ['prod_gf_cn', 'prod_qd_cn', 'prod_official_usa', 'prod_official_euro', 'prod_official_asia', 'prod_official_cht'],
-  zzz: ['prod_gf_cn', 'prod_gf_cn', 'prod_gf_us', 'prod_gf_eu', 'prod_gf_jp', 'prod_gf_sg']
-}
-
 let HttpsProxyAgent = ''
 export default class MysApi {
   /**
@@ -57,37 +51,30 @@ export default class MysApi {
 
   getServer() {
     const _uid = String(this.uid)
-    if (this.game == 'zzz') {
-      if (_uid.length < 10) {
-        return game_region[this.game][0] // 官服
-      }
-
-      switch (_uid.slice(0, -8)) {
-        case '10':
-          return game_region[this.game][2]// 美服
-        case '15':
-          return game_region[this.game][3]// 欧服
-        case '13':
-          return game_region[this.game][4]// 亚服
-        case '17':
-          return game_region[this.game][5]// 港澳台服
-      }
-    } else {
-      switch (_uid.slice(0, -8)) {
-        case '5':
-          return game_region[this.game][1] // B服
-        case '6':
-          return game_region[this.game][2]// 美服
-        case '7':
-          return game_region[this.game][3]// 欧服
-        case '8':
-        case '18':
-          return game_region[this.game][4]// 亚服
-        case '9':
-          return game_region[this.game][5]// 港澳台服
-      }
+    const isSr = this.game == 'sr'
+    const isZzz = this.game == 'zzz'
+    switch (_uid.slice(0, -8)) {
+      case '1':
+      case '2':
+      case '3':
+        return isSr ? 'prod_gf_cn' : 'cn_gf01'// 官服
+      case '5':
+        return isSr ? 'prod_qd_cn' : 'cn_qd01'// B服
+      case '6':
+      case '10':
+        return isZzz ? 'prod_gf_us' : isSr ? 'prod_official_usa' : 'os_usa'// 美服
+      case '7':
+      case '15':
+        return isZzz ? 'prod_gf_eu' : isSr ? 'prod_official_euro' : 'os_euro'// 欧服
+      case '8':
+      case '13':
+      case '18':
+        return isZzz ? 'prod_gf_jp' : isSr ? 'prod_official_asia' : 'os_asia'// 亚服
+      case '9':
+      case '17':
+        return isZzz ? 'prod_gf_sg' : isSr ? 'prod_official_cht' : 'os_cht'// 港澳台服
     }
-    return game_region[this.game][0] // 官服
+    return (isZzz || isSr) ? 'prod_gf_cn' : 'cn_gf01'// 官服
   }
 
   async getData(type, data = {}, cached = false) {
