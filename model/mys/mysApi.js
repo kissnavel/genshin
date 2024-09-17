@@ -84,10 +84,7 @@ export default class MysApi {
 
   async getData(type, data = {}, cached = false) {
     if (!this._device_fp && !data?.Getfp && !data?.headers?.['x-rpc-device_fp']) {
-      this._device_fp = await this.getData('getFp', {
-        seed_id: this.generateSeed(16),
-        Getfp: true
-      })
+      this._device_fp = await this.getData('getFp', { Getfp: true })
     }
     if (type === 'getFp' && !data?.Getfp) return this._device_fp
 
@@ -152,16 +149,16 @@ export default class MysApi {
 
   getHeaders(query = '', body = '') {
     const cn = {
-      app_version: '2.40.1',
-      User_Agent: `Mozilla/5.0 (Linux; Android 12; ${this.device}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.73 Mobile Safari/537.36 miHoYoBBS/2.40.1`,
+      app_version: '2.73.1',
+      User_Agent: 'Mozilla/5.0 (Linux; Android 11; J9110 Build/55.2.A.4.332; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/124.0.6367.179 Mobile Safari/537.36 miHoYoBBS/2.73.1',
       client_type: '5',
       Origin: 'https://webstatic.mihoyo.com',
       X_Requested_With: 'com.mihoyo.hyperion',
       Referer: 'https://webstatic.mihoyo.com/'
     }
     const os = {
-      app_version: '2.55.0',
-      User_Agent: 'Mozilla/5.0 (Linux; Android 11; J9110 Build/55.2.A.4.332; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/124.0.6367.179 Mobile Safari/537.36 miHoYoBBSOversea/2.55.0',
+      app_version: '2.57.1',
+      User_Agent: 'Mozilla/5.0 (Linux; Android 11; J9110 Build/55.2.A.4.332; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/124.0.6367.179 Mobile Safari/537.36 miHoYoBBSOversea/2.57.1',
       client_type: '2',
       Origin: 'https://act.hoyolab.com',
       X_Requested_With: 'com.mihoyo.hoyolab',
@@ -232,14 +229,5 @@ export default class MysApi {
     }
 
     return null
-  }
-
-  generateSeed(length = 16) {
-    const characters = '0123456789abcdef'
-    let result = ''
-    for (let i = 0; i < length; i++) {
-      result += characters[Math.floor(Math.random() * characters.length)]
-    }
-    return result
   }
 }
