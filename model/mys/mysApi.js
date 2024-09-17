@@ -53,26 +53,31 @@ export default class MysApi {
     const _uid = String(this.uid)
     const isSr = this.game == 'sr'
     const isZzz = this.game == 'zzz'
-    switch (_uid.slice(0, -8)) {
-      case '1':
-      case '2':
-      case '3':
-        return isSr ? 'prod_gf_cn' : 'cn_gf01'// 官服
-      case '5':
-        return isSr ? 'prod_qd_cn' : 'cn_qd01'// B服
-      case '6':
-      case '10':
-        return isZzz ? 'prod_gf_us' : isSr ? 'prod_official_usa' : 'os_usa'// 美服
-      case '7':
-      case '15':
-        return isZzz ? 'prod_gf_eu' : isSr ? 'prod_official_euro' : 'os_euro'// 欧服
-      case '8':
-      case '13':
-      case '18':
-        return isZzz ? 'prod_gf_jp' : isSr ? 'prod_official_asia' : 'os_asia'// 亚服
-      case '9':
-      case '17':
-        return isZzz ? 'prod_gf_sg' : isSr ? 'prod_official_cht' : 'os_cht'// 港澳台服
+    if (isZzz) {
+      switch (_uid.slice(0, -8)) {
+        case '10':
+          return 'prod_gf_us'// 美服
+        case '15':
+          return 'prod_gf_eu'// 欧服
+        case '13':
+          return 'prod_gf_jp'// 亚服
+        case '17':
+          return 'prod_gf_sg'// 港澳台服
+      }
+    } else {
+      switch (_uid.slice(0, -8)) {
+        case '5':
+          return isSr ? 'prod_qd_cn' : 'cn_qd01'// B服
+        case '6':
+          return isSr ? 'prod_official_usa' : 'os_usa'// 美服
+        case '7':
+          return isSr ? 'prod_official_euro' : 'os_euro'// 欧服
+        case '8':
+        case '18':
+          return isSr ? 'prod_official_asia' : 'os_asia'// 亚服
+        case '9':
+          return isSr ? 'prod_official_cht' : 'os_cht'// 港澳台服
+      }
     }
     return (isZzz || isSr) ? 'prod_gf_cn' : 'cn_gf01'// 官服
   }
