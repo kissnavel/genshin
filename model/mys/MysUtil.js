@@ -1,6 +1,11 @@
 import { Data } from '#miao'
 
-const games = [{ key: 'gs', name: '原神' }, { key: 'sr', name: '星穹铁道' }, { key: 'zzz', name: '绝区零' }]
+const games = [
+  { key: 'gs', name: '原神' },
+  { key: 'sr', name: '星穹铁道' },
+  { key: 'zzz', name: '绝区零' },
+  { key: 'wd', name: '未定事件簿' }
+]
 
 const MysUtil = {
   // 获取标准ltuid
@@ -30,6 +35,8 @@ const MysUtil = {
         return 'sr'
       case 'zzz':
         return 'zzz'
+      case 'wd':
+        return 'wd'
       default:
         return 'gs'
     }

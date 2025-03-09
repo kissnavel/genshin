@@ -29,24 +29,24 @@ export class user extends plugin {
           fnc: 'noLogin'
         },
         {
-          reg: /^#?(原神|星铁|绝区零)?我的c(oo)?k(ie)?$/i,
+          reg: /^#?(原神|星铁|绝区零|未定)?我的c(oo)?k(ie)?$/i,
           event: 'message',
           fnc: 'myCk'
         },
         {
-          reg: /^#?(原神|星铁|绝区零)?删除c(oo)?k(ie)?$/i,
+          reg: /^#?(原神|星铁|绝区零|未定)?删除c(oo)?k(ie)?$/i,
           fnc: 'delCk'
         },
         {
-          reg: /^#?(原神|星铁|绝区零)?(删除|解绑)uid(\s|\+)*([0-9]{1,2})?$/i,
+          reg: /^#?(原神|星铁|绝区零|未定)?(删除|解绑)uid(\s|\+)*([0-9]{1,2})?$/i,
           fnc: 'delUid'
         },
         {
-          reg: /^#(原神|星铁|绝区零)?绑定(uid)?(\s|\+)*((1[0-9]|[1-9])[0-9]{8}|[1-9][0-9]{7})$/i,
+          reg: /^#(原神|星铁|绝区零|未定)?绑定(uid)?(\s|\+)*((1[0-9]|[1-9])[0-9]{8}|[1-9][0-9]{7})$/i,
           fnc: 'bingUid'
         },
         {
-          reg: /^#(原神|星铁|绝区零)?(我的)?(uid)[0-9]{0,2}$/i,
+          reg: /^#(原神|星铁|绝区零|未定)?(我的)?(uid)[0-9]{0,2}$/i,
           fnc: 'showUid'
         },
         {
@@ -102,6 +102,12 @@ export class user extends plugin {
       this.reply("请发送绑定的绝区零uid", false, { at: true })
       return true
     }
+
+    if (/^#?未定绑定uid$/i.test(this.e.msg)) {
+      this.setContext("saveWdUid")
+      this.reply("请发送绑定的未定uid", false, { at: true })
+      return true
+    }
   }
 
   /** 绑定uid */
@@ -145,6 +151,21 @@ export class user extends plugin {
     this.e.game = 'zzz'
     this.bingUid()
     this.finish("saveZzzUid")
+  }
+
+  /** 绑定未定uid */
+  saveWdUid() {
+    if (!this.e.msg) return
+    let uid = this.e.msg.match(/[1-9][0-9]{8}|[1-9][0-9]{7}/g)
+    if (!uid) {
+      this.reply("未定UID输入错误", false, { at: true })
+      return
+    }
+    this.e.msg = "#未定绑定" + this.e.msg
+    this.e.isSr = false
+    this.e.game = 'wd'
+    this.bingUid()
+    this.finish("saveWdUid")
   }
 
   /** 未登录ck */

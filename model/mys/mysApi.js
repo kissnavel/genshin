@@ -17,7 +17,7 @@ export default class MysApi {
     this.uid = uid
     this.cookie = cookie
     this.game = option.game || 'gs'
-    this.server = this.getServer(uid, this.game)
+    this.server = this.getServer()
     this.apiTool = new ApiTool(uid, this.server, this.game)
     /** 5分钟缓存 */
     this.cacheCd = 300
@@ -53,7 +53,19 @@ export default class MysApi {
     const _uid = String(this.uid)
     const isSr = this.game == 'sr'
     const isZzz = this.game == 'zzz'
-    if (isZzz) {
+    const isWd = this.game == 'wd'
+    if (isWd) {
+      switch (_uid.slice(0, -7)) {
+        case '11':
+          return 'cn_prod_bb01'// B服
+        case '21':
+          return 'cn_prod_mix01'// 渠道服(华为)
+        case '10':
+          return 'tw_prod_wd01'// 台服
+        case '20':
+          return 'glb_prod_wd01'// 国际服
+      }
+    } else if (isZzz) {
       switch (_uid.slice(0, -8)) {
         case '10':
           return 'prod_gf_us'// 美服
@@ -79,7 +91,7 @@ export default class MysApi {
           return isSr ? 'prod_official_cht' : 'os_cht'// 港澳台服
       }
     }
-    return (isZzz || isSr) ? 'prod_gf_cn' : 'cn_gf01'// 官服
+    return isWd ? 'cn_prod_gf01' : (isZzz || isSr) ? 'prod_gf_cn' : 'cn_gf01'// 官服
   }
 
   async getData(type, data = {}, cached = false) {
