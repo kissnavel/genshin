@@ -154,6 +154,7 @@ export default class User extends base {
       msg.push(
         '星穹铁道支持：',
         '【*uid】当前绑定ck uid列表',
+        '【*我的ck】查看当前绑定ck',
         '【*删除ck】删除当前绑定ck',
         '【*体力】查询当前开拓力',
         '【*星琼】查看星琼月历',
@@ -163,13 +164,14 @@ export default class User extends base {
       )
       button.push([
         { text: '*uid', callback: '*uid' },
-        { text: '*删除ck', callback: '*删除ck' },
-        { text: '*体力', callback: '*体力' }
+        { text: '*我的ck', callback: '*我的ck' },
+        { text: '*删除ck', callback: '*删除ck' }
       ], [
+        { text: '*体力', callback: '*体力' },
         { text: '*星琼', callback: '*星琼' },
-        { text: '*星琼统计', callback: '*星琼统计' },
-        { text: '*练度统计', callback: '*练度统计' }
+        { text: '*星琼统计', callback: '*星琼统计' }
       ], [
+        { text: '*练度统计', callback: '*练度统计' },
         { text: '*面板', callback: '*面板' },
         { text: '*更新面板', callback: '*更新面板' }
       ])
@@ -178,15 +180,17 @@ export default class User extends base {
       msg.push(
         '绝区零支持：',
         '【%uid】当前绑定ck uid列表',
+        '【%我的ck】查看当前绑定ck',
         '【%删除ck】删除当前绑定ck',
         '【%体力】查询当前电量',
         '【%邦布】查看已拥有的邦布'
       )
       button.push([
         { text: '%uid', callback: '%uid' },
-        { text: '%删除ck', callback: '%删除ck' },
-        { text: '%体力', callback: '%体力' }
+        { text: '%我的ck', callback: '%我的ck' },
+        { text: '%删除ck', callback: '%删除ck' }
       ], [
+        { text: '%体力', callback: '%体力' },
         { text: '%邦布', callback: '%邦布' }
       ])
     }
@@ -194,10 +198,12 @@ export default class User extends base {
       msg.push(
         '未定事件簿支持：',
         '【&uid】当前绑定ck uid列表',
+        '【&我的ck】查看当前绑定ck',
         '【&删除ck】删除当前绑定ck'
       )
       button.push([
         { text: '&uid', callback: '&uid' },
+        { text: '&我的ck', callback: '&我的ck' },
         { text: '&删除ck', callback: '&删除ck' }
       ])
     }
