@@ -309,6 +309,10 @@ export default class apiTool {
       },
       wd: {
         ...(['cn_prod_gf01', 'cn_prod_bb01', 'cn_prod_mix01'].includes(this.server) ? {
+          UserGame: {
+            url: `${host}binding/api/getUserGameRolesByCookie`,
+            query: `game_biz=nxx_cn&region=${this.server}&game_uid=${this.uid}`
+          },
           /** 体力接口fp参数用于避开验证码 */
           getFp: {
             url: `${hostPublicData}device-fp/api/getFp`,
@@ -324,6 +328,10 @@ export default class apiTool {
             }
           }
         } : {
+          UserGame: {
+            url: `${host}binding/api/getUserGameRolesByCookie`,
+            query: `${['tw_prod_wd01'].includes(this.server) ? 'game_biz=nxx_tw' : 'game_biz=nxx_global'}&region=${this.server}&game_uid=${this.uid}`
+          },
           /** 体力接口fp参数用于避开验证码 */
           getFp: {
             url: `${hostPublicData}device-fp/api/getFp`,
@@ -338,11 +346,7 @@ export default class apiTool {
               seed_time: new Date().getTime() + ''
             }
           }
-        }),
-        UserGame: {
-          url: `${host}binding/api/getUserGameRolesByCookie`,
-          query: `region=${this.server}&game_uid=${this.uid}`
-        }
+        })
       }
     }
 
