@@ -237,7 +237,7 @@ export default class User extends base {
 
   /** 绑定uid，若有ck的话优先使用ck-uid */
   async bingUid() {
-    let uid = this.e.msg.match((this.e.game == 'wd' ? /[1-9][0-9]{8}|[1-9][0-9]{7}/g : this.e.game == 'zzz' ? /(1[0-9]|[1-9])[0-9]{8}|[1-9][0-9]{7}/g : /(18|[1-9])[0-9]{8}/g))
+    let uid = this.e.msg.match((this.e.game == 'wd' ? /[1-9][0-9]{7,8}/g : this.e.game == 'zzz' ? /(1[0-9]|[1-9])[0-9]{8}|[1-9][0-9]{7}/g : /(18|[1-9])[0-9]{8}/g))
     if (!uid) return
     uid = uid[0]
     let user = await this.user()

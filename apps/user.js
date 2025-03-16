@@ -156,7 +156,7 @@ export class user extends plugin {
   /** 绑定未定uid */
   saveWdUid() {
     if (!this.e.msg) return
-    let uid = this.e.msg.match(/[1-9][0-9]{8}|[1-9][0-9]{7}/g)
+    let uid = this.e.msg.match(/[1-9][0-9]{7,8}/g)
     if (!uid) {
       this.reply("未定UID输入错误", false, { at: true })
       return
