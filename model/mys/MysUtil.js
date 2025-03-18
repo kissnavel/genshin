@@ -1,10 +1,10 @@
 import { Data } from '#miao'
 
 const games = [
-  { key: 'gs', name: '原神' },
-  { key: 'sr', name: '星穹铁道' },
+  { key: 'wd', name: '未定事件簿' },
   { key: 'zzz', name: '绝区零' },
-  { key: 'wd', name: '未定事件簿' }
+  { key: 'sr', name: '星穹铁道' },
+  { key: 'gs', name: '原神' }
 ]
 
 const MysUtil = {
@@ -31,7 +31,6 @@ const MysUtil = {
     }
     switch (game) {
       case 'sr':
-      case 'star':
         return 'sr'
       case 'zzz':
         return 'zzz'
