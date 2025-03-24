@@ -1,7 +1,9 @@
 import md5 from 'md5'
+import _ from 'lodash'
 import fetch from 'node-fetch'
 import cfg from '../../../../lib/config/config.js'
 import ApiTool from './apiTool.js'
+import getDeviceFp from '../getDeviceFp.js'
 
 let HttpsProxyAgent = ''
 export default class MysApi {
@@ -81,6 +83,21 @@ export default class MysApi {
       }
     }
 
+    if (type == 'deviceLogin' || type == 'saveDevice') {
+      try {
+        headers['x-rpc-sys_version'] = '12'
+        headers['x-rpc-client_type'] = '2'
+        headers['x-rpc-channel'] = 'miyousheluodi'
+        headers['x-rpc-csm_source'] = 'home'
+        headers['Host'] = 'bbs-api.miyoushe.com'
+        headers['User-Agent'] = 'okhttp/4.9.3'
+        headers['Referer'] = 'https://app.mihoyo.com/'
+        headers['DS'] = this.getDs2()
+      } catch (error) {
+        logger.error(`[genshin]设备信息解析失败：${error.message}`)
+      }
+    }
+
     return { url, headers, body }
   }
 
@@ -134,7 +151,7 @@ export default class MysApi {
     const ck = this.cookie
     const ltuid = ck.ltuid
     if (!this._device_fp && !data?.headers?.['x-rpc-device_fp']) {
-      let { deviceFp } = await this.getDeviceFp(uid, ltuid)
+      let { deviceFp } = await getDeviceFp.Fp(uid, ck)
       this._device_fp = { data: { device_fp: deviceFp }, retcode: 0 }
     }
     if (type === 'getFp') return this._device_fp
@@ -274,12 +291,27 @@ export default class MysApi {
     return `${t},${r},${DS}`
   }
 
+  getDs2() {
+    let t = Math.round(new Date().getTime() / 1000)
+    let r = this.randomString(6)
+    let DS = md5(`salt=WGtruoQrwczmsjLOPXzJLnaAYycsLavx&t=${t}&r=${r}`)
+    return `${t},${r},${DS}`
+  }
+
   getGuid() {
     function S4() {
       return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1)
     }
 
     return (S4() + S4() + '-' + S4() + '-' + S4() + '-' + S4() + '-' + S4() + S4() + S4())
+  }
+
+  randomString(length = 32) {
+    let randomStr = ''
+    for (let i = 0; i < length; i++) {
+      randomStr += _.sample('abcdefghijklmnopqrstuvwxyz0123456789')
+    }
+    return randomStr
   }
 
   cacheKey(type, data) {
@@ -311,91 +343,5 @@ export default class MysApi {
     }
 
     return null
-  }
-
-  async getDeviceFp(uid, ltuid) {
-    let deviceFp
-    let bindInfo = await redis.get(`genshin:device_fp:${ltuid}:bind`)
-    if (bindInfo) {
-      deviceFp = await redis.get(`genshin:device_fp:${ltuid}:fp`)
-      let data = {
-        deviceFp
-      }
-      try {
-        bindInfo = JSON.parse(bindInfo)
-        data = {
-          productName: bindInfo?.deviceProduct,
-          deviceType: bindInfo?.deviceName,
-          modelName: bindInfo?.deviceModel,
-          oaid: bindInfo?.oaid,
-          osVersion: bindInfo?.androidVersion,
-          deviceInfo: bindInfo?.deviceFingerprint,
-          board: bindInfo?.deviceBoard
-        }
-      } catch (error) {
-        bindInfo = null
-      }
-      if (!deviceFp) {
-        const sdk = this.getUrl('getFp', data)
-        const res = await fetch(sdk.url, {
-          headers: sdk.headers,
-          method: 'POST',
-          body: sdk.body
-        })
-        const fpRes = await res.json()
-        logger.debug(`[米游社][设备指纹]${JSON.stringify(fpRes)}`)
-        deviceFp = fpRes?.data?.device_fp
-        if (!deviceFp) {
-          return { deviceFp: null }
-        }
-        await redis.set(`genshin:device_fp:${ltuid}:fp`, deviceFp, {
-          EX: 86400 * 7
-        })
-        data['deviceFp'] = deviceFp
-        const deviceLogin = this.getUrl('deviceLogin', data)
-        const saveDevice = this.getUrl('saveDevice', data)
-        if (!!deviceLogin && !!saveDevice) {
-          logger.debug(`[米游社][设备登录]保存设备信息`)
-          try {
-            logger.debug(`[米游社][设备登录]${JSON.stringify(deviceLogin)}`)
-            const login = await fetch(deviceLogin.url, {
-              headers: deviceLogin.headers,
-              method: 'POST',
-              body: deviceLogin.body
-            })
-            const save = await fetch(saveDevice.url, {
-              headers: saveDevice.headers,
-              method: 'POST',
-              body: saveDevice.body
-            })
-            const result = await Promise.all([login.json(), save.json()])
-            logger.debug(`[米游社][设备登录]${JSON.stringify(result)}`)
-          } catch (error) {
-            logger.error(`[米游社][设备登录]${error.message}`)
-          }
-        }
-      }
-    } else {
-      deviceFp = await redis.get(`genshin:device_fp:${uid}:fp`)
-      if (!deviceFp) {
-        const sdk = this.getUrl('getFp')
-        const res = await fetch(sdk.url, {
-          headers: sdk.headers,
-          method: 'POST',
-          body: sdk.body
-        })
-        const fpRes = await res.json()
-        logger.debug(`[米游社][设备指纹]${JSON.stringify(fpRes)}`)
-        deviceFp = fpRes?.data?.device_fp
-        if (!deviceFp) {
-          return { deviceFp: null }
-        }
-        await redis.set(`genshin:device_fp:${uid}:fp`, deviceFp, {
-          EX: 86400 * 7
-        })
-      }
-    }
-
-    return { deviceFp }
   }
 }

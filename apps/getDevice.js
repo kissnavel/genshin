@@ -1,7 +1,7 @@
 import plugin from '../../../lib/plugins/plugin.js'
 import common from '../../../lib/common/common.js'
+import getDeviceFp from '../model/getDeviceFp.js'
 import MysInfo from '../model/mys/mysInfo.js'
-import MysApi from '../model/mys/mysApi.js'
 
 export class getDevice extends plugin {
   constructor () {
@@ -46,7 +46,7 @@ export class getDevice extends plugin {
       return false
     }
 
-    const msg = e.msg.replace(/#*(原神|星铁|未定)?绑定设备(i|I)(d|D)/, '').trim()
+    const msg = e.msg.replace(/^#*(原神|星铁|未定)?绑定设备(i|I)(d|D)/, '').trim()
     try {
       const info = JSON.parse(msg)
       if (!info) {
@@ -74,8 +74,7 @@ export class getDevice extends plugin {
       }
       await redis.del(`genshin:device_fp:${ltuid}:fp`)
       await redis.set(`genshin:device_fp:${ltuid}:bind`, JSON.stringify(info))
-      let mysapi = new MysApi(uid, ck, e)
-      const { deviceFp } = await mysapi.getDeviceFp()
+      const { deviceFp } = await getDeviceFp.Fp(uid, ck)
       if (!deviceFp) {
         await this.reply('绑定设备失败')
         return false
