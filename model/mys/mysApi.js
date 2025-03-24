@@ -140,6 +140,24 @@ export default class MysApi {
     if (type === 'getFp') return this._device_fp
 
     if (ltuid) {
+      let bindInfo = await redis.get(`genshin:device_fp:${ltuid}:bind`)
+      if (bindInfo) {
+        try {
+          bindInfo = JSON.parse(bindInfo)
+          data = {
+            ...data,
+            productName: bindInfo?.deviceProduct,
+            deviceType: bindInfo?.deviceName,
+            modelName: bindInfo?.deviceModel,
+            oaid: bindInfo?.oaid,
+            osVersion: bindInfo?.androidVersion,
+            deviceInfo: bindInfo?.deviceFingerprint,
+            board: bindInfo?.deviceBoard
+          }
+        } catch (error) {
+          bindInfo = null
+        }
+      }
       const device_fp = await redis.get(`genshin:device_fp:${ltuid}:fp`)
       if (device_fp) {
         data.deviceFp = device_fp
