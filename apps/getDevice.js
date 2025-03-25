@@ -88,7 +88,7 @@ export class getDevice extends plugin {
       }
       await redis.del(`genshin:device_fp:${ltuid}:fp`)
       await redis.set(`genshin:device_fp:${ltuid}:bind`, JSON.stringify(info))
-      const { deviceFp } = await getDeviceFp.Fp(uid, ck)
+      const { deviceFp } = await getDeviceFp.Fp(uid, ck, game)
       if (!deviceFp) {
         await this.reply('绑定设备失败')
         return false

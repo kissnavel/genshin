@@ -149,9 +149,10 @@ export default class MysApi {
   async getData(type, data = {}, cached = false) {
     const uid = this.uid
     const ck = this.cookie
+    const game = this.game
     const ltuid = ck.ltuid
     if (!this._device_fp && !data?.headers?.['x-rpc-device_fp']) {
-      let { deviceFp } = await getDeviceFp.Fp(uid, ck)
+      let { deviceFp } = await getDeviceFp.Fp(uid, ck, game)
       this._device_fp = { data: { device_fp: deviceFp }, retcode: 0 }
     }
     if (type === 'getFp') return this._device_fp

@@ -2,9 +2,9 @@ import fetch from 'node-fetch'
 import MysApi from './mys/mysApi.js'
 
 export default class getDeviceFp {
-  static async Fp(uid, ck) {
+  static async Fp(uid, ck, game) {
     let ltuid = ck.ltuid
-    let mysapi = new MysApi(uid, ck, this.e)
+    let mysapi = new MysApi(uid, ck, { game })
     let deviceFp
     let bindInfo = await redis.get(`genshin:device_fp:${ltuid}:bind`)
     if (bindInfo) {
