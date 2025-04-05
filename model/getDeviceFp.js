@@ -68,6 +68,9 @@ export default class getDeviceFp {
       }
     } else {
       deviceFp = await redis.get(`genshin:device_fp:${uid}:fp`)
+      let data = {
+        deviceFp
+      }
       if (!deviceFp) {
         const sdk = mysapi.getUrl('getFp')
         const res = await fetch(sdk.url, {
