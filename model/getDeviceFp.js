@@ -84,6 +84,31 @@ export default class getDeviceFp {
         await redis.set(`genshin:device_fp:${uid}:fp`, deviceFp, {
           EX: 86400 * 7
         })
+        if (!(game == 'wd' ? /^(10|20)[0-9]{7}/i : /^(1[0-9]|[6-9])[0-9]{8}/i).test(uid)) {
+          data['deviceFp'] = deviceFp
+          const deviceLogin = mysapi.getUrl('deviceLogin', data)
+          const saveDevice = mysapi.getUrl('saveDevice', data)
+          if (!!deviceLogin && !!saveDevice) {
+            logger.debug(`[米游社][设备登录]保存设备信息`)
+            try {
+              logger.debug(`[米游社][设备登录]${JSON.stringify(deviceLogin)}`)
+              const login = await fetch(deviceLogin.url, {
+                headers: deviceLogin.headers,
+                method: 'POST',
+                body: deviceLogin.body
+              })
+              const save = await fetch(saveDevice.url, {
+                headers: saveDevice.headers,
+                method: 'POST',
+                body: saveDevice.body
+              })
+              const result = await Promise.all([login.json(), save.json()])
+              logger.debug(`[米游社][设备登录]${JSON.stringify(result)}`)
+            } catch (error) {
+              logger.error(`[米游社][设备登录]${error.message}`)
+            }
+          }
+        }
       }
     }
 
