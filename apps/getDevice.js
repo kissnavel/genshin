@@ -112,7 +112,6 @@ export class getDevice extends plugin {
     await redis.del(`genshin:device_fp:${ltuid}:fp`)
     await redis.del(`genshin:device_fp:${ltuid}:bind`)
     await redis.del(`genshin:device_fp:${ltuid}:id`)
-    await redis.del(`genshin:device_fp:${uid}:fp`)
     await this.reply('解绑设备成功', false, { at: true, recallMsg: 100 })
   }
   async bindDeviceHelp(e) {
