@@ -12,15 +12,15 @@ export class getDevice extends plugin {
       priority: 300,
       rule: [
         {
-            reg: '^#*(原神|星铁|未定)?绑定设备$',
+            reg: '^#*(原神|星铁)?绑定设备$',
             fnc: 'bindDevice'
         },
         {
-            reg: '^#*(原神|星铁|未定)?解绑设备$',
+            reg: '^#*(原神|星铁)?解绑设备$',
             fnc: 'deleteBind'
         },
         {
-            reg: '^#*(原神|星铁|未定)?绑定设备帮助$',
+            reg: '^#*(原神|星铁)?绑定设备帮助$',
             fnc: 'bindDeviceHelp'
         }
       ]
@@ -31,7 +31,7 @@ export class getDevice extends plugin {
     const uid = await MysInfo.getUid(e, false)
     if (!uid) return false
     const game = e.game
-    if ((game == 'wd' ? /^(10|20)[0-9]{7}/i : /^(1[0-9]|[6-9])[0-9]{8}/i).test(uid)) {
+    if (/^(18|[6-9])[0-9]{8}/i.test(uid)) {
       await this.reply('国际服不需要绑定设备')
       return false
     }
@@ -106,7 +106,7 @@ export class getDevice extends plugin {
   async deleteBind(e) {
     const uid = await MysInfo.getUid(e, false)
     if (!uid) return false
-    if ((e.game == 'wd' ? /^(10|20)[0-9]{7}/i : /^(1[0-9]|[6-9])[0-9]{8}/i).test(uid)) return false
+    if (/^(18|[6-9])[0-9]{8}/i.test(uid)) return false
     const ck = await MysInfo.checkUidBing(uid, e)
     const ltuid = ck.ltuid
     await redis.del(`genshin:device_fp:${ltuid}:fp`)
@@ -122,7 +122,7 @@ export class getDevice extends plugin {
         '2. 在请求头内找到【x-rpc-device_id】和【x-rpc-device_fp】',
         '3. 自行构造如下格式的设备信息：',
         '    {"device_id": "x-rpc-device_id的内容", "device_fp": "x-rpc-device_fp的内容"}',
-        '4. 给机器人发送"(#/*/&)绑定设备"指令',
+        '4. 给机器人发送"(#/*)绑定设备"指令',
         '5. 机器人会提示发送设备信息',
         '6. 粘贴自行构造的设备信息，并发送',
         '7. 提示绑定成功', 
@@ -131,13 +131,13 @@ export class getDevice extends plugin {
         '1. 使用常用米游社手机下载下面链接的APK文件，并安装',
         'https://ghproxy.mihomo.me/https://raw.githubusercontent.com/forchannot/get_device_info/main/app/build/outputs/apk/debug/app-debug.apk',
         '2. 打开后点击按钮复制',
-        '3. 给机器人发送"(#/*/&)绑定设备"指令',
+        '3. 给机器人发送"(#/*)绑定设备"指令',
         '4. 机器人会提示发送设备信息',
         '5. 粘贴已复制的设备信息，并发送',
         '6. 提示绑定成功',
         '--------------------------------',
         '[解绑设备]',
-        '发送 (#/*/&)解绑设备 即可'
+        '发送 (#/*)解绑设备 即可'
       ],
       msg = msgs.join('\n')
     await this.reply(await common.makeForwardMsg(e, msg, '绑定设备帮助'))
