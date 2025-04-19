@@ -45,6 +45,7 @@ export default class DailyCache extends BaseModel {
         key = 'sys:config'
         } else {
           serv = /^hoyo|^os/i.test(uid) ? servs[1] : servs[0]
+          key = `${game}:${serv}`
         }
       } else {
         if (game == 'bh2') {
