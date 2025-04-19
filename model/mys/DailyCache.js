@@ -35,12 +35,16 @@ export default class DailyCache extends BaseModel {
 
   // 内部方法：获取redis表前缀
   static getStoreKey (uid, game = 'config') {
-    let key
+    let key, serv
     if (!uid || game === 'config') {
       key = 'sys:config'
     } else {
       game = MysUtil.getGameKey(game)
-      let serv = (game == 'wd' ? /^(10|20)[0-9]{7}|^hoyo|^os/i.test(uid) : /^(1[0-9]|[6-9])[0-9]{8}|^hoyo|^os/i.test(uid)) ? servs[1] : servs[0]
+      if (game == 'wd') {
+        serv = /^(10|20)[0-9]{7}|^hoyo|^os/i.test(uid) ? servs[1] : servs[0]
+      } else {
+        serv = /^(1[0-9]|[6-9])[0-9]{8}|^hoyo|^os/i.test(uid) ? servs[1] : servs[0]
+      }
       key = `${game}:${serv}`
     }
     const date = moment().format('MM-DD')
