@@ -9,14 +9,16 @@
 gs:{mark:'#'},
 sr:{mark:'*'},
 zzz:{mark:'%'},
-wd:{mark:'&'}
+wd:{mark:'&'},
+bh3:{mark:'!'},
+bh2:{mark:'￥'}
 }; }}
 
 
 <div class="uid-list">
   {{each uids game}}
   {{set mark = gameMap[game.key]?.mark}}
-  {{set Game = game.key === 'zzz' ? 'ZZZero' : 'Wd'}}
+  {{set Game = game.key === 'bh2' ? 'Bh2' : game.key === 'bh3' ? 'Bh3' : game.key === 'wd' ? 'Wd' : 'ZZZero'}}
   <div class="game-cont">
     <div class="game-title">
       <strong>{{mark}}{{game.name}}</strong>

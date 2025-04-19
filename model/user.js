@@ -207,6 +207,32 @@ export default class User extends base {
         { text: '&删除ck', callback: '&删除ck' }
       ])
     }
+    if (mys.hasGame('bh3')) {
+      msg.push(
+        '崩坏三支持：',
+        '【!uid】当前绑定ck uid列表',
+        '【!我的ck】查看当前绑定ck',
+        '【!删除ck】删除当前绑定ck'
+      )
+      button.push([
+        { text: '!uid', callback: '!uid' },
+        { text: '!我的ck', callback: '!我的ck' },
+        { text: '!删除ck', callback: '!删除ck' }
+      ])
+    }
+    if (mys.hasGame('bh2')) {
+      msg.push(
+        '崩坏学园2支持：',
+        '【￥uid】当前绑定ck uid列表',
+        '【￥我的ck】查看当前绑定ck',
+        '【￥删除ck】删除当前绑定ck'
+      )
+      button.push([
+        { text: '￥uid', callback: '￥uid' },
+        { text: '￥我的ck', callback: '￥我的ck' },
+        { text: '￥删除ck', callback: '￥删除ck' }
+      ])
+    }
     msg = await common.makeForwardMsg(this.e, [[msg.join('\n'), segment.button(...button)]], '绑定成功：使用命令说明')
     await this.e.reply(msg)
   }
@@ -237,7 +263,11 @@ export default class User extends base {
 
   /** 绑定uid，若有ck的话优先使用ck-uid */
   async bingUid() {
-    let uid = this.e.msg.match((this.e.game == 'wd' ? /[1-9][0-9]{7,8}/g : this.e.game == 'zzz' ? /(1[0-9]|[1-9])[0-9]{8}|[1-9][0-9]{7}/g : /(18|[1-9])[0-9]{8}/g))
+    const bh2 = /[1-9][0-9]{5,7}/g
+    const bh3 = /[1-9][0-9]{7,9}/g
+    const wd = /[1-9][0-9]{7,8}/g
+    const zzz = /(1[0-9]|[1-9])[0-9]{8}|[1-9][0-9]{7}/g
+    let uid = this.e.msg.match(this.e.game == 'bh2' ? bh2 : this.e.game == 'bh3' ? bh3 : this.e.game == 'wd' ? wd : this.e.game == 'zzz' ? zzz : /(18|[1-9])[0-9]{8}/g)
     if (!uid) return
     uid = uid[0]
     let user = await this.user()
@@ -297,7 +327,9 @@ export default class User extends base {
       { key: 'gs', name: '原神' },
       { key: 'sr', name: '星穹铁道' },
       { key: 'zzz', name: '绝区零' },
-      { key: 'wd', name: '未定事件簿' }
+      { key: 'wd', name: '未定事件簿' },
+      { key: 'bh3', name: '崩坏三' },
+      { key: 'bh2', name: '崩坏学园2' }
     ]
     lodash.forEach(uids, (ds) => {
       ds.uidList = user.getUidList(ds.key)

@@ -116,7 +116,18 @@ export default class MysInfo {
     }
 
     let matchUid = (msg = '') => {
-      let ret = (game == 'wd' ? /[1-9][0-9]{7,8}/g : game == 'zzz' ? /(1[0-9]|[1-9])[0-9]{8}|[1-9][0-9]{7}/g : /(18|[1-9])[0-9]{8}/g).exec(msg)
+      let ret
+      if (game == 'bh2') {
+        ret = /[1-9][0-9]{5,7}/g.exec(msg)
+      } else if (game == 'bh3') {
+        ret = /[1-9][0-9]{7,9}/g.exec(msg)
+      } else if (game == 'wd') {
+        ret = /[1-9][0-9]{7,8}/g.exec(msg)
+      } else if (game == 'zzz') {
+        ret = /(1[0-9]|[1-9])[0-9]{8}|[1-9][0-9]{7}/g.exec(msg)
+      } else {
+        ret = /(18|[1-9])[0-9]{8}/g.exec(msg)
+      }
       if (!ret) return false
       return ret[0]
     }

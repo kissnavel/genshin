@@ -29,24 +29,24 @@ export class user extends plugin {
           fnc: 'noLogin'
         },
         {
-          reg: /^#?(原神|星铁|绝区零|未定)?我的c(oo)?k(ie)?$/i,
+          reg: /^#?(原神|星铁|绝区零|未定|崩三|崩二)?我的c(oo)?k(ie)?$/i,
           event: 'message',
           fnc: 'myCk'
         },
         {
-          reg: /^#?(原神|星铁|绝区零|未定)?删除c(oo)?k(ie)?$/i,
+          reg: /^#?(原神|星铁|绝区零|未定|崩三|崩二)?删除c(oo)?k(ie)?$/i,
           fnc: 'delCk'
         },
         {
-          reg: /^#?(原神|星铁|绝区零|未定)?(删除|解绑)uid(\s|\+)*([0-9]{1,2})?$/i,
+          reg: /^#?(原神|星铁|绝区零|未定|崩三|崩二)?(删除|解绑)uid(\s|\+)*([0-9]{1,2})?$/i,
           fnc: 'delUid'
         },
         {
-          reg: /^#(原神|星铁|绝区零|未定)?绑定(uid)?(\s|\+)*((1[0-9]|[1-9])[0-9]{8}|[1-9][0-9]{7})$/i,
+          reg: /^#(原神|星铁|绝区零|未定|崩三|崩二)?绑定(uid)?(\s|\+)*(([1-9][0-9]|[1-9])[0-9]{8}|[1-9][0-9]{5,7})$/i,
           fnc: 'bingUid'
         },
         {
-          reg: /^#(原神|星铁|绝区零|未定)?(我的)?(uid)[0-9]{0,2}$/i,
+          reg: /^#(原神|星铁|绝区零|未定|崩三|崩二)?(我的)?(uid)[0-9]{0,2}$/i,
           fnc: 'showUid'
         },
         {
@@ -108,6 +108,16 @@ export class user extends plugin {
       this.reply("请发送绑定的未定uid", false, { at: true })
       return true
     }
+    if (/^#?崩三绑定uid$/i.test(this.e.msg)) {
+      this.setContext("saveBh3Uid")
+      this.reply("请发送绑定的崩三uid", false, { at: true })
+      return true
+    }
+    if (/^#?崩二绑定uid$/i.test(this.e.msg)) {
+      this.setContext("saveBh2Uid")
+      this.reply("请发送绑定的崩二uid", false, { at: true })
+      return true
+    }
   }
 
   /** 绑定uid */
@@ -166,6 +176,36 @@ export class user extends plugin {
     this.e.game = 'wd'
     this.bingUid()
     this.finish("saveWdUid")
+  }
+
+  /** 绑定崩三uid */
+  saveBh3Uid() {
+    if (!this.e.msg) return
+    let uid = this.e.msg.match(/[1-9][0-9]{7,9}/g)
+    if (!uid) {
+      this.reply("崩三UID输入错误", false, { at: true })
+      return
+    }
+    this.e.msg = "#崩三绑定" + this.e.msg
+    this.e.isSr = false
+    this.e.game = 'bh3'
+    this.bingUid()
+    this.finish("saveBh3Uid")
+  }
+
+  /** 绑定崩二uid */
+  saveBh2Uid() {
+    if (!this.e.msg) return
+    let uid = this.e.msg.match(/[1-9][0-9]{5,7}/g)
+    if (!uid) {
+      this.reply("崩二UID输入错误", false, { at: true })
+      return
+    }
+    this.e.msg = "#崩二绑定" + this.e.msg
+    this.e.isSr = false
+    this.e.game = 'bh2'
+    this.bingUid()
+    this.finish("saveBh2Uid")
   }
 
   /** 未登录ck */

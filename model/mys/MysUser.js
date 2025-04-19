@@ -337,10 +337,13 @@ export default class MysUser extends BaseModel {
       'nap_global',
       'nxx_cn',
       'nxx_global',
-      'nxx_tw'
+      'nxx_tw',
+      'bh3_cn',
+      'bh3_global',
+      'bh2_cn'
     ].includes(v.game_biz))
     if (!playerList || playerList.length <= 0) {
-      return err('该账号尚未绑定原神、星铁、绝区零或未定角色')
+      return err('该账号尚未绑定原神、星铁、绝区零、未定、崩三或崩二角色')
     }
 
     this.gsUids = []
@@ -370,6 +373,11 @@ export default class MysUser extends BaseModel {
       case 'nxx_global':
       case 'nxx_tw':
         return 'wd'
+      case 'bh3_cn':
+      case 'bh3_global':
+        return 'bh3'
+      case 'bh2_cn':
+        return 'bh2'
       default:
         return 'gs'
     }

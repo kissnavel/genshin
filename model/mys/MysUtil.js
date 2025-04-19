@@ -1,6 +1,8 @@
 import { Data } from '#miao'
 
 const games = [
+  { key: 'bh2', name: '崩坏学园2' },
+  { key: 'bh3', name: '崩坏三' },
   { key: 'wd', name: '未定事件簿' },
   { key: 'zzz', name: '绝区零' },
   { key: 'sr', name: '星穹铁道' },
@@ -36,6 +38,10 @@ const MysUtil = {
         return 'zzz'
       case 'wd':
         return 'wd'
+      case 'bh3':
+        return 'bh3'
+      case 'bh2':
+        return 'bh2'
       default:
         return 'gs'
     }
