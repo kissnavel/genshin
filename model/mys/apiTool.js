@@ -11,10 +11,11 @@ export default class apiTool {
    * @param {区服} server
    * @param {是否为星穹铁道或其他游戏? type(bool or string)} isSr
    */
-  constructor(uid, server, game) {
+  constructor(uid, server, game, biz) {
     this.uid = uid
     this.game = game || 'gs'
     this.server = server
+    this.biz = biz
     this.uuid = crypto.randomUUID()
   }
 
@@ -29,7 +30,7 @@ export default class apiTool {
     const deviceBrand = deviceInfo.split('/')[0]
     const deviceDisplay = deviceInfo.split('/')[3]
     let host, hostRecord, hostPublicData
-    if (/cn_|_cn/.test(this.server)) {
+    if (['bh3_cn', 'bh2_cn'].includes(this.biz) || /cn_|_cn/.test(this.server)) {
       host = 'https://api-takumi.mihoyo.com/'
       hostRecord = 'https://api-takumi-record.mihoyo.com/'
       hostPublicData = 'https://public-data-api.mihoyo.com/'
@@ -358,6 +359,128 @@ export default class apiTool {
         useCdk: {
           url: 'https://public-operation-nap.hoyolab.com/common/apicdkey/api/webExchangeCdkeyHyl',
           query: `cdkey=${data.cdk}&game_biz=nap_global&lang=zh-cn&region=${this.server}&t=${new Date().getTime() + ''}&uid=${this.uid}`
+        },
+        deviceLogin: {
+          url: 'https://bbs-api.miyoushe.com/apihub/api/deviceLogin',
+          body: {
+            app_version: '2.73.1',
+            device_id: data.deviceId,
+            device_name: `${deviceBrand}${modelName}`,
+            os_version: '33',
+            platform: 'Android',
+            registration_id: this.generateSeed(19)
+          }
+        },
+        saveDevice: {
+          url: 'https://bbs-api.miyoushe.com/apihub/api/saveDevice',
+          body: {
+            app_version: '2.73.1',
+            device_id: data.deviceId,
+            device_name: `${deviceBrand}${modelName}`,
+            os_version: '33',
+            platform: 'Android',
+            registration_id: this.generateSeed(19)
+          }
+        }
+      },
+      bh3: {
+        bh3_cn: {
+          url: 'https://api-takumi.mihoyo.com/binding/api/getUserGameRolesByCookie',
+          query: 'game_biz=bh3_cn'
+        },
+        bh3_global: {
+          url: 'https://sg-public-api.hoyolab.com/binding/api/getUserGameRolesByCookie',
+          query: 'game_biz=bh3_global'
+        },
+        ...(['bh3_cn'].includes(this.biz) ? {
+          UserGame: {
+            url: `${host}binding/api/getUserGameRolesByCookie`,
+            query: `game_biz=bh3_cn&region=${this.server}&game_uid=${this.uid}`
+          },
+          /** 体力接口fp参数用于避开验证码 */
+          getFp: {
+            url: `${hostPublicData}device-fp/api/getFp`,
+            body: {
+              app_name: 'bbs_cn',
+              bbs_device_id: `${this.uuid}`,
+              device_fp: '38d802d62e7fb',
+              device_id: 'd927172613ac7594',
+              ext_fields: `{"proxyStatus":1,"isRoot":0,"romCapacity":"512","deviceName":"${modelName}","productName":"${productName}","romRemain":"489","hostname":"BuildHost","screenSize":"1096x2434","isTablet":0,"aaid":"${this.uuid}","model":"${modelName}","brand":"${deviceBrand}","hardware":"qcom","deviceType":"${deviceType}","devId":"REL","serialNumber":"unknown","sdCapacity":228442,"buildTime":"1653304778000","buildUser":"BuildUser","simState":1,"ramRemain":"221267","appUpdateTimeDiff":1736258293874,"deviceInfo":"${deviceInfo}","vaid":"${this.uuid}","buildType":"user","sdkVersion":"31","ui_mode":"UI_MODE_TYPE_NORMAL","isMockLocation":0,"cpuType":"arm64-v8a","isAirMode":0,"ringMode":2,"chargeStatus":1,"manufacturer":"${deviceBrand}","emulatorStatus":0,"appMemory":"512","osVersion":"${osVersion}","vendor":"unknown","accelerometer":"0.24616162x0.44117668x9.934102","sdRemain":221125,"buildTags":"release-keys","packageName":"com.mihoyo.hyperion","networkType":"WiFi","oaid":"${oaid}","debugStatus":1,"ramCapacity":"228442","magnetometer":"-0.93750006x26.456251x-42.693752","display":"${deviceDisplay}","appInstallTimeDiff":1736258293874,"packageVersion":"2.33.0","gyroscope":"4.5813544E-4x-0.0x-7.635591E-4","batteryStatus":66,"hasKeyboard":0,"board":"${board}"}`,
+              platform: '2',
+              seed_id: `${this.uuid}`,
+              seed_time: new Date().getTime() + ''
+            }
+          }
+        } : {
+          UserGame: {
+            url: `${host}binding/api/getUserGameRolesByCookie`,
+            query: `game_biz=bh3_global&region=${this.server}&game_uid=${this.uid}`
+          },
+          /** 体力接口fp参数用于避开验证码 */
+          getFp: {
+            url: `${hostPublicData}device-fp/api/getFp`,
+            body: {
+              app_name: 'bbs_oversea',
+              device_fp: '38d7f469c1319',
+              device_id: 'd927172613ac7594',
+              ext_fields: `{"proxyStatus":1,"isRoot":0,"romCapacity":"512","deviceName":"${modelName}","productName":"${productName}","romRemain":"474","hostname":"BuildHost","screenSize":"1096x2434","isTablet":0,"model":"${modelName}","brand":"${deviceBrand}","hardware":"qcom","deviceType":"${deviceType}","devId":"REL","serialNumber":"unknown","sdCapacity":228442,"buildTime":"1653304778000","buildUser":"BuildUser","simState":1,"ramRemain":"221344","appUpdateTimeDiff":1736258244054,"deviceInfo":"${deviceInfo}","buildType":"user","sdkVersion":"31","ui_mode":"UI_MODE_TYPE_NORMAL","isMockLocation":0,"cpuType":"arm64-v8a","isAirMode":0,"ringMode":2,"app_set_id":"${this.uuid}","chargeStatus":1,"manufacturer":"${deviceBrand}","emulatorStatus":0,"appMemory":"512","adid":"${this.uuid}","osVersion":"${osVersion}","vendor":"unknown","accelerometer":"-1.6262221x3.1136606x9.471091","sdRemain":221216,"buildTags":"release-keys","packageName":"com.mihoyo.hoyolab","networkType":"WiFi","debugStatus":1,"ramCapacity":"228442","magnetometer":"-17.1x-6.6937504x-25.85625","display":"${deviceDisplay}","appInstallTimeDiff":1736258244054,"packageVersion":"2.33.0","gyroscope":"-0.18203248x-0.3193204x0.060321167","batteryStatus":66,"hasKeyboard":0,"board":"${board}"}`,
+              hoyolab_device_id: `${this.uuid}`,
+              platform: '2',
+              seed_id: `${this.uuid}`,
+              seed_time: new Date().getTime() + ''
+            }
+          }
+        }),
+        /** 体力 */
+        dailyNote: {
+          url: `${hostRecord}game_record/appv2/honkai3rd/api/note`,
+          query: `role_id=${this.uid}&server=${this.server}`
+        },
+        deviceLogin: {
+          url: 'https://bbs-api.miyoushe.com/apihub/api/deviceLogin',
+          body: {
+            app_version: '2.73.1',
+            device_id: data.deviceId,
+            device_name: `${deviceBrand}${modelName}`,
+            os_version: '33',
+            platform: 'Android',
+            registration_id: this.generateSeed(19)
+          }
+        },
+        saveDevice: {
+          url: 'https://bbs-api.miyoushe.com/apihub/api/saveDevice',
+          body: {
+            app_version: '2.73.1',
+            device_id: data.deviceId,
+            device_name: `${deviceBrand}${modelName}`,
+            os_version: '33',
+            platform: 'Android',
+            registration_id: this.generateSeed(19)
+          }
+        }
+      },
+      bh2: {
+        bh2_cn: {
+          url: 'https://api-takumi.mihoyo.com/binding/api/getUserGameRolesByCookie',
+          query: 'game_biz=bh2_cn'
+        },
+        UserGame: {
+          url: `${host}binding/api/getUserGameRolesByCookie`,
+          query: `game_biz=bh2_cn&region=${this.server}&game_uid=${this.uid}`
+        },
+        /** 体力接口fp参数用于避开验证码 */
+        getFp: {
+          url: `${hostPublicData}device-fp/api/getFp`,
+          body: {
+            app_name: 'bbs_cn',
+            bbs_device_id: `${this.uuid}`,
+            device_fp: '38d802d62e7fb',
+            device_id: 'd927172613ac7594',
+            ext_fields: `{"proxyStatus":1,"isRoot":0,"romCapacity":"512","deviceName":"${modelName}","productName":"${productName}","romRemain":"489","hostname":"BuildHost","screenSize":"1096x2434","isTablet":0,"aaid":"${this.uuid}","model":"${modelName}","brand":"${deviceBrand}","hardware":"qcom","deviceType":"${deviceType}","devId":"REL","serialNumber":"unknown","sdCapacity":228442,"buildTime":"1653304778000","buildUser":"BuildUser","simState":1,"ramRemain":"221267","appUpdateTimeDiff":1736258293874,"deviceInfo":"${deviceInfo}","vaid":"${this.uuid}","buildType":"user","sdkVersion":"31","ui_mode":"UI_MODE_TYPE_NORMAL","isMockLocation":0,"cpuType":"arm64-v8a","isAirMode":0,"ringMode":2,"chargeStatus":1,"manufacturer":"${deviceBrand}","emulatorStatus":0,"appMemory":"512","osVersion":"${osVersion}","vendor":"unknown","accelerometer":"0.24616162x0.44117668x9.934102","sdRemain":221125,"buildTags":"release-keys","packageName":"com.mihoyo.hyperion","networkType":"WiFi","oaid":"${oaid}","debugStatus":1,"ramCapacity":"228442","magnetometer":"-0.93750006x26.456251x-42.693752","display":"${deviceDisplay}","appInstallTimeDiff":1736258293874,"packageVersion":"2.33.0","gyroscope":"4.5813544E-4x-0.0x-7.635591E-4","batteryStatus":66,"hasKeyboard":0,"board":"${board}"}`,
+            platform: '2',
+            seed_id: `${this.uuid}`,
+            seed_time: new Date().getTime() + ''
+          }
         },
         deviceLogin: {
           url: 'https://bbs-api.miyoushe.com/apihub/api/deviceLogin',

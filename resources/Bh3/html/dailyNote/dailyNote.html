@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8"/>
+  <link rel="shortcut icon" href="#"/>
+  <link rel="stylesheet" type="text/css" href="{{pluResPath}}Bh3/html/dailyNote/dailyNote.css"/>
+</head>
+<body>
+  <div class="container" id="container">
+    <div class="info-box">
+      <div class="title">HONKAI IMPACT 3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UID: {{uid}}</div>
+      <div class="card">
+        <div class="stamina-train-box">
+          <div class="stamina-icon-section">
+            <div class="stamina-label">体力</div>
+            <img class="stamina-icon" src="{{pluResPath}}Bh3/html/dailyNote/icon.png" alt="体力图标">
+            <div class="stamina-num-box">
+              <div class="stamina-num">{{daily.current_stamina}} / {{daily.max_stamina}}</div>
+              <div class="stamina-progress" style="width: {{ 100 * (daily.current_stamina / daily.max_stamina) }}%;"></div>
+            </div>
+          </div>
+          <div class="stamina-train-info">
+            <div class="recovery-section">
+              <span class="recovery-label">剩余恢复时间</span>
+              <span class="recovery-value {{ daily.stamina_recover_time === 0 ? 'full' : '' }}">{{daily.stamina_recover_time === 0 ? '已全部恢复' : daily.stamina_recover_time}}</span>
+            </div>
+            <div class="train-section">
+              <span class="train-label">每日历练值</span>
+              <span class="train-value">{{daily.current_train_score}} / {{daily.max_train_score}}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-box endless-box">
+          <div class="section-title">超弦空间</div>
+          <div class="section-status">{{daily.greedy_endless.is_open ? '已开启' : '未开启'}}</div>
+        </div>
+
+       <div class="section-box battle-box">
+        <div class="section-header">
+          <div class="section-title">记忆战场</div>
+        </div>
+        <div class="rewards-section">
+          <div class="reward-item">
+            <span class="reward-value">{{daily?.battle_field?.cur_reward || '0'}} / {{daily?.battle_field?.max_reward || '11'}}</span>
+            <span class="reward-label">挑战奖励</span>
+          </div>
+          <div class="reward-separator"></div> <!-- 分隔线 -->
+          <div class="reward-item">
+            <span class="reward-value">{{daily?.battle_field?.cur_sss_reward || '0'}} / {{daily?.battle_field?.max_sss_reward || '10'}}</span>
+            <span class="reward-label">SSS奖励</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-box god-war-box">
+        <div class="section-title">往世乐土</div>
+        <div class="reward-item single-reward">
+          <span class="reward-value">{{daily.god_war.cur_reward || '0'}} / {{daily.god_war.max_reward || '20000'}}</span>
+        </div>
+     </div>
+      </div>
+      </div>
+    </div>
+</body>
+</html>

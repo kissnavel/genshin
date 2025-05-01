@@ -1,0 +1,242 @@
+﻿@font-face {
+    font-family: 'tttgbnumber';
+    src: url('../../../font/bh3.ttf') format('truetype');
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+}
+
+body {
+    font-size: 14px;
+    color: #333;
+    font-family: PingFangSC-Medium, PingFang SC, sans-serif;
+    width: 400px;
+    transform: scale(1.8);
+    transform-origin: 0 0;
+}
+
+.container {
+    width: 400px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 7px 0 0 0;
+    font-family: "tttgbnumber";
+}
+
+.info-box {
+    padding: 15px 20px;
+}
+
+.title {
+    font-size: 14px;
+    color: #889bb1;
+    margin-bottom: 15px;
+    position: relative;
+    padding-left: 12px;
+}
+
+.title:before {
+    content: '';
+    width: 4px;
+    height: 14px;
+    background: #889bb1;
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    border-radius: 2px;
+}
+
+.stamina-train-box {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.stamina-icon-section {
+    text-align: center;
+    margin-right: 20px;
+    position: relative;
+    width: 80px;
+}
+
+.stamina-label {
+    background-color: #ff9e2c;
+    color: white;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 4px 4px 0 0;
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    z-index: 1;
+}
+
+.stamina-icon {
+    display: block;
+    width: 60px;
+    height: 60px;
+    margin: 10px auto 5px auto;
+    border: 1px solid #eee;
+    background-color: #fff;
+    border-radius: 4px;
+}
+
+.stamina-num-box {
+    background-color: #333;
+    color: white;
+    font-size: 14px;
+    padding: 4px 0;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+    line-height: 1.2;
+}
+
+.stamina-num {
+    position: relative;
+    z-index: 1;
+}
+
+.stamina-progress {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 4px;
+    background-color: #00bcd4;
+    border-radius: 0 0 4px 4px;
+    z-index: 0;
+}
+
+.stamina-train-info {
+    flex: 1;
+    font-size: 14px;
+    color: #666;
+}
+
+.recovery-section,
+.train-section {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px dashed #eee;
+}
+
+.train-section {
+    border-bottom: none;
+}
+
+.recovery-label,
+.train-label {
+    color: #333;
+}
+
+.recovery-value {
+    color: #666;
+}
+
+.recovery-value.full {
+    color: #7cba23;
+}
+
+.train-value {
+    color: #666;
+}
+
+.section-box {
+    background-color: #F4F3F8;
+    padding: 12px 15px 12px 15px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.section-box:last-child {
+    margin-bottom: 0;
+}
+
+.section-box::before {
+    content: '';
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    bottom: 0px;
+    width: 4px;
+    background-color: #CDCDDE;
+}
+
+.section-header {
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.section-title {
+    font-size: 16px;
+    color: #333;
+}
+
+.endless-box {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.section-status {
+    font-size: 14px;
+    color: #999;
+}
+
+.god-war-box {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.rewards-section {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 100%;
+    margin-top: auto;
+}
+
+.reward-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.reward-value {
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 2px;
+    font-family: 'tttgbnumber';
+    line-height: 1.1;
+}
+
+.reward-label {
+    font-size: 12px;
+    color: #999;
+}
+
+.reward-separator {
+    width: 1px;
+    background-color: #eee;
+    margin: 0 20px;
+    height: 30px;
+    align-self: center;
+}

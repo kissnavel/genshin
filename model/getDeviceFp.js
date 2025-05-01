@@ -2,9 +2,9 @@ import fetch from 'node-fetch'
 import MysApi from './mys/mysApi.js'
 
 export default class getDeviceFp {
-  static async Fp(uid, ck, game) {
+  static async Fp(uid, ck, game, biz) {
     let ltuid = ck.ltuid
-    let mysapi = new MysApi(uid, ck, { game })
+    let mysapi = new MysApi(uid, ck, { game }, '', biz)
     let deviceFp = await redis.get(`genshin:device_fp:${ltuid}:fp`)
     let data = {}
     if (!deviceFp) {
@@ -43,7 +43,7 @@ export default class getDeviceFp {
       await redis.set(`genshin:device_fp:${ltuid}:fp`, deviceFp, {
         EX: 86400 * 7
       })
-      if (!(game == 'wd' ? /^(10|20)[0-9]{7}/i : /^(1[0-9]|[6-9])[0-9]{8}/i).test(uid)) {
+      if (['bh3_cn', 'bh2_cn'].includes(biz) || !(game == 'wd' ? /^(10|20)[0-9]{7}/i : /^(1[0-9]|[6-9])[0-9]{8}/i).test(uid)) {
         data['deviceFp'] = deviceFp
         const deviceLogin = mysapi.getUrl('deviceLogin', data)
         const saveDevice = mysapi.getUrl('saveDevice', data)

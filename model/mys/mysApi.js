@@ -15,12 +15,13 @@ export default class MysApi {
    * @param isSr 是否星铁
    * @param device 设备device_id
    */
-  constructor(uid, cookie, option = { game: 'gs', device: '' }) {
+  constructor(uid, cookie, option = { game: 'gs', device: '' }, Server = '', Biz = '') {
     this.uid = uid
     this.cookie = cookie
     this.game = option.game || 'gs'
-    this.server = this.getServer()
-    this.apiTool = new ApiTool(uid, this.server, this.game)
+    this.server = Server || this.getServer()
+    this.biz = Biz
+    this.apiTool = new ApiTool(uid, this.server, this.game, this.biz)
     /** 5分钟缓存 */
     this.cacheCd = 300
 
@@ -150,9 +151,10 @@ export default class MysApi {
     const uid = this.uid
     const ck = this.cookie
     const game = this.game
+    const biz = this.biz
     const ltuid = ck.ltuid
     if (!this._device_fp && !data?.headers?.['x-rpc-device_fp']) {
-      let { deviceFp } = await getDeviceFp.Fp(uid, ck, game)
+      let { deviceFp } = await getDeviceFp.Fp(uid, ck, game, biz)
       this._device_fp = { data: { device_fp: deviceFp }, retcode: 0 }
     }
     if (type === 'getFp') return this._device_fp
@@ -265,7 +267,7 @@ export default class MysApi {
       Referer: 'https://act.hoyolab.com/'
     }
     let client
-    if (/cn_|_cn/.test(this.server)) {
+    if (['bh3_cn', 'bh2_cn'].includes(this.biz) || /cn_|_cn/.test(this.server)) {
       client = cn
     } else {
       client = os
@@ -281,7 +283,7 @@ export default class MysApi {
 
   getDs(q = '', b = '') {
     let n = ''
-    if (/cn_|_cn/.test(this.server)) {
+    if (['bh3_cn', 'bh2_cn'].includes(this.biz) || /cn_|_cn/.test(this.server)) {
       n = 'xV8v4Qu54lUKrEYFZkJhB8cuOh9Asafs'
     } else {
       n = 'okr4obncj8bw5a65hbnn5oo6ixjc3l9w'
@@ -329,7 +331,7 @@ export default class MysApi {
     if (!proxyAddress) return null
     if (proxyAddress === 'http://0.0.0.0:0') return null
 
-    if (/cn_|_cn/.test(this.server)) return null
+    if (['bh3_cn', 'bh2_cn'].includes(this.biz) || /cn_|_cn/.test(this.server)) return null
 
     if (HttpsProxyAgent === '') {
       HttpsProxyAgent = await import('https-proxy-agent').catch((err) => {

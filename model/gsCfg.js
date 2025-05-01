@@ -3,6 +3,7 @@ import chokidar from 'chokidar'
 import fs from 'node:fs'
 import lodash from 'lodash'
 import MysInfo from './mys/mysInfo.js'
+import MysApi from './mys/mysApi.js'
 import NoteUser from './mys/NoteUser.js'
 import { Character, Weapon } from '#miao.models'
 
@@ -121,6 +122,49 @@ class GsCfg {
       noteCk[qq] = tmp
     })
     return { ck, ckQQ, noteCk }
+  }
+
+  /**
+   * 获取其它游戏信息
+   * @returns {Promise<{uid: string, ck: string, game_biz: string, region: string}>}
+   */
+  async othergame(e) {
+    let user = await NoteUser.create(e)
+    if (!user.hasCk) {
+      await e.reply('当前尚未绑定Cookie')
+      return false
+    }
+    let mys = user.getMysUser(e)
+    let uid = await MysInfo.getUid(e)
+    let ck = mys.ck
+    let game = e.game
+    let game_biz, region
+    let mysApi = new MysApi('', ck, { game })
+    let res
+    if (game == 'bh2') {
+      res = await mysApi.getData('bh2_cn')
+      if (res?.retcode !== 0) {
+        await e.reply('用户数据获取失败')
+        return false
+      }
+    } else {
+      res = await mysApi.getData('bh3_cn')
+      if (res?.retcode !== 0) res = await mysApi.getData('bh3_global')
+      if (res?.retcode !== 0) {
+        await e.reply('用户数据获取失败')
+        return false
+      }
+    }
+
+    let data = res.data.list.find(item => item.game_uid === uid)
+    if (data) {
+      game_biz = data.game_biz,
+      region = data.region
+    } else {
+      game_biz = '',
+      region = ''
+    }
+    return { uid, ck, game_biz, region }
   }
 
   /**
