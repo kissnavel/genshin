@@ -135,12 +135,11 @@ class GsCfg {
       return false
     }
     let mys = user.getMysUser(e)
-    let uid = await MysInfo.getUid(e)
+    let uid = await MysInfo.getUid(e, false)
     let ck = mys.ck
     let game = e.game
-    let game_biz, region
+    let res, game_biz, region
     let mysApi = new MysApi('', ck, { game })
-    let res
     if (game == 'bh2') {
       res = await mysApi.getData('bh2_cn')
       if (res?.retcode !== 0) {
