@@ -23,6 +23,6 @@ export class dailyNote extends plugin {
     if (!data) return
 
     /** 生成图片 */
-    this.renderImg('genshin', `Bh3/html/dailyNote/dailyNote`, data)
+    this.renderImg('genshin', 'Bh3/html/dailyNote/dailyNote', data)
   }
 }
