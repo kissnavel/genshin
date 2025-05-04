@@ -1,5 +1,5 @@
 ## 使用说明
-本仓库包含的原仓库没有的功能，如需使用自行前往lib/plugins/loader.js相应位置添加前缀
+### 使用本仓库需自行前往lib/plugins/loader.js相应位置添加前缀
 miao崽：
 ```
     /** 未定前缀 */
