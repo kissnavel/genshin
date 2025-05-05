@@ -22,6 +22,10 @@ export default class Note extends base {
 
     let note = await mysApi.getData('dailyNote', { headers })
     let daily = note.data
+    if (!daily) {
+      await e.reply('体力数据获取失败')
+      return false
+    }
 
     return {
       ...this.screenData,

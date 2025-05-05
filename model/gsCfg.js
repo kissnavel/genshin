@@ -142,14 +142,14 @@ class GsCfg {
     let mysApi = new MysApi('', ck, { game })
     if (game == 'bh2') {
       res = await mysApi.getData('bh2_cn')
-      if (res?.retcode !== 0) {
+      if (!res || res?.retcode !== 0) {
         await e.reply('用户数据获取失败')
         return false
       }
     } else {
       res = await mysApi.getData('bh3_cn')
-      if (res?.retcode !== 0) res = await mysApi.getData('bh3_global')
-      if (res?.retcode !== 0) {
+      if (!res || res?.retcode !== 0) res = await mysApi.getData('bh3_global')
+      if (!res || res?.retcode !== 0) {
         await e.reply('用户数据获取失败')
         return false
       }
