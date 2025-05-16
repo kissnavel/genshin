@@ -437,7 +437,7 @@ export default class MysInfo {
         break
       case 5003:
       case 10041:
-        if (!isTask) this.e.reply([`UID:${this.uid}，米游社账号异常，暂时无法查询`, this.mysButton])
+        if (!isTask) this.e.reply([`UID:${this.uid}，米游社账号异常，暂时无法查询，发送“#绑定设备帮助”查看如何绑定设备`, this.mysButton])
         break
       case 1034:
       case 10035:
