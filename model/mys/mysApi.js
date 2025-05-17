@@ -178,15 +178,9 @@ export default class MysApi {
     if (type === 'getFp' && !data?.Getfp) return this._device_fp
 
     const device_fp = await redis.get(`genshin:device_fp:${ltuid}:fp`)
-    if (device_fp) {
-      data.deviceFp = device_fp
-      data.headers['x-rpc-device_fp'] = device_fp
-    }
+    if (device_fp) data.deviceFp = device_fp
     const device_id = await redis.get(`genshin:device_fp:${ltuid}:id`)
-    if (device_id) {
-      data.deviceId = device_id
-      data.headers['x-rpc-device_id'] = device_id
-    }
+    if (device_id) data.deviceId = device_id
 
     let { url, headers, body } = this.getUrl(type, data)
 
