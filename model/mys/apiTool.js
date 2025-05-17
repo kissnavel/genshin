@@ -359,28 +359,6 @@ export default class apiTool {
         useCdk: {
           url: 'https://public-operation-nap.hoyolab.com/common/apicdkey/api/webExchangeCdkeyHyl',
           query: `cdkey=${data.cdk}&game_biz=nap_global&lang=zh-cn&region=${this.server}&t=${new Date().getTime() + ''}&uid=${this.uid}`
-        },
-        deviceLogin: {
-          url: 'https://bbs-api.miyoushe.com/apihub/api/deviceLogin',
-          body: {
-            app_version: '2.73.1',
-            device_id: data.deviceId,
-            device_name: `${deviceBrand}${modelName}`,
-            os_version: '33',
-            platform: 'Android',
-            registration_id: this.generateSeed(19)
-          }
-        },
-        saveDevice: {
-          url: 'https://bbs-api.miyoushe.com/apihub/api/saveDevice',
-          body: {
-            app_version: '2.73.1',
-            device_id: data.deviceId,
-            device_name: `${deviceBrand}${modelName}`,
-            os_version: '33',
-            platform: 'Android',
-            registration_id: this.generateSeed(19)
-          }
         }
       },
       wd: {
@@ -422,29 +400,7 @@ export default class apiTool {
               seed_time: new Date().getTime() + ''
             }
           }
-        }),
-        deviceLogin: {
-          url: 'https://bbs-api.miyoushe.com/apihub/api/deviceLogin',
-          body: {
-            app_version: '2.73.1',
-            device_id: data.deviceId,
-            device_name: `${deviceBrand}${modelName}`,
-            os_version: '33',
-            platform: 'Android',
-            registration_id: this.generateSeed(19)
-          }
-        },
-        saveDevice: {
-          url: 'https://bbs-api.miyoushe.com/apihub/api/saveDevice',
-          body: {
-            app_version: '2.73.1',
-            device_id: data.deviceId,
-            device_name: `${deviceBrand}${modelName}`,
-            os_version: '33',
-            platform: 'Android',
-            registration_id: this.generateSeed(19)
-          }
-        }
+        })
       },
       bh3: {
         bh3_cn: {
@@ -498,28 +454,6 @@ export default class apiTool {
         dailyNote: {
           url: `${hostRecord}game_record/appv2/honkai3rd/api/note`,
           query: `role_id=${this.uid}&server=${this.server}`
-        },
-        deviceLogin: {
-          url: 'https://bbs-api.miyoushe.com/apihub/api/deviceLogin',
-          body: {
-            app_version: '2.73.1',
-            device_id: data.deviceId,
-            device_name: `${deviceBrand}${modelName}`,
-            os_version: '33',
-            platform: 'Android',
-            registration_id: this.generateSeed(19)
-          }
-        },
-        saveDevice: {
-          url: 'https://bbs-api.miyoushe.com/apihub/api/saveDevice',
-          body: {
-            app_version: '2.73.1',
-            device_id: data.deviceId,
-            device_name: `${deviceBrand}${modelName}`,
-            os_version: '33',
-            platform: 'Android',
-            registration_id: this.generateSeed(19)
-          }
         }
       },
       bh2: {
@@ -543,28 +477,6 @@ export default class apiTool {
             platform: '2',
             seed_id: `${this.uuid}`,
             seed_time: new Date().getTime() + ''
-          }
-        },
-        deviceLogin: {
-          url: 'https://bbs-api.miyoushe.com/apihub/api/deviceLogin',
-          body: {
-            app_version: '2.73.1',
-            device_id: data.deviceId,
-            device_name: `${deviceBrand}${modelName}`,
-            os_version: '33',
-            platform: 'Android',
-            registration_id: this.generateSeed(19)
-          }
-        },
-        saveDevice: {
-          url: 'https://bbs-api.miyoushe.com/apihub/api/saveDevice',
-          body: {
-            app_version: '2.73.1',
-            device_id: data.deviceId,
-            device_name: `${deviceBrand}${modelName}`,
-            os_version: '33',
-            platform: 'Android',
-            registration_id: this.generateSeed(19)
           }
         }
       }
