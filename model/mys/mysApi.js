@@ -149,11 +149,6 @@ export default class MysApi {
   async getData(type, data = {}, cached = false) {
     const ck = this.cookie
     const ltuid = ck.ltuid
-    if (!this._device_fp && !data?.Getfp && !data?.headers?.['x-rpc-device_fp']) {
-      this._device_fp = await this.getData('getFp', { Getfp: true })
-    }
-    if (type === 'getFp' && !data?.Getfp) return this._device_fp
-
     if (ltuid) {
       let bindInfo = await redis.get(`genshin:device_fp:${ltuid}:bind`)
       if (bindInfo) {
@@ -173,16 +168,24 @@ export default class MysApi {
           bindInfo = null
         }
       }
-      const device_fp = await redis.get(`genshin:device_fp:${ltuid}:fp`)
-      if (device_fp) {
-        data.deviceFp = device_fp
-        data.headers['x-rpc-device_fp'] = device_fp
-      }
-      const device_id = await redis.get(`genshin:device_fp:${ltuid}:id`)
-      if (device_id) {
-        data.deviceId = device_id
-        data.headers['x-rpc-device_id'] = device_id
-      }
+    }
+    if (!this._device_fp && !data?.Getfp && !data?.headers?.['x-rpc-device_fp']) {
+      this._device_fp = await this.getData('getFp', {
+        ...data,
+        Getfp: true
+      })
+    }
+    if (type === 'getFp' && !data?.Getfp) return this._device_fp
+
+    const device_fp = await redis.get(`genshin:device_fp:${ltuid}:fp`)
+    if (device_fp) {
+      data.deviceFp = device_fp
+      data.headers['x-rpc-device_fp'] = device_fp
+    }
+    const device_id = await redis.get(`genshin:device_fp:${ltuid}:id`)
+    if (device_id) {
+      data.deviceId = device_id
+      data.headers['x-rpc-device_id'] = device_id
     }
 
     let { url, headers, body } = this.getUrl(type, data)
