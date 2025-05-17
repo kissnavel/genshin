@@ -168,6 +168,10 @@ export default class MysApi {
           bindInfo = null
         }
       }
+      const device_fp = await redis.get(`genshin:device_fp:${ltuid}:fp`)
+      if (device_fp) data.deviceFp = device_fp
+      const device_id = await redis.get(`genshin:device_fp:${ltuid}:id`)
+      if (device_id) data.deviceId = device_id
     }
     if (!this._device_fp && !data?.Getfp && !data?.headers?.['x-rpc-device_fp']) {
       this._device_fp = await this.getData('getFp', {
@@ -176,23 +180,6 @@ export default class MysApi {
       })
     }
     if (type === 'getFp' && !data?.Getfp) return this._device_fp
-
-    if (ltuid) {
-      const device_fp = await redis.get(`genshin:device_fp:${ltuid}:fp`)
-      if (device_fp) {
-        data = {
-          ...data,
-          deviceFp: device_fp
-        }
-      }
-      const device_id = await redis.get(`genshin:device_fp:${ltuid}:id`)
-      if (device_id) {
-        data = {
-          ...data,
-          deviceId: device_id
-        }
-      }
-    }
 
     let { url, headers, body } = this.getUrl(type, data)
 
