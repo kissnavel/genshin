@@ -3,7 +3,6 @@ import _ from 'lodash'
 import fetch from 'node-fetch'
 import cfg from '../../../../lib/config/config.js'
 import ApiTool from './apiTool.js'
-import getDeviceFp from '../getDeviceFp.js'
 
 let HttpsProxyAgent = ''
 export default class MysApi {
@@ -53,7 +52,7 @@ export default class MysApi {
     if (data.deviceFp) {
       headers['x-rpc-device_fp'] = data.deviceFp
       // 兼容喵崽
-      this._device_fp = { data: { device_fp: data.deviceFp }, retcode: 0 }
+      this._device_fp = { data: { device_fp: data.deviceFp } }
     }
 
     // 如果有设备ID，写入设备ID（传入的，这里是绑定设备方法1中的设备ID）
@@ -148,16 +147,12 @@ export default class MysApi {
   }
 
   async getData(type, data = {}, cached = false) {
-    const uid = this.uid
     const ck = this.cookie
-    const game = this.game
-    const biz = this.biz
     const ltuid = ck.ltuid
-    if (!this._device_fp && !data?.headers?.['x-rpc-device_fp']) {
-      let { deviceFp } = await getDeviceFp.Fp(uid, ck, game, biz)
-      this._device_fp = { data: { device_fp: deviceFp }, retcode: 0 }
+    if (!this._device_fp && !data?.Getfp && !data?.headers?.['x-rpc-device_fp']) {
+      this._device_fp = await this.getData('getFp', { Getfp: true })
     }
-    if (type === 'getFp') return this._device_fp
+    if (type === 'getFp' && !data?.Getfp) return this._device_fp
 
     if (ltuid) {
       let bindInfo = await redis.get(`genshin:device_fp:${ltuid}:bind`)
