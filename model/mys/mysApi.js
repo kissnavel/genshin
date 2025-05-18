@@ -146,8 +146,7 @@ export default class MysApi {
     return isWd ? 'cn_prod_gf01' : (isZzz || isSr) ? 'prod_gf_cn' : 'cn_gf01'// 官服
   }
 
-  async getData(type, data = {}, cached = false) {
-    if (!data?.headers) data.headers = {}
+  async getData(type, data = { headers: '' }, cached = false) {
     const ck = this.cookie
     const ltuid = ck.ltuid
     if (ltuid) {
