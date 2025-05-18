@@ -108,8 +108,8 @@ export default class MysInfo {
       uid = atUser.getUid(game)
       if (uid) return String(uid)
       if (e.noTips !== true) {
-        e.reply(['尚未绑定uid', segment.button([
-          { text: '绑定UID', input: '#绑定uid' }
+        e.reply([`请先${e.game === 'gs' ? '#' : e.game === 'sr' ? '*' : e.game === 'zzz' ? '%' : e.game === 'bh3' ? '!' : '￥'}绑定uid`, segment.button([
+          { text: '绑定UID', input: `${e.game === 'gs' ? '#' : e.game === 'sr' ? '*' : e.game === 'zzz' ? '%' : e.game === 'bh3' ? '!' : '￥'}绑定uid` }
         ])], false, { at })
       }
       return false
@@ -141,8 +141,8 @@ export default class MysInfo {
     }
 
     if (e.noTips !== true) {
-      e.reply([`请先${e.game === 'gs' ? '#' : e.game === 'sr' ? '*': e.game === 'zzz' ? '%' : e.game === 'bh3' ? '!': '￥'}绑定uid`, segment.button([
-        { text: '绑定UID', input: `${e.game === 'gs' ? '#' : e.game === 'sr' ? '*': e.game === 'zzz' ? '%' : e.game === 'bh3' ? '!': '￥'}绑定uid` }
+      e.reply([`请先${e.game === 'gs' ? '#' : e.game === 'sr' ? '*' : e.game === 'zzz' ? '%' : e.game === 'bh3' ? '!' : '￥'}绑定uid`, segment.button([
+        { text: '绑定UID', input: `${e.game === 'gs' ? '#' : e.game === 'sr' ? '*' : e.game === 'zzz' ? '%' : e.game === 'bh3' ? '!' : '￥'}绑定uid` }
       ])], false, { at: at || true })
     }
 
@@ -341,8 +341,8 @@ export default class MysInfo {
     if (this.e.noTips === true) return
 
     if (!this.uid) {
-      this.e.reply([`请先${e.game === 'gs' ? '#' : e.game === 'sr' ? '*': e.game === 'zzz' ? '%' : e.game === 'bh3' ? '!': '￥'}绑定uid`, segment.button([
-        { text: '绑定UID', input: `${e.game === 'gs' ? '#' : e.game === 'sr' ? '*': e.game === 'zzz' ? '%' : e.game === 'bh3' ? '!': '￥'}绑定uid` }
+      this.e.reply([`请先${this.e.game === 'gs' ? '#' : this.e.game === 'sr' ? '*' : this.e.game === 'zzz' ? '%' : this.e.game === 'bh3' ? '!' : '￥'}绑定uid`, segment.button([
+        { text: '绑定UID', input: `${this.e.game === 'gs' ? '#' : this.e.game === 'sr' ? '*' : this.e.game === 'zzz' ? '%' : this.e.game === 'bh3' ? '!' : '￥'}绑定uid` }
       ])], false, { at: true })
     }
 
