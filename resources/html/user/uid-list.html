@@ -12,17 +12,20 @@ zzz:{mark:'%'},
 wd:{mark:'&'},
 bh3:{mark:'!'},
 bh2:{mark:'￥'}
-}; }}
+} }}
 
 
 <div class="uid-list">
   {{each uids game}}
   {{set mark = gameMap[game.key]?.mark}}
-  {{set Game = game.key === 'bh2' ? 'Bh2' : game.key === 'bh3' ? 'Bh3' : game.key === 'wd' ? 'Wd' : 'ZZZero'}}
+  {{set Game = game.key == 'bh2' ? 'Bh2' : game.key == 'bh3' ? 'Bh3' : game.key == 'wd' ? 'Wd' : 'ZZZero'}}
   <div class="game-cont">
     <div class="game-title">
       <strong>{{mark}}{{game.name}}</strong>
-      <span>使用<nobr>{{mark}}uid1</nobr>切换uid</span>
+      <span>使用
+        <nobr>{{mark}}uid1</nobr>
+        切换uid
+      </span>
     </div>
     <div class="game-ul">
       {{if game.uidList?.length > 0 }}
@@ -37,14 +40,17 @@ bh2:{mark:'￥'}
             <div class="info">
               <div class="uid-info">
                 <div class="uid shadow">{{uid.uid}}<span>{{uid.uid}}</span></div>
-                <div class="type {{uid.type}}">{{uid.type==='ck'?'CK':'绑定'}}</div>
+                <div class="type {{uid.type}}">{{uid.type == 'ck' ? 'CK' : '绑定'}}</div>
               </div>
               <div class="detail">
                 {{if uid.name && uid.level}}
                 <div class="name">{{uid.name}} Lv.{{uid.level}}</div>
                 {{else}}
                 {{if game.key == 'gs' || game.key == 'sr'}}
-                <div class="no-info">暂无uid信息，可通过更新面板获取信息</div>
+                <div class="no-info">暂无uid信息，可通过
+                  <nobr>{{mark}}更新面板</nobr>
+                  获取信息
+                </div>
                 {{else}}
                 <div class="no-info">暂无uid信息</div>
                 {{/if}}
@@ -56,8 +62,10 @@ bh2:{mark:'￥'}
       </div>
       {{/each}}
       {{else}}
-      <div class="no-uid">暂无uid，请发送CK或通过
-        <nobr>{{mark}}绑定123456789</nobr>
+      <div class="no-uid">暂无uid，请
+        <nobr>#扫码登录</nobr>
+        或发送CK或通过
+        <nobr>{{mark}}绑定{{(game.key == 'gs' || game.key == 'sr') ? 123456789 : 12345678}}</nobr>
         来绑定UID
       </div>
       {{/if}}
@@ -68,20 +76,61 @@ bh2:{mark:'￥'}
 </div>
 
 <ul class="tips">
-  <li>原神及通用命令以#开头，星铁命令以*开头。发送CK可绑定CK对应uid</li>
-  <li>游戏信息来自面板数据，如无信息或不准确请更新面板</li>
   <li>
-    <nobr>#删除uid1</nobr>
-    删除指定序号uid
-
-    <nobr>#绑定123456789</nobr>
-    绑定对应uid
+    <nobr>#</nobr>
+    <nobr>*</nobr>
+    <nobr>%</nobr>
+    <nobr>&</nobr>
+    <nobr>!</nobr>
+    <nobr>￥</nobr>
+    各游戏命令开头
   </li>
   <li>
-    <nobr>#我的ck</nobr>
-    查看ck信息
-
+    <nobr>#扫码登录</nobr>
+    或发送CK可绑定CK对应uid
+  </li>
+  <li>
+    <nobr>#</nobr>
+    <nobr>*</nobr>
+    <nobr>%</nobr>
+    <nobr>&</nobr>
+    <nobr>!</nobr>
+    <nobr>￥</nobr>
+    <nobr>123456789</nobr>
+    绑定uid
+  </li>
+  <li>
+    <nobr>#</nobr>
+    <nobr>*</nobr>
+    <nobr>%</nobr>
+    <nobr>&</nobr>
+    <nobr>!</nobr>
+    <nobr>￥</nobr>
+    <nobr>删除uid1</nobr>
+    删除指定序号uid
+  </li>
+  <li>ck绑定的uid需通过
     <nobr>#删除ck</nobr>
+    来删除
+  </li>
+  <li>
+    <nobr>#</nobr>
+    <nobr>*</nobr>
+    <nobr>%</nobr>
+    <nobr>&</nobr>
+    <nobr>!</nobr>
+    <nobr>￥</nobr>
+    <nobr>我的ck</nobr>
+    查看ck信息
+  </li>
+  <li>
+    <nobr>#</nobr>
+    <nobr>*</nobr>
+    <nobr>%</nobr>
+    <nobr>&</nobr>
+    <nobr>!</nobr>
+    <nobr>￥</nobr>
+    <nobr>删除ck</nobr>
     删除当前ck
   </li>
 </ul>
