@@ -2,6 +2,7 @@ import md5 from 'md5'
 import _ from 'lodash'
 import fetch from 'node-fetch'
 import cfg from '../../../../lib/config/config.js'
+import getDeviceFp from '../getDeviceFp.js'
 import ApiTool from './apiTool.js'
 
 let HttpsProxyAgent = ''
@@ -147,7 +148,10 @@ export default class MysApi {
   }
 
   async getData(type, data = { headers: {} }, cached = false) {
+    const uid = this.uid
     const ck = this.cookie
+    const game = this.game
+    const biz = this.biz
     const ltuid = ck.ltuid
     if (ltuid) {
       let bindInfo = await redis.get(`genshin:device_fp:${ltuid}:bind`)
@@ -168,10 +172,10 @@ export default class MysApi {
           bindInfo = null
         }
       }
-      const device_fp = await redis.get(`genshin:device_fp:${ltuid}:fp`)
-      if (device_fp) {
-        data.deviceFp = device_fp
-        data.headers['x-rpc-device_fp'] = device_fp
+      const { deviceFp } = await getDeviceFp.Fp(uid, ck, game, biz)
+      if (deviceFp) {
+        data.deviceFp = deviceFp
+        data.headers['x-rpc-device_fp'] = deviceFp
       }
       const device_id = await redis.get(`genshin:device_fp:${ltuid}:id`)
       if (device_id) {
