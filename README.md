@@ -1,37 +1,3 @@
-## 使用说明
-### 使用本仓库需自行前往lib/plugins/loader.js相应位置添加前缀
-miao崽：
-```
-    /** 未定前缀 */
-    this.wdReg = /^#?(&|未定事件簿|未定)+/
-    /** 崩坏三前缀 */
-    this.bh3Reg = /^#?(！|!|崩坏三|崩三)+/
-    /** 崩坏二前缀 */
-    this.bh2Reg = /^#?(￥|崩坏学园2|崩坏二|崩二)+/
-```
-trss崽：
-```
-  /** 未定前缀 */
-  wdReg = /^#?(&|未定事件簿|未定)+/
-  /** 崩坏三前缀 */
-  bh3Reg = /^#?(！|!|崩坏三|崩三)+/
-  /** 崩坏二前缀 */
-  bh2Reg = /^#?(￥|崩坏学园2|崩坏二|崩二)+/
-```
-miao崽和trss崽：
-```
-      else if (this.wdReg.test(e.msg)) {
-      e.game = 'wd'
-      e.msg = e.msg.replace(this.wdReg, '#未定')
-    } else if (this.bh3Reg.test(e.msg)) {
-      e.game = 'bh3'
-      e.msg = e.msg.replace(this.bh3Reg, '#崩三')
-    } else if (this.bh2Reg.test(e.msg)) {
-      e.game = 'bh2'
-      e.msg = e.msg.replace(this.bh2Reg, '#崩二')
-    }
-```
-## 下面是原仓库说明
 ### yunzai v3 genshin独立仓库，自用修改
 
 | 米游社查询指令 | 说明|
