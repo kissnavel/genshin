@@ -3,9 +3,19 @@ import cfg from '../../../lib/config/config.js'
 import loader from '../../../lib/plugins/loader.js'
 import Runtime from '../../../lib/plugins/runtime.js'
 
-let yunzaiName = cfg.package.name
+/** 星铁命令前缀 */
+const srReg = /^#?(\*|星铁|星轨|穹轨|星穹|崩铁|星穹铁道|崩坏星穹铁道|铁道)+/
+/** 绝区零命令前缀 */
+const zzzReg = /^#?(%|％|绝区零|绝区)+/
+/** 未定事件簿命令前缀 */
+const wdReg = /^#?(&|未定事件簿|未定)+/
+/** 崩坏三命令前缀 */
+const bh3Reg = /^#?(！|!|崩坏三|崩三)+/
+/** 崩坏二命令前缀 */
+const bh2Reg = /^#?(￥|崩坏学园2|崩坏二|崩二)+/
 
-if (yunzaiName == 'trss-yunzai' || yunzaiName == 'miao-yunzai') {
+const yunzaiName = cfg.package.name
+if (yunzaiName == 'trss-yunzai') {
 /** 劫持deal */
   loader.deal = async function (e) {
     this.count(e, 'receive', e.message)
@@ -23,7 +33,7 @@ if (yunzaiName == 'trss-yunzai' || yunzaiName == 'miao-yunzai') {
     const priority = []
     for (const i of this.priority) {
     /** 判断是否启用功能，过滤事件 */
-      if (this.checkDisable(Object.assign(i.plugin, { e })) && this.filtEvent(e, i.plugin)) { priority.push(i) }
+      if (this.checkDisable(Object.assign(i.plugin, { e })) && this.filtEvent(e, i.plugin)) priority.push(i)
     }
 
     for (const i of priority) {
@@ -35,7 +45,8 @@ if (yunzaiName == 'trss-yunzai' || yunzaiName == 'miao-yunzai') {
       }
       if (!lodash.isEmpty(context)) {
         let ret
-        for (const fnc in context) { ret ||= await Object.assign(new i.class(e), { e })[fnc](context[fnc]) }
+        for (const fnc in context)
+          ret ||= await Object.assign(new i.class(e), { e })[fnc](context[fnc])
         if (ret === 'continue') continue
         return
       }
@@ -56,16 +67,6 @@ if (yunzaiName == 'trss-yunzai' || yunzaiName == 'miao-yunzai') {
       get: () => e.game === 'gs',
       set: (v) => e.game = v ? 'gs' : 'sr'
     })
-    /** 星铁命令前缀 */
-    const srReg = /^#?(\*|星铁|星轨|穹轨|星穹|崩铁|星穹铁道|崩坏星穹铁道|铁道)+/
-    /** 绝区零命令前缀 */
-    const zzzReg = /^#?(%|％|绝区零|绝区)+/
-    /** 未定事件簿命令前缀 */
-    const wdReg = /^#?(&|未定事件簿|未定)+/
-    /** 崩坏三命令前缀 */
-    const bh3Reg = /^#?(！|!|崩坏三|崩三)+/
-    /** 崩坏二命令前缀 */
-    const bh2Reg = /^#?(￥|崩坏学园2|崩坏二|崩二)+/
     if (srReg.test(e.msg)) {
       e.game = 'sr'
       e.msg = e.msg.replace(srReg, '#星铁')
@@ -84,13 +85,12 @@ if (yunzaiName == 'trss-yunzai' || yunzaiName == 'miao-yunzai') {
     }
 
     /** 优先执行 accept */
-    for (const i of priority) {
+    for (const i of priority)
       if (i.plugin.accept) {
         const res = await Object.assign(new i.class(e), { e }).accept(e)
         if (res === 'return') return
         if (res) break
       }
-    }
 
     for (const i of priority) {
       if (i.plugin.rule) {
@@ -147,7 +147,7 @@ if (yunzaiName == 'trss-yunzai' || yunzaiName == 'miao-yunzai') {
       const p = new i.class(e)
       p.e = e
       /** 判断是否启用功能，过滤事件 */
-      if (this.checkDisable(p) && this.filtEvent(e, p)) { priority.push(p) }
+      if (this.checkDisable(p) && this.filtEvent(e, p)) priority.push(p)
     }
 
     for (const plugin of priority) {
@@ -159,9 +159,8 @@ if (yunzaiName == 'trss-yunzai' || yunzaiName == 'miao-yunzai') {
       }
       if (!lodash.isEmpty(context)) {
         let ret
-        for (const fnc in context) {
+        for (const fnc in context)
           ret ||= await plugin[fnc](context[fnc])
-        }
         /** 返回continue时，继续响应后续插件 */
         if (ret === 'continue') continue
         return
@@ -181,16 +180,6 @@ if (yunzaiName == 'trss-yunzai' || yunzaiName == 'miao-yunzai') {
       get: () => e.game === 'gs',
       set: (v) => e.game = v ? 'gs' : 'sr'
     })
-    /** 星铁命令前缀 */
-    const srReg = /^#?(\*|星铁|星轨|穹轨|星穹|崩铁|星穹铁道|崩坏星穹铁道|铁道)+/
-    /** 绝区零命令前缀 */
-    const zzzReg = /^#?(%|％|绝区零|绝区)+/
-    /** 未定事件簿命令前缀 */
-    const wdReg = /^#?(&|未定事件簿|未定)+/
-    /** 崩坏三命令前缀 */
-    const bh3Reg = /^#?(！|!|崩坏三|崩三)+/
-    /** 崩坏二命令前缀 */
-    const bh2Reg = /^#?(￥|崩坏学园2|崩坏二|崩二)+/
     if (srReg.test(e.msg)) {
       e.game = 'sr'
       e.msg = e.msg.replace(srReg, '#星铁')
@@ -208,13 +197,12 @@ if (yunzaiName == 'trss-yunzai' || yunzaiName == 'miao-yunzai') {
       e.msg = e.msg.replace(bh2Reg, '#崩二')
     }
     /** 优先执行 accept */
-    for (const plugin of priority) {
+    for (const plugin of priority)
       if (plugin.accept) {
         const res = await plugin.accept(e)
         if (res == 'return') return
         if (res) break
       }
-    }
 
     a: for (const plugin of priority) {
       /** 正则匹配 */
@@ -225,7 +213,7 @@ if (yunzaiName == 'trss-yunzai' || yunzaiName == 'miao-yunzai') {
           if (!new RegExp(v.reg).test(e.msg)) continue
           e.logFnc = `[${plugin.name}][${v.fnc}]`
 
-          if (v.log !== false) { logger.info(`${e.logFnc}${e.logText} ${lodash.truncate(e.msg, { length: 100 })}`) }
+          if (v.log !== false) logger.info(`${e.logFnc}${e.logText} ${lodash.truncate(e.msg, { length: 100 })}`)
 
           /** 判断权限 */
           if (!this.filtPermission(e, v)) break a
@@ -236,7 +224,7 @@ if (yunzaiName == 'trss-yunzai' || yunzaiName == 'miao-yunzai') {
             if (res !== false) {
             /** 设置冷却cd */
               this.setLimit(e)
-              if (v.log !== false) { logger.mark(`${e.logFnc} ${lodash.truncate(e.msg, { length: 100 })} 处理完成 ${Date.now() - start}ms`) }
+              if (v.log !== false) logger.mark(`${e.logFnc} ${lodash.truncate(e.msg, { length: 100 })} 处理完成 ${Date.now() - start}ms`)
               break a
             }
           } catch (error) {
