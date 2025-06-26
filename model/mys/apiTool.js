@@ -86,6 +86,17 @@ export default class apiTool {
           url: `${hostRecord}game_record/app/genshin/api/role_combat`,
           query: `role_id=${this.uid}&need_detail=true&server=${this.server}`
         },
+        /** 幽境危战 */
+        hard_challenge: {
+          url: `${hostRecord}game_record/app/genshin/api/hard_challenge`,
+          query: `role_id=${this.uid}&need_detail=true&server=${this.server}`
+          // 先只做获取详细信息的（需要ck）
+        },
+        /** 幽境危战增益角色 */
+        hard_challenge_popularity: {
+          url: `${hostRecord}game_record/app/genshin/api/hard_challenge/popularity`,
+          query: `role_id=${this.uid}&server=${this.server}`
+        },
         /** 角色详情 */
         character: {
           url: `${hostRecord}game_record/app/genshin/api/character/list`,

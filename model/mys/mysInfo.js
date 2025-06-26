@@ -38,7 +38,9 @@ export default class MysInfo {
       'action_cardList',
       'avatarInfo',
       'role_combat',
-      'characterDetail'
+      'characterDetail',
+      'hard_challenge',
+      'hard_challenge_popularity'
     ]
 
     this.gtest = false
