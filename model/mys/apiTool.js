@@ -20,13 +20,13 @@ export default class apiTool {
   }
 
   getUrlMap = (data = {}) => {
-    const productName = data?.productName ?? 'XQ-BC52_EEA'
-    const deviceType = data?.deviceType ?? 'XQ-BC52'
-    const modelName = data?.modelName ?? 'XQ-BC52'
-    const oaid = data?.oaid ?? this.uuid
-    const osVersion = data?.osVersion ?? '13'
-    const deviceInfo = data?.deviceInfo ?? 'Sony/XQ-BC52_EEA/XQ-BC52:13/61.2.A.0.472A/061002A0000472A0046651803:user/release-keys'
-    const board = data?.board ?? 'lahaina'
+    const productName = data?.productName || 'XQ-BC52_EEA'
+    const deviceType = data?.deviceType || 'XQ-BC52'
+    const modelName = data?.modelName || 'XQ-BC52'
+    const oaid = data?.oaid || this.uuid
+    const osVersion = data?.osVersion || '13'
+    const deviceInfo = data?.deviceInfo || 'Sony/XQ-BC52_EEA/XQ-BC52:13/61.2.A.0.472A/061002A0000472A0046651803:user/release-keys'
+    const board = data?.board || 'lahaina'
     const deviceBrand = deviceInfo.split('/')[0]
     const deviceDisplay = deviceInfo.split('/')[3]
     let host, hostRecord, hostPublicData
