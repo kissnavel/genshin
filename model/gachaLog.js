@@ -28,6 +28,8 @@ export default class GachaLog extends base {
     const srPool = [
       { type: 11, typeName: "角色" },
       { type: 12, typeName: "光锥" },
+      { type: 21, typeName: "角色联动" },
+      { type: 22, typeName: "光锥联动" },
       { type: 1, typeName: "常驻" },
       { type: 2, typeName: "新手" }
     ]
@@ -207,10 +209,12 @@ export default class GachaLog extends base {
       end_id: 0,
       ...param
     }).toString()
+    const isLd = [21, 22].includes(param.gacha_type)
+    let GachaLog =  isLd ? 'getLdGachaLog' : 'getGachaLog'
     if (this.e.isSr) {
-      logUrl = "https://public-operation-hkrpg.mihoyo.com/common/gacha_record/api/getGachaLog?"
+      logUrl = `https://public-operation-hkrpg.mihoyo.com/common/gacha_record/api/${GachaLog}?`
       if (!["prod_gf_cn", "prod_qd_cn"].includes(param.region)) {
-        logUrl = "https://public-operation-hkrpg-sg.hoyoverse.com/common/gacha_record/api/getGachaLog?"
+        logUrl = `https://public-operation-hkrpg-sg.hoyoverse.com/common/gacha_record/api/${GachaLog}?`
       }
       logParam = new URLSearchParams({
         authkey_ver: 1,
@@ -416,7 +420,7 @@ export default class GachaLog extends base {
 
   async getAllGcLogData() {
     this.model = "gachaAllLog"
-    const poolList = ["角色", this.e?.isSr ? "光锥" : "武器", "集录", "常驻"]
+    const poolList = ["角色", "角色联动", this.e?.isSr ? "光锥" : "武器", "光锥联动", "集录", "常驻"]
     const logData = []
     let fiveMaxNum = 0
     const originalMsg = this.e.msg
@@ -492,6 +496,15 @@ export default class GachaLog extends base {
       case "光锥":
         type = 12
         typeName = "光锥"
+        break
+      case "角色联动":
+        type = 21
+        typeName = "角色联动"
+        break
+      case "光锥联动":
+      case "武器联动":
+        type = 22
+        typeName = "光锥联动"
         break
       case "新手":
         type = this.e.isSr ? 2 : 100
@@ -798,7 +811,7 @@ export default class GachaLog extends base {
   randData(data) {
     const type = data.type || this.type
     const typeName = data.typeName || this.typeName
-    const max = type === 12 || type === 302 ? 80 : 90
+    const max = type === 12 || type === 22 || type === 302 ? 80 : 90
     let line = []
     let weapon = this.e.isSr ? "光锥" : "武器"
     //最非，最欧
@@ -824,7 +837,7 @@ export default class GachaLog extends base {
       minValue = 0;
     }
 
-    if ([301, 11].includes(type)) {
+    if ([301, 11, 21].includes(type)) {
       line = [[
         { lable: "未出五星", num: data.noFiveNum, unit: "抽" },
         { lable: "五星", num: data.fiveNum, unit: "个" },
@@ -856,7 +869,7 @@ export default class GachaLog extends base {
       ]]
     }
     // 武器池
-    if ([302, 12].includes(type)) {
+    if ([302, 12, 22].includes(type)) {
       line = [[
         { lable: "未出五星", num: data.noFiveNum, unit: "抽" },
         { lable: "五星", num: data.fiveNum, unit: "个" },
