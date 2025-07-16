@@ -212,12 +212,15 @@ export default class User extends base {
         '崩坏三支持：',
         '【!uid】当前绑定ck uid列表',
         '【!我的ck】查看当前绑定ck',
-        '【!删除ck】删除当前绑定ck'
+        '【!删除ck】删除当前绑定ck',
+        '【!体力】查询当前体力'
       )
       button.push([
         { text: '!uid', callback: '!uid' },
         { text: '!我的ck', callback: '!我的ck' },
         { text: '!删除ck', callback: '!删除ck' }
+      ], [
+        { text: '!体力', callback: '!体力' }
       ])
     }
     if (mys.hasGame('bh2')) {
