@@ -12,7 +12,7 @@ export class exchange extends plugin {
       priority: 1000,
       rule: [
         {
-          reg: /^(#|\*)?(原神|星铁|崩铁|崩三|崩坏三|崩坏3|绝区零)?(直播|前瞻)?兑换码$/,
+          reg: /^(#|\*)?(原神|星铁|崩铁|崩三|崩坏三|崩坏3|绝区零)?(国服)?(直播|前瞻)?兑换码$/,
           fnc: 'getCode'
         },
         {
@@ -24,7 +24,7 @@ export class exchange extends plugin {
   }
 
   async getCode() {
-    let reg = this.e.msg.match(/^(#|\*)?(原神|星铁|崩铁|崩三|崩坏三|崩坏3|绝区零)?(直播|前瞻)?兑换码$/)
+    let reg = this.e.msg.match(/^(#|\*)?(原神|星铁|崩铁|崩三|崩坏三|崩坏3|绝区零)?(国服)?(直播|前瞻)?兑换码$/)
     this.uid = '75276539'
     this.gid = '2'
     if (reg[1] == '*' || ['星铁', '崩铁'].includes(reg[2])) {
