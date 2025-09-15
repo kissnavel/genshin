@@ -48,7 +48,7 @@ export class exchange extends plugin {
     }
     if (!actid) {
       logger.info('[兑换码] 未获取到actId')
-      return true
+      return await this.reply('暂无前瞻直播资讯')
     }
     
     this.actId = actid
