@@ -270,11 +270,3 @@ img {
   align-items: center;
   padding-left: 60px;
 }
-
-.logo {
-  position: absolute;
-  font-size: 30px;
-  bottom: 90px;
-  left: 130px;
-  color: #fff;
-}
