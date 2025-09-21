@@ -4,6 +4,9 @@ import lodash from 'lodash'
 import NoteUser from './NoteUser.js'
 import MysUser from './MysUser.js'
 import DailyCache from './DailyCache.js'
+import getDeviceFp from '../getDeviceFp.js'
+import Cfg from '../Cfg.js'
+import common from '../../../../lib/common/common.js'
 
 export default class MysInfo {
   static tips = '请先#绑定Cookie\n发送【Cookie帮助】查看配置教程'
@@ -394,11 +397,6 @@ export default class MysInfo {
     }
 
     res.retcode = Number(res.retcode)
-    if (type === 'bbs_sign') {
-      if ([-5003].includes(res.retcode)) {
-        res.retcode = 0
-      }
-    }
 
     switch (res.retcode) {
       case 0:
@@ -447,17 +445,25 @@ export default class MysInfo {
         break
       case 1034:
       case 10035:
-        let handler = this.e.runtime?.handler || {}
-
-        // 如果有注册的mys.req.err，调用
-        if (handler.has('mys.req.err')) {
-          logger.mark(`[米游社查询][uid:${this.uid}][qq:${this.userId}] 遇到验证码，尝试调用 Handler mys.req.err`)
-          res = await handler.call('mys.req.err', this.e, { mysApi, type, res, data, mysInfo: this }) || res
+        let retry = 0
+        res = await this.geetest(type, mysApi, data, res.retcode)
+        while ((res?.retcode == 1034 || res?.retcode == 10035) && retry < Cfg.getConfig('config').retrytime) {
+          res = await this.geetest(type, mysApi, data, res?.retcode)
+          retry++
         }
 
-        if (!res || res?.retcode == 1034) {
-          logger.mark(`[米游社查询失败][uid:${this.uid}][qq:${this.userId}] 遇到验证码`)
-          if (!isTask) this.e.reply([`UID:${this.uid}，米游社查询遇到验证码，请稍后再试`, this.mysButton])
+        if (res?.retcode !== 0 && res.retcode !== 10103) {
+          let handler = this.e.runtime?.handler || {}
+
+          // 如果有注册的mys.req.err，调用
+          if (handler.has('mys.req.err')) {
+            logger.mark(`[米游社查询][uid:${this.uid}][qq:${this.userId}] 遇到验证码，尝试调用 Handler mys.req.err`)
+            res = await handler.call('mys.req.err', this.e, { mysApi, type, res, data, mysInfo: this }) || res
+          }
+          if (!res || res?.retcode == 1034 || res?.retcode == 10035) {
+            logger.mark(`[米游社查询失败][uid:${this.uid}][qq:${this.userId}] 遇到验证码`)
+            if (!isTask) this.e.reply([`UID:${this.uid}，米游社查询遇到验证码，请稍后再试`, this.mysButton])
+          }
         }
         break
       case 10307:
@@ -476,14 +482,89 @@ export default class MysInfo {
     return res
   }
 
+  async geetest(type, mysApi, data, retcode = 1034) {
+    let api = Cfg.getConfig('api')
+    let res = await mysApi.getData(type, data)
+    if (res?.retcode == 0 || (type == 'detail' && res?.retcode == -1002)) return res
+
+    if (data?.headers) delete data.headers
+    try {
+      let vali = new MysApi(mysApi.uid, mysApi.cookie, mysApi.option, '', '', 'all')
+
+      let challenge_game = mysApi.game == 'zzz' ? '8' : mysApi.game == 'sr' ? '6' : '2'
+      let { deviceFp } = await getDeviceFp.Fp(mysApi.uid, mysApi.cookie, mysApi.game)
+      let headers = { 'x-rpc-device_fp': deviceFp, 'x-rpc-challenge_game': challenge_game }
+      let app_key = mysApi.game == 'zzz' ? 'game_record_zzz' : mysApi.game == 'sr' ? 'hkrpg_game_record' : ''
+
+      res = await vali.getData(retcode == 10035 ? "createGeetest" : "createVerification", { headers, app_key })
+      if (!res) return { "data": null, "message": "公共ck失效", "retcode": 10103 }
+
+      if (api.type == 1) {
+        res = await vali.getData("recognize", res?.data)
+        if (res?.resultid) {
+          let results = res
+          let retry = 0
+          await common.sleep(5000)
+          res = await vali.getData("results", results)
+          while ((res?.status == 2) && retry < 10) {
+            await common.sleep(5000)
+            res = await vali.getData("results", results)
+            retry++
+          }
+        }
+      } else if (api.type == 2) {
+        res = await vali.getData("in", res?.data)
+        if (res?.request) {
+          let request = res
+          let retry = 0
+          await common.sleep(5000)
+          res = await vali.getData("res", request)
+          while ((res?.request == "CAPCHA_NOT_READY") && retry < 10) {
+            await common.sleep(5000)
+            res = await vali.getData("res", request)
+            retry++
+          }
+        }
+      }
+      if (res?.data?.validate || res?.request?.geetest_validate) {
+        res = await vali.getData(retcode == 10035 ? "verifyGeetest" : "verifyVerification", {
+          ...res?.data ? res.data : res.request,
+          headers,
+          app_key
+        })
+      } else {
+        return { "data": null, "message": `${api.api}验证码失败`, "retcode": 1034 }
+      }
+
+      if (res?.data?.challenge) {
+        res = await mysApi.getData(type, {
+          headers: {
+            "x-rpc-challenge": res?.data?.challenge,
+            ...headers
+          },
+          ...data
+        })
+      }
+      if (res?.retcode !== 0)
+        return { "data": null, "message": "", "retcode": 1034 }
+
+    } catch (error) {
+      logger.error("无感日志：" + error)
+      return { "data": null, "message": "", "retcode": 1034 }
+    }
+    return res
+  }
+
   /** 删除失效ck */
   async delCk () {
     if (!this.ckUser) {
       return false
     }
-    let ckUser = this.ckUser
-    // 删除记录，并清除对应user ck记录
-    await ckUser.delWithUser()
+    if (Cfg.getConfig('config').Autodelck) {
+      let ckUser = this.ckUser
+      // 删除记录，并清除对应user ck记录
+      await ckUser.delWithUser()
+    }
   }
 
   /** 查询次数满，今日内标记失效 */

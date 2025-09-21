@@ -1,0 +1,82 @@
+[
+  {
+    "id": "1",
+    "signId": "1",
+    "forumId": "1",
+    "name": "崩坏3",
+    "url": "https://bbs.mihoyo.com/bh3/",
+    "otherName": [
+      "bh3",
+      "崩崩崩",
+      "崩坏3"
+    ]
+  },
+  {
+    "id": "2",
+    "signId": "26",
+    "forumId": "26",
+    "name": "原神",
+    "url": "https://bbs.mihoyo.com/ys/",
+    "otherName": [
+      "gs",
+      "原神"
+    ]
+  },
+  {
+    "id": "3",
+    "signId": "30",
+    "forumId": "30",
+    "name": "崩坏2",
+    "url": "https://bbs.mihoyo.com/bh2/",
+    "otherName": [
+      "bh2",
+      "崩崩",
+      "崩坏2"
+    ]
+  },
+  {
+    "id": "4",
+    "signId": "37",
+    "forumId": "37",
+    "name": "未定事件簿",
+    "url": "https://bbs.mihoyo.com/wd/",
+    "otherName": [
+      "未定",
+      "事件簿",
+      "未定事件簿"
+    ]
+  },
+  {
+    "id": "5",
+    "signId": "34",
+    "forumId": "34",
+    "name": "大别野",
+    "url": "https://bbs.mihoyo.com/dby/",
+    "otherName": [
+      "大别野"
+    ]
+  },
+  {
+    "id": "6",
+    "signId": "52",
+    "forumId": "52",
+    "name": "崩坏星穹铁道",
+    "url": "https://bbs.mihoyo.com/sr/",
+    "otherName": [
+      "sr",
+      "星铁",
+      "崩坏星穹铁道"
+    ]
+  },
+  {
+    "id": "8",
+    "signId": "57",
+    "forumId": "57",
+    "name": "绝区零",
+    "url": "https://bbs.mihoyo.com/zzz/",
+    "otherName": [
+      "zzz",
+      "绝区零"
+    ]
+  }
+]

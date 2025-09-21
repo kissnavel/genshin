@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+	<link rel="shortcut icon" href="#" />
+	<link rel="stylesheet" type="text/css" href="{{pluResPath}}html/dailyNote/dailyNote.css" />
+</head>
+
+<body>
+	<div class="container" id="container" style=" background-image: url({{pluResPath}}img/dailyNote/bg/bg.png);">
+		<div class="left_model">
+			<div class="list">
+				<div class="div">
+					<img src="{{pluResPath}}img/dailyNote/树脂.png" alt="">
+				</div>
+				<div class="div">
+					<span class="title light">原粹树脂</span>
+					<div class="kb"></div>
+					<span class="bottom">{{if resinMaxTime}}
+						{{resinMaxTimeMb2Day}}<span class="time">{{resinMaxTimeMb2}}</span>恢复
+						{{else}}树脂已完全恢复{{/if}}</span>
+				</div>
+				<div class="div sumCount">
+					<span class="{{if current_resin>=159}}red{{/if}}">{{current_resin}}</span>/{{max_resin}}
+				</div>
+			</div>
+			<div class="list">
+				<div class="div">
+					<img src="{{pluResPath}}img/dailyNote/洞天宝钱.png" alt="">
+				</div>
+				<div class="div">
+					<span class="title light">洞天宝钱</span>
+					<div class="kb"></div>
+					<span class="bottom">
+						{{if coinTime}}
+						{{coinTimeMb2Day}}<span class="time">{{coinTimeMb2}}</span>恢复
+						{{else}}存储已满{{/if}}</span>
+				</div>
+				<div class="div sumCount">
+					<!-- /{{max_home_coin}} -->
+					<span class="{{if current_home_coin/max_home_coin > 0.9}}red{{/if}}">{{current_home_coin}}</span>
+
+				</div>
+			</div>
+			<div class="list">
+				<div class="div">
+					<img src="{{pluResPath}}img/dailyNote/每日.png" alt="">
+				</div>
+				<div class="div">
+					<span class="title light">每日委托</span>
+					<div class="kb"></div>
+					<span class="bottom">今日委托奖励{{if is_extra_task_reward_received==1}}已{{else}}未{{/if}}领取</span>
+				</div>
+				<div class="div sumCount">
+					<span class="{{if finished_task_num<4}}red{{/if}}">{{finished_task_num}}</span>/{{total_task_num}}
+				</div>
+			</div>
+			<div class="list">
+				<div class="div">
+					<img src="{{pluResPath}}img/dailyNote/签到福利.webp" alt="">
+				</div>
+				<div class="div">
+					<span class="title light">签到福利</span>
+					<div class="kb"></div>
+					<span class="bottom">米游社原神每日签到</span>
+				</div>
+				<div class="div sumCount">
+					<span class="{{if is_sign==true}}red{{/if}}">{{if is_sign==true}}已{{else}}未{{/if}}签到</span>
+				</div>
+			</div>
+		</div>
+		<div class="right_model">
+			<div class="uId light">
+				UID:{{game_uid}}
+			</div>
+			<div class="head_image">
+				{{each expeditions list}}
+				<div class="li">
+					<div class="jdt">
+						<img src="{{pluResPath}}img/dailyNote/speed/{{list.percentage}}.png" />
+					</div>
+					<div class="icon {{list.mb2Icon==''?'user_null':''}}">
+						{{if !list.avatar_side_icon}}
+						<img src="{{pluResPath}}img/dailyNote/角色.png" style="width: 60px;height: 60px;"
+							alt="" />{{else}}
+						<img src="{{list.avatar_side_icon}}" alt="">{{/if}}
+					</div>
+					<div class="text" style="top:{{list.remained_time==0?'30%':'20%'}};">
+						{{if !list.avatar_side_icon}}
+						<span>未派遣</span>
+						{{else}}
+						<span class="{{if list.percentage!=100}}red{{/if}}">
+							{{if list.percentage==100}}已完成{{else}}派遣未完成{{/if}}
+						</span>
+						{{/if}}
+					</div>
+				</div>
+				{{/each}}
+			</div>
+
+			<div class="bottom_list">
+				<div class="bottom_time light">
+					{{dayMb2}}
+				</div>
+			</div>
+
+		</div>
+	</div>
+</body>
+
+</html>

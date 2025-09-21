@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+  <link rel="shortcut icon" href="#" />
+  <link rel="stylesheet" type="text/css" href="{{pluResPath}}html/sign/sign.css" />
+  <link rel="preload" href="{{fontsPath}}tttgbnumber.ttf" as="font">
+</head>
+
+<body>
+  <div class="container" id="container">
+    <div class="page">
+      <div class="header">
+        <div class="header-content">
+          <strong>米游社游戏签到</strong>
+          <div class="sign-count">签到数量：<span class="count-num">{{totalSignCount}}</span> 个</div>
+        </div>
+      </div>
+
+      {{ each gameList game}}
+      {{ if game.results && game.results.length > 0}}
+      <div class="game-section">
+        <div class="game-name">{{game.name}}</div>
+        <div class="table-container">
+          <table class="sign-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>UID</th>
+                <th>签到结果</th>
+                <th>#</th>
+                <th>今日奖励</th>
+                <th>累计签到</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{ each game.results result}}
+              <tr>
+                <td>{{result.index}}</td>
+                <td>{{result.uid}}</td>
+                <td>
+                  <div class="status-icon status-{{result.status}}">
+                    {{if result.status === 'failed'}}
+                      <div class="error-icon">✗</div>
+                    {{else}}
+                      <div class="check-icon">✓</div>
+                    {{/if}}
+                  </div>
+                  {{result.statusText}}
+                </td>
+                <td>
+                  <img class="icon" src="{{ result.icon }}" alt="">
+                </td>
+                <td>{{result.reward}}</td>
+                <td>{{result.totalDays}} 天</td>
+              </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {{/if}}
+      {{/each}}
+    </div>
+  </div>
+</body>
+
+</html> 

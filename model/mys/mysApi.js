@@ -15,10 +15,10 @@ export default class MysApi {
    * @param isSr 是否星铁
    * @param device 设备device_id
    */
-  constructor(uid, cookie, option = { game: 'gs', device: '' }, Server = '', Biz = '') {
+  constructor(uid, cookie, option = { game: 'gs', device: '' }, Server = '', Biz = '', game = '') {
     this.uid = uid
     this.cookie = cookie
-    this.game = option.game || 'gs'
+    this.game = game || option.game
     this.server = Server || this.getServer()
     this.biz = Biz
     this.apiTool = new ApiTool(uid, this.server, this.game, this.biz)
@@ -30,6 +30,35 @@ export default class MysApi {
       log: true,
       ...option
     }
+
+    this.types = [
+      'createGeetest',
+      'verifyGeetest',
+      'createVerification',
+      'verifyVerification',
+      'recognize',
+      'signrecognize',
+      'bbssignrecognize',
+      'results',
+      'in',
+      'res',
+      'bbsisSign',
+      'bbsSign',
+      'bbsGetCaptcha',
+      'bbsCaptchaVerify',
+      'bbsPostList',
+      'bbsPostFull',
+      'bbsReply',
+      'bbsShareConf',
+      'bbsVotePost'
+    ]
+
+    this.gttypes = [
+      'recognize',
+      'signrecognize',
+      'bbssignrecognize',
+      'results'
+    ]
   }
 
   /* eslint-disable quotes */
@@ -42,12 +71,13 @@ export default class MysApi {
     let urlMap = this.apiTool.getUrlMap({ ...data, deviceId: this.device })
     if (!urlMap[type]) return false
 
-    let { url, query = '', body = '' } = urlMap[type]
+    let { url, query = '', body = '', config = '', types = '', sign = ''  } = urlMap[type]
 
     if (query) url += `?${query}`
     if (body) body = JSON.stringify(body)
 
-    let headers = this.getHeaders(query, body)
+    this.forumid = data.forumid || ''
+    let headers = this.getHeaders(types, query, body, sign)
 
     // 如果有设备指纹，写入设备指纹
     if (data.deviceFp) {
@@ -99,7 +129,7 @@ export default class MysApi {
       }
     }
 
-    return { url, headers, body }
+    return { url, headers, body, config }
   }
 
   getServer() {
@@ -147,10 +177,10 @@ export default class MysApi {
     return isWd ? 'cn_prod_gf01' : (isZzz || isSr) ? 'prod_gf_cn' : 'cn_gf01'// 官服
   }
 
-  async getData(type, data = { headers: {} }, cached = false) {
+  async getData(type, data = { headers: {} }, cached = false, game = '') {
     const uid = this.uid
     const ck = this.cookie
-    const game = this.game
+    const Game = this.game
     const biz = this.biz
     const ltuid = ck.ltuid
     if (ltuid) {
@@ -172,7 +202,7 @@ export default class MysApi {
           bindInfo = null
         }
       }
-      const { deviceFp } = await getDeviceFp.Fp(uid, ck, game, biz)
+      const { deviceFp } = await getDeviceFp.Fp(uid, ck, Game, biz)
       if (deviceFp) {
         data.deviceFp = deviceFp
         data.headers['x-rpc-device_fp'] = deviceFp
@@ -183,15 +213,18 @@ export default class MysApi {
         data.headers['x-rpc-device_id'] = device_id
       }
     }
-    if (!this._device_fp && !data?.Getfp && !data?.headers?.['x-rpc-device_fp']) {
-      this._device_fp = await this.getData('getFp', {
-        ...data,
-        Getfp: true
-      })
+    if (!this.types.includes(type)) {
+      if (!this._device_fp && !data?.Getfp && !data?.headers?.['x-rpc-device_fp']) {
+        this._device_fp = await this.getData('getFp', {
+          ...data,
+          Getfp: true
+        })
+      }
+      if (type === 'getFp' && !data?.Getfp) return this._device_fp
     }
-    if (type === 'getFp' && !data?.Getfp) return this._device_fp
 
-    let { url, headers, body } = this.getUrl(type, data)
+    if (game) this.game = game
+    let { url, headers, body, config } = this.getUrl(type, data)
 
     if (!url) return false
 
@@ -203,10 +236,19 @@ export default class MysApi {
 
     if (data.headers) {
       headers = { ...headers, ...data.headers }
+      delete data.headers
     }
 
-    if (type !== 'getFp' && !headers['x-rpc-device_fp'] && this._device_fp.data?.device_fp) {
-      headers['x-rpc-device_fp'] = this._device_fp.data.device_fp
+    if (type == 'sign' && (data.validate || data.geetest_validate)) {
+      headers["x-rpc-challenge"] = data.challenge || data.geetest_challenge
+      headers["x-rpc-validate"] = data.validate || data.geetest_validate
+      headers["x-rpc-seccode"] = `${data.validate || data.geetest_validate}|jordan`
+    }
+
+    if (!this.types.includes(type)) {
+      if (type !== 'getFp' && !headers['x-rpc-device_fp'] && this._device_fp.data?.device_fp) {
+        headers['x-rpc-device_fp'] = this._device_fp.data.device_fp
+      }
     }
 
     let param = {
@@ -222,6 +264,16 @@ export default class MysApi {
     }
     let response = {}
     let start = Date.now()
+    if (this.gttypes.includes(type)) {
+      param = {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: config
+      }
+    }
+
     try {
       response = await fetch(url, param)
     } catch (error) {
@@ -250,34 +302,80 @@ export default class MysApi {
     return res
   }
 
-  getHeaders(query = '', body = '') {
-    const cn = {
-      app_version: '2.73.1',
-      User_Agent: 'Mozilla/5.0 (Linux; Android 13; XQ-BC52 Build/61.2.A.0.472A; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/111.0.5563.116 Mobile Safari/537.36 miHoYoBBS/2.73.1',
-      client_type: '5',
-      Origin: 'https://webstatic.mihoyo.com',
-      X_Requested_With: 'com.mihoyo.hyperion',
+  getHeaders(types, query = '', body = '', sign = false) {
+    const header = {
+      'x-rpc-app_version': '2.73.1',
+      'x-rpc-client_type': '5',
+      'x-rpc-device_id': this.device_id,
+      'User-Agent': 'Mozilla/5.0 (Linux; Android 13; XQ-BC52 Build/61.2.A.0.472A; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/111.0.5563.116 Mobile Safari/537.36 miHoYoBBS/2.73.1',
       Referer: 'https://webstatic.mihoyo.com/'
     }
-    const os = {
-      app_version: '2.57.1',
-      User_Agent: 'Mozilla/5.0 (Linux; Android 13; XQ-BC52 Build/61.2.A.0.472A; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/111.0.5563.116 Mobile Safari/537.36 miHoYoBBSOversea/2.57.1',
-      client_type: '2',
-      Origin: 'https://act.hoyolab.com',
-      X_Requested_With: 'com.mihoyo.hoyolab',
+
+    const header_os = {
+      'x-rpc-app_version': '2.57.1',
+      'x-rpc-client_type': '2',
+      'x-rpc-device_id': this.device_id,
+      'User-Agent': 'Mozilla/5.0 (Linux; Android 13; XQ-BC52 Build/61.2.A.0.472A; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/111.0.5563.116 Mobile Safari/537.36 miHoYoBBSOversea/2.57.1',
       Referer: 'https://act.hoyolab.com/'
     }
+
+    const header_bbs = {
+      'x-rpc-app_version': '2.73.1',
+      'x-rpc-channel': 'miyousheluodi',
+      'x-rpc-client_type': '2',
+      Referer: 'https://app.mihoyo.com/',
+      'User-Agent': 'okhttp/4.9.3',
+      'x-rpc-device_id': this.device_id,
+      'x-rpc-device_model': 'XQ-BC52',
+      'x-rpc-device_name': 'Sony XQ-BC52',
+      'x-rpc-sys_version': '12'
+    }
+
     let client
     if (['bh3_cn', 'bh2_cn'].includes(this.biz) || /cn_|_cn/.test(this.server)) {
-      client = cn
+      client = header
     } else {
-      client = os
+      client = header_os
+    }
+
+    let signgame = this.game == 'gs' ? 'hk4e' : this.game == 'sr' ? 'hkrpg' : this.game == 'zzz' ? 'zzz' : this.game == 'bh3' ? 'bh3' : this.game == 'bh2' ? 'bh2' : 'nxx'
+    let x_rpc = {
+      'x-rpc-device_model': 'XQ-BC52',
+      'x-rpc-device_name': 'Sony XQ-BC52',
+      'x-rpc-sys_version': '12',
+      'x-rpc-signgame': signgame,
+      'x-rpc-platform': 'android'
+    }
+
+    switch (types) {
+      // 细分签到
+      case 'sign':
+        if (['bh3_cn', 'bh2_cn'].includes(this.biz) || /cn_|_cn/.test(this.server))
+          return {
+            ...header,
+            ...x_rpc,
+            'X-Requested-With': 'com.mihoyo.hyperion',
+            'x-rpc-channel': 'miyousheluodi',
+            DS: this.SignDs()
+          }
+        else
+          return {
+            ...header_os,
+            ...x_rpc,
+            'X-Requested-With': 'com.mihoyo.hoyolab',
+            'x-rpc-channel': 'google',
+            DS: this.SignDs()
+          }
+      case 'bbs':
+        return {
+          ...header_bbs,
+          DS: (sign ? this.bbsDs(query, body) : this.SignDs("WGtruoQrwczmsjLOPXzJLnaAYycsLavx"))
+        }
+      case 'noheader':
+        return {}
     }
     return {
-      'x-rpc-app_version': client.app_version,
-      'x-rpc-client_type': client.client_type,
-      'User-Agent': client.User_Agent,
-      Referer: client.Referer,
+      ...client,
       DS: this.getDs(query, body)
     }
   }
@@ -299,6 +397,20 @@ export default class MysApi {
     let t = Math.round(new Date().getTime() / 1000)
     let r = this.randomString(6)
     let DS = md5(`salt=WGtruoQrwczmsjLOPXzJLnaAYycsLavx&t=${t}&r=${r}`)
+    return `${t},${r},${DS}`
+  }
+
+  bbsDs(q = "", b, salt = "t0qEgfub6cvueAPgR5m9aQWWVciEer7v") {
+    let t = Math.floor(Date.now() / 1000)
+    let r = _.random(100001, 200000)
+    let DS = md5(`salt=${salt}&t=${t}&r=${r}&b=${b}&q=${q}`)
+    return `${t},${r},${DS}`
+  }
+
+  SignDs(salt = 'jEpJb9rRARU2rXDA9qYbZ3selxkuct9a') {
+    const t = Math.floor(Date.now() / 1000)
+    let r = this.randomString(6)
+    const DS = md5(`salt=${salt}&t=${t}&r=${r}`)
     return `${t},${r},${DS}`
   }
 

@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import _ from 'lodash'
+import Cfg from './Cfg.js'
 import cfg from '../../../lib/config/config.js'
 import { Common, Version } from '#miao'
 import { Character } from '#miao.models'
@@ -9,6 +10,9 @@ export default class base {
     this.e = e
     this.userId = e?.user_id
     this.model = 'genshin'
+    this.set = Cfg.getConfig('config')
+    this.note = Cfg.getConfig('defnote')
+    this.white = Cfg.getConfig('white')
     this._path = process.cwd().replace(/\\/g, '/')
   }
 
@@ -71,6 +75,55 @@ export default class base {
       headImg: char?.imgs?.banner,
       srtempFile: '',
       game: 'gs',
+    }
+  }
+
+  /**
+   * 截图默认数据
+   * @param saveId html保存id
+   * @param tplFile 模板html路径
+   * @param pluResPath 插件资源路径
+   */
+  get screenNote() {
+    let headImg
+    if (this.e?.isZzz) {
+      return {
+        saveId: this.userId,
+        cwd: this._path,
+        tplFile: `./plugins/genshin/resources/ZZZero/html/${this.model}/${this.model}.html`,
+        /** 绝对路径 */
+        fontsPath: `${this._path}/plugins/genshin/resources/fonts/`,
+        pluResPath: `${this._path}/plugins/genshin/resources/ZZZero/`,
+        genshinPath: `${this._path}/plugins/genshin/resources/`,
+        headStyle: '',
+        gstempFile: 'ZZZero/',
+      }
+    } else if (this.e?.isSr) {
+      headImg = _.sample(fs.readdirSync(`${this._path}/plugins/genshin/resources/StarRail/img/worldcard`).filter(file => file.endsWith('.png')))
+      return {
+        saveId: this.userId,
+        cwd: this._path,
+        tplFile: `./plugins/genshin/resources/StarRail/html/${this.model}/${this.model}.html`,
+        /** 绝对路径 */
+        fontsPath: `${this._path}/plugins/genshin/resources/fonts/`,
+        pluResPath: `${this._path}/plugins/genshin/resources/StarRail/`,
+        genshinPath: `${this._path}/plugins/genshin/resources/`,
+        headStyle: `<style> .head_box { background: url(${this._path}/plugins/genshin/resources/StarRail/img/worldcard/${headImg}) #fff; background-position-x: -10px; background-repeat: no-repeat; background-size: 540px; background-position-y: -100px; </style>`,
+        gstempFile: 'StarRail/'
+      }
+    } else {
+      headImg = _.sample(fs.readdirSync(`${this._path}/plugins/genshin/resources/img/namecard`).filter(file => file.endsWith('.png')))
+      return {
+        saveId: this.userId,
+        cwd: this._path,
+        tplFile: `./plugins/genshin/resources/genshin/html/${this.model}/${this.model}.html`,
+        /** 绝对路径 */
+        fontsPath: `${this._path}/plugins/genshin/resources/fonts/`,
+        pluResPath: `${this._path}/plugins/genshin/resources/genshin/`,
+        genshinPath: `${this._path}/plugins/genshin/resources/`,
+        headStyle: `<style> .head_box { background: url(${this._path}/plugins/genshin/resources/img/namecard/${headImg}) #fff; background-position-x: 42px; background-repeat: no-repeat; background-size: auto 101%; }</style>`,
+        gstempFile: 'genshin/'
+      }
     }
   }
 }

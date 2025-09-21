@@ -1,51 +1,236 @@
-import moment from 'moment'
-import lodash from 'lodash'
-import base from './base.js'
+import puppeteer from '../../../lib/puppeteer/puppeteer.js'
+import common from '../../../lib/common/common.js'
 import MysInfo from './mys/mysInfo.js'
-import { Character } from '#miao.models'
+import MysApi from './mys/mysApi.js'
+import base from './base.js'
+import moment from 'moment'
+import Cfg from './Cfg.js'
+import fs from 'node:fs'
+import _ from 'lodash'
 
 export default class Note extends base {
-  constructor (e) {
+  constructor(e) {
     super(e)
     this.model = 'dailyNote'
+    this.week = [
+      '星期日',
+      '星期一',
+      '星期二',
+      '星期三',
+      '星期四',
+      '星期五',
+      '星期六'
+    ]
   }
 
-  /** 生成体力图片 */
-  static async get (e) {
+  static async get(e) {
     let note = new Note(e)
-    return await note.getData()
+
+    let { cks } = await Cfg.getcks(false, e.user_id, true)
+    if (_.every(cks, _.isEmpty)) return e.reply('请【#扫码登录】绑定ck\n或尝试【#刷新ck】', false, { at: true })
+
+    e.reply('查询中请稍等...', false, { at: true, recallMsg: 30 })
+
+    let sendMsg = []
+    e._reply = e.reply
+    e.reply = ((msg) => {
+      sendMsg.push(msg)
+    })
+
+    let promises = []
+    for (let g of ['gs', 'sr', 'zzz'])
+      if (!_.isEmpty(cks[g]))
+        promises.push(note.ddos(cks[g], g))
+
+    await Promise.all(promises)
+
+    if (sendMsg.length > note.set.forward)
+      await e._reply(await common.makeForwardMsg(e, sendMsg))
+    else
+      await e._reply(sendMsg, false, { at: false })
+
+    return
   }
 
-  async getData () {
-    let device_fp = await MysInfo.get(this.e, 'getFp')
-    let headers = { 'x-rpc-device_fp': device_fp?.data?.device_fp }
-
-    let res = await MysInfo.get(this.e, 'dailyNote', { headers })
-    let resUser
-    if (!res || res.retcode !== 0) return false
-
-    /** 截图数据 */
-    let data = this.e.isSr ? this.noteSr(res) : this.noteData(res)
-
-    let screenData = this.screenData
-    if (this.e.isSr) {
-      resUser = await MysInfo.get(this.e, 'UserGame', { headers })
-      resUser.data?.list?.forEach(v => this.e.uid.includes(v.game_biz))
-      if (!resUser || resUser.retcode !== 0) return false
+  async ddos(cks, game) {
+    for (let i in cks) {
+      await this.getData(cks[i], game)
     }
-    return {
-      name: this.e.sender.card,
+  }
+
+  async NoteTask() {
+    if (!this.set.NoteTask) return
+
+    let sendCD = this.set.sendCD * 3600;
+    let Note = Cfg.getConfig('defnote')
+    if (_.isEmpty(Note)) return
+
+    for (let bot_id in Note)
+      for (let user_id in Note[bot_id]) {
+        logger.mark(`[定时任务:检查体力推送]Bot:${bot_id};User:${user_id}`)
+        let User = Note[bot_id][user_id]
+        user_id = Number(user_id) || user_id
+        let { cks } = await Cfg.getcks(false, user_id, true)
+        let imgs = {}, Resins = {}
+        for (let group_id in User) {
+          let Group = User[group_id]
+          this.e = {
+            user_id: user_id,
+            qq: user_id,
+            msg: "体力",
+            isSr: false,
+            isZzz: false,
+          }
+          let sendMsg = [segment.at(user_id), this.set.TaskMsg]
+          let length = sendMsg.length
+          this.e.reply = (msg) => { sendMsg.push(msg) }
+
+          for (let g of ['gs', 'sr', 'zzz']) {
+            this.e.isSr = g == 'sr' ?? true
+            this.e.isZzz = g == 'zzz' ?? true
+            for (let uid of Group[g]) {
+              let data = {}, Resin = Group[`${g}_Resin`]
+              let sendkey = `${group_id}:${bot_id}:${g}_NoteTask:${uid}`
+              if (await redis.get(sendkey)) continue
+
+              if (imgs[`${g}_${uid}`]) {
+                if (Number(Resins[`${g}_${uid}`]) < Number(Resin)) continue
+                logger.mark(`[体力推送]Bot:${bot_id};Group:${group_id};QQ:${user_id};${`${g}_UID`}:${uid}`)
+
+                await redis.set(sendkey, "1", { EX: sendCD })
+                await this.e.reply(imgs[`${g}_${uid}`])
+                continue
+              }
+
+              if (!cks[g][uid]) continue
+              let ck = cks[g][uid]
+
+              let { Data, User, Sign } = await this.noteData(ck, g)
+              if (Data?.retcode !== 0 || !User || !Sign) continue
+
+              Resins[`${g}_${uid}`] = this.e.isZzz ? Data?.data.energy.progress.current : Data?.data[`current_${this.e.isSr ? 'stamina' : 'resin'}`]
+              if (Number(Resins[`${g}_${uid}`]) >= Number(Resin)) {
+                logger.mark(`[体力推送]Bot:${bot_id};Group:${group_id};QQ:${user_id};${`${g}_UID`}:${uid}`)
+
+                data = this.e.isZzz ? await this.noteZzz(Data, uid) : this.e.isSr ? await this.noteSr(Data, uid) : await this.notegs(Data, uid)
+                data = {
+                  quality: 80,
+                  ...this.screenNote,
+                  ...data,
+                  ...User,
+                  ...Sign
+                }
+                imgs[`${g}_${uid}`] = await puppeteer.screenshot(`${data.gstempFile}dailyNote`, data)
+              }
+
+              if (imgs[`${g}_${uid}`]) {
+                await redis.set(sendkey, "1", { EX: sendCD })
+                await this.e.reply(imgs[`${g}_${uid}`])
+              }
+            }
+          }
+          if (sendMsg.length > length) {
+            Bot[bot_id].pickGroup(group_id).sendMsg(sendMsg)
+            await common.sleep(5000)
+          }
+        }
+      }
+
+    return
+  }
+
+  async getData(ck, game) {
+    let res = await this.noteData(ck, game)
+    if (res?.Data?.retcode !== 0 || !res?.User || !res?.Sign) return false
+
+    this.e.isSr = game == 'sr' ? true : false
+    this.e.isZzz = game == 'zzz' ? true : false
+    let data = this.e.isZzz ? await this.noteZzz(res.Data, ck.uid) : this.e.isSr ? await this.noteSr(res.Data, ck.uid) : await this.notegs(res.Data, ck.uid)
+
+    data = {
       quality: 80,
-      ...screenData,
+      ...this.screenNote,
       ...data,
-      ...resUser?.data?.list[0]
+      ...res.User,
+      ...res.Sign
+    }
+    let img = await puppeteer.screenshot(`${data.gstempFile}dailyNote`, data)
+    if (img) return await this.e.reply(img)
+  }
+
+  async noteData(ck, game) {
+    let mysApi = new MysApi(ck.uid, ck.ck, {}, '', '', game)
+
+    let device_fp = await mysApi.getData('getFp')
+    device_fp = await new MysInfo(this.e).checkCode(device_fp, 'getFp', mysApi, {}, true)
+    if (device_fp?.retcode !== 0) return false
+    let headers = { 'x-rpc-device_fp': device_fp?.data?.device_fp }
+    await common.sleep(200)
+
+    let Data = await mysApi.getData('dailyNote', { headers })
+    Data = await new MysInfo(this.e).checkCode(Data, 'dailyNote', mysApi, {}, true)
+    if (Data?.retcode !== 0) return false
+    await common.sleep(200)
+
+    let resUser = await mysApi.getData('UserGame')
+    resUser = await new MysInfo(this.e).checkCode(resUser, 'UserGame', mysApi, {}, true)
+    if (resUser?.retcode !== 0 || _.isEmpty(resUser?.data?.list)) return false
+    let User = resUser?.data?.list.find(item => item.game_uid === ck.uid)
+    if (User) {
+      resUser = {
+        game_uid: User.game_uid,
+        nickname: User.nickname,
+        level: User.level
+      }
+    }
+    await common.sleep(200)
+
+    let signInfo = await mysApi.getData('sign_info')
+    signInfo = await new MysInfo(this.e).checkCode(signInfo, 'sign_info', mysApi, {}, true)
+    if (signInfo?.retcode !== 0) return false
+    signInfo = signInfo?.data
+    await common.sleep(200)
+
+    return { Data, User: resUser, Sign: signInfo }
+  }
+
+  async noteZzz(res, uid) {
+    let { data } = res
+    const ImgData = {}
+
+    const nowDay = moment(new Date()).format('DD')
+    if (data.energy.restore > 0) {
+      let resinMaxTime = new Date().getTime() + data.energy.restore * 1000
+      let maxDate = new Date(resinMaxTime)
+
+      resinMaxTime = moment(maxDate).format('HH:mm')
+      let timeDay = await this.dateTime_(maxDate)
+      ImgData.resinMaxTimeMb2 = timeDay + moment(maxDate).format('hh:mm')
+
+      if (moment(maxDate).format('DD') !== nowDay) {
+        ImgData.resinMaxTimeMb2Day = '明天'
+        resinMaxTime = `明天 ${resinMaxTime}`
+      } else {
+        ImgData.resinMaxTimeMb2Day = '今天'
+        resinMaxTime = ` ${resinMaxTime}`
+      }
+      ImgData.resinMaxTime = resinMaxTime
+    }
+    ImgData.sale_state = /Doing/.test(data.vhs_sale.sale_state) ? '正在营业' : '未营业'
+    ImgData.card = /Done/.test(data.card_sign) ? '已完成' : '未完成'
+
+    return {
+      uid: uid,
+      saveId: uid,
+      dayMb2: moment(new Date()).format('yyyy年MM月DD日 HH:mm') + ' ' + this.week[new Date().getDay()],
+      ...ImgData,
+      ...data
     }
   }
 
-  noteSr (res) {
+  noteSr(res, uid) {
     let { data } = res
-    let nowDay = moment().date()
-    let nowUnix = Number(moment().format('X'))
+
     /** 树脂 */
     let resinMaxTime
     if (data.stamina_recover_time > 0) {
@@ -55,7 +240,7 @@ export default class Note extends base {
       let minutes = d.minutes()
       let seconds = d.seconds()
       resinMaxTime = hours + '小时' + minutes + '分钟' + seconds + '秒'
-      // 精确到秒。。。。
+      //精确到秒。。。。
       if (day > 0) {
         resinMaxTime = day + '天' + hours + '小时' + minutes + '分钟' + seconds + '秒'
       } else if (hours > 0) {
@@ -93,127 +278,123 @@ export default class Note extends base {
         item.avatars.push('派遣头像')
       }
     }
-    // 标识属性图标~
-    let iconChar = lodash.sample(['希儿', '白露', '艾丝妲', '布洛妮娅', '姬子', '卡芙卡', '克拉拉', '停云', '佩拉', '黑塔', '希露瓦', '银狼'])
-    let char = Character.get(iconChar, 'gs')
-    let week = [
-      '星期日',
-      '星期一',
-      '星期二',
-      '星期三',
-      '星期四',
-      '星期五',
-      '星期六'
-    ]
-    let day = `${week[moment().day()]}`
+    // 头像
+    let sricon = _.sample(fs.readdirSync(`${this._path}/plugins/genshin/resources/StarRail/img/role`).filter(file => file.endsWith('.webp')))
+    sricon = `${this._path}/plugins/genshin/resources/StarRail/img/role/${sricon}`
+    let icon = _.sample(['希儿', '白露', '艾丝妲', '布洛妮娅', '姬子', '卡芙卡', '克拉拉', '停云', '佩拉', '黑塔', '希露瓦', '银狼'])
     return {
-      uid: this.e.uid,
-      saveId: this.e.uid,
-      icon: char.imgs?.face,
-      day,
-      resinMaxTime,
-      nowDay: moment(new Date()).format('YYYY年MM月DD日'),
+      uid,
+      saveId: uid, icon, sricon,
+      day: `${this.week[moment().day()]}`,
+      resinMaxTime, nowDay: moment(new Date()).format('YYYY年MM月DD日'),
       ...data
     }
   }
 
-  noteData (res) {
+  async notegs(res, uid) {
     let { data } = res
 
-    let nowDay = moment().date()
-    let nowUnix = Number(moment().format('X'))
-
     /** 树脂 */
-    let resinMaxTime
+    let nowDay = moment(new Date()).format('DD')
+    let resinMaxTime, resinMaxTimeMb2, resinMaxTimeMb2Day
     if (data.resin_recovery_time > 0) {
-      resinMaxTime = nowUnix + Number(data.resin_recovery_time)
+      resinMaxTime = new Date().getTime() + data.resin_recovery_time * 1000
+      let maxDate = new Date(resinMaxTime)
+      resinMaxTime = moment(maxDate).format('HH:mm')
+      let timeDay = await this.dateTime_(maxDate)
+      resinMaxTimeMb2 = timeDay + moment(maxDate).format('hh:mm')
 
-      let maxDate = moment.unix(resinMaxTime)
-      resinMaxTime = maxDate.format('HH:mm')
-
-      if (maxDate.date() != nowDay) {
+      if (moment(maxDate).format('DD') !== nowDay) {
+        resinMaxTimeMb2Day = '明天'
         resinMaxTime = `明天 ${resinMaxTime}`
       } else {
+        resinMaxTimeMb2Day = '今天'
         resinMaxTime = ` ${resinMaxTime}`
       }
     }
 
     /** 派遣 */
     let remainedTime = ''
-    if (data.expeditions && data.expeditions.length >= 1) {
-      remainedTime = lodash.map(data.expeditions, 'remained_time')
-      remainedTime = lodash.min(remainedTime)
-
-      if (remainedTime > 0) {
-        remainedTime = nowUnix + Number(remainedTime)
-        let remainedDate = moment.unix(remainedTime)
-        remainedTime = remainedDate.format('HH:mm')
-
-        if (remainedDate.date() != nowDay) {
-          remainedTime = `明天 ${remainedTime}`
-        } else {
-          remainedTime = ` ${remainedTime}`
-        }
-      }
-    }
+    for (let val of data.expeditions)
+      if (String(val.status) === 'Finished')
+        val.percentage = 100
+      else
+        val.percentage = 50
 
     /** 宝钱 */
     let coinTime = ''
+    let coinTimeMb2 = ''
+    let coinTimeMb2Day = ''
+    let chnNumChar = ['零', '明', '后', '三', '四', '五', '六', '七', '八', '九']
+    if (!data.home_coin_recovery_time && data.current_home_coin < data.max_home_coin)
+      data.home_coin_recovery_time = (data.max_home_coin - data.current_home_coin) / 30 * 3600
+
     if (data.home_coin_recovery_time > 0) {
+      let coinDate = new Date(new Date().getTime() + data.home_coin_recovery_time * 1000)
       let coinDay = Math.floor(data.home_coin_recovery_time / 3600 / 24)
       let coinHour = Math.floor((data.home_coin_recovery_time / 3600) % 24)
       let coinMin = Math.floor((data.home_coin_recovery_time / 60) % 60)
       if (coinDay > 0) {
         coinTime = `${coinDay}天${coinHour}小时${coinMin}分钟`
+        let dayTime = (24 - moment(new Date()).format('HH') + moment(coinDate).diff(new Date(), 'hours')) / 24
+        coinTimeMb2Day = chnNumChar[dayTime.toFixed(0)] + '天'
+        let timeDay = await this.dateTime_(coinDate)
+        coinTimeMb2 = timeDay + moment(coinDate).format('hh:mm')
       } else {
-        let coinDate = moment.unix(
-          nowUnix + Number(data.home_coin_recovery_time)
-        )
-
-        if (coinDate.date() != nowDay) {
-          coinTime = `明天 ${coinDate.format('HH:mm')}`
+        coinTimeMb2 = moment(coinDate).format('hh:mm')
+        if (moment(coinDate).format('DD') !== nowDay) {
+          coinTimeMb2Day = '明天'
+          coinTime = `明天 ${moment(coinDate).format('hh:mm')}`
         } else {
-          coinTime = coinDate.format('HH:mm')
+          coinTimeMb2Day = '今天'
+          coinTime = moment(coinDate).format('hh:mm', coinDate)
         }
       }
     }
-
-    let week = [
-      '星期日',
-      '星期一',
-      '星期二',
-      '星期三',
-      '星期四',
-      '星期五',
-      '星期六'
-    ]
-    let day = `${moment().format('MM-DD HH:mm')} ${week[moment().day()]}`
 
     /** 参量质变仪 */
     if (data?.transformer?.obtained) {
       data.transformer.reached = data.transformer.recovery_time.reached
       let recoveryTime = ''
 
-      if (data.transformer.recovery_time.Day > 0) {
+      if (data.transformer.recovery_time.Day > 0)
         recoveryTime += `${data.transformer.recovery_time.Day}天`
-      }
-      if (data.transformer.recovery_time.Hour > 0) {
+
+      if (data.transformer.recovery_time.Hour > 0)
         recoveryTime += `${data.transformer.recovery_time.Hour}小时`
-      }
-      if (data.transformer.recovery_time.Minute > 0) {
+
+      if (data.transformer.recovery_time.Minute > 0)
         recoveryTime += `${data.transformer.recovery_time.Minute}分钟`
-      }
+
       data.transformer.recovery_time = recoveryTime
     }
 
     return {
-      uid: this.e.uid,
-      saveId: this.e.uid,
+      saveId: uid,
       resinMaxTime,
+      resinMaxTimeMb2,
+      resinMaxTimeMb2Day,
       remainedTime,
       coinTime,
-      day,
+      coinTimeMb2,
+      coinTimeMb2Day,
+      dayMb2: moment(new Date()).format('yyyy年MM月DD日 HH:mm') + ' ' + this.week[new Date().getDay()],
+      day: moment().format('MM-DD HH:mm') + ' ' + this.week[moment().day()],
       ...data
     }
+  }
+
+  async dateTime_(time) {
+    return moment(time).format('HH') < 6
+      ? '凌晨'
+      : moment(time).format('HH') < 12
+        ? '上午'
+        : moment(time).format('HH') < 17.5
+          ? '下午'
+          : moment(time).format('HH') < 19.5
+            ? '傍晚'
+            : moment(time).format('HH') < 22
+              ? '晚上'
+              : '深夜'
   }
 }

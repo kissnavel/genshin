@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+  <link rel="shortcut icon" href="#" />
+  <title>体力</title>
+  <link rel="stylesheet" type="text/css" href="{{pluResPath}}html/dailyNote/dailyNote.css" />
+</head>
+
+<body>
+  <div class="container" id="container">
+    <div class="header">
+      <img class="logo" src="{{pluResPath}}img/dailyNote/left.png">
+      <img class="logos" src="{{pluResPath}}img/dailyNote/right.png">
+      <h1>UID: {{uid}}</h1>
+      <p class="date">{{dayMb2}}</p>
+      <p style="color: {{if is_sign==true}}#DE4848{{/if}}">
+        签到福利: {{if is_sign==true}}已{{else}}尚未{{/if}}签到
+      </p>
+    </div>
+    <div class="resin">
+      <img class="icon icon-树脂" src="{{pluResPath}}img/dailyNote/电池.png">
+      <p>电量</p>
+      <div class="num">
+        <strong style="color: {{if resinMaxTime}}#F39000{{else}}#71B755{{/if}};">{{energy.progress.current}}</strong>/{{energy.progress.max}}
+      </div>
+      <div class="status">
+        {{if resinMaxTimeMb2}}
+        <div class="status-title">预计恢复时间</div>
+        <div class="status-date">{{resinMaxTimeMb2Day}}<span class="time"> {{resinMaxTimeMb2}}</span></div>
+        {{else}}
+        <div class="status-whole">已全部恢复</div>
+        {{/if}}
+      </div>
+    </div>
+    <div class="list">
+      <div class="item">
+        <img class="icon icon-活跃度" src="{{pluResPath}}img/dailyNote/活跃度.png">
+        <div class="title">活跃度<span {{if vitality.current != vitality.max}}style="color: #ef4136;"{{/if}}>{{vitality.current}}<span1 style="font-size:25px">/{{vitality.max}}</span1></span></div>
+      </div>
+      <div class="img-line"></div>
+      <div class="item">
+        <img class="icon icon-刮刮卡" src="{{pluResPath}}img/dailyNote/刮刮卡.png">
+        <div class="title">
+          刮刮卡<span>{{card}}</span>
+        </div>
+      </div>
+      <div class="img-line"></div>
+      <div class="item">
+        <img class="icon icon-录像店" src="{{pluResPath}}img/dailyNote/录像店.png">
+        <div class="title">录像店<span>{{sale_state}}</span></div>
+      </div>
+      <div class="img-line"></div>
+      <div class="item">
+        <img class="icon icon-悬赏委托" src="{{pluResPath}}img/dailyNote/圆环.png">
+        <div class="title">悬赏委托
+          <span {{if bounty_commission && bounty_commission.num != bounty_commission.total}}style="color: #ef4136; font-size: 20px; vertical-align: middle;"{{/if}}>
+            {{bounty_commission ? bounty_commission.num : 0}}<span1 style="font-size:25px">/{{bounty_commission ? bounty_commission.total : 0}}</span1>
+          </span>
+        </div>
+      </div>
+      <div class="img-line"></div>
+      <div class="item">
+        <img class="icon icon-丽都周纪积分" src="{{pluResPath}}img/dailyNote/圆环.png">
+        <div class="title">丽都周纪积分
+            <span {{if weekly_task && weekly_task.cur_point != weekly_task.max_point}}style="color: #ef4136; font-size: 20px; vertical-align: middle;"{{/if}}>
+              {{weekly_task ? weekly_task.cur_point : 0}}<span1 style="font-size:25px">/{{weekly_task ? weekly_task.max_point : 0}}</span1>
+            </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

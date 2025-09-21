@@ -1,0 +1,67 @@
+#插件优先级
+priority: -114514
+
+#是否自动签到
+AutoSign: false
+#自动签到定时任务(更改需要重启)
+signTime: 0 2 0 * * ?
+#签到游戏
+game:
+ - gs
+ - sr
+ - zzz
+ - bh3
+ - bh2
+ - wd
+#签到重试次数
+retry: 2
+#签到成功消息撤回时间，单位秒，0为不撤回
+recall: 60
+
+#社区是否自动签到
+AutobbsSign: false
+#自动签到定时任务(更改需要重启)
+bbsSignTime: 0 2 0 * * ?
+#签到重试次数
+bbsRetry: 3
+#真的要这样做咩？(不要大晚上d捏)
+ddos: false
+#每次签到sk数(不建议太高嗷，小心429捏！)
+ddostime: 10
+
+#是否开启体力查询
+Note: false
+#是否开启体力推送
+NoteTask: false
+#体力推送查询间隔，默认30分钟
+TaskTime: 0 0/30 * * * ?
+#体力推送CD(小时)
+sendCD: 12
+#默认推送阈值
+gs_Resin: 160
+sr_Resin: 260
+zzz_Resin: 200
+#合并转发
+forward: 2
+#推送文案
+TaskMsg: 哥哥（姐姐）你的体力快满了哦~
+
+#失效qq每行显示个数
+invalid: 2
+#非自动签到是否开启群白名单
+whiteSign: false
+#自动签到是否同时开启群和QQ白名单，关闭则仅使用QQ白名单
+whiteGroup: true
+
+#本体过码重试次数
+retrytime: 2
+
+#是否自动删除ck
+Autodelck: false
+#是否自动删除sk
+Autodelsk: false
+
+#是否开启米游社更新面板
+myspanel: false
+#米游社更新面板CD，单位秒，建议不低于120秒
+myspanelCD: 120

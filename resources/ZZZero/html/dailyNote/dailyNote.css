@@ -1,0 +1,328 @@
+@font-face {
+  font-family: "HYWenHei-55W";
+  src: url("../../../font/ZZZ.ttf");
+  font-weight: normal;
+  font-style: normal;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none
+}
+
+body {
+  font-size: 14px;
+  font-family: "HYWenHei-55W", serif;
+  width: 800px;
+  height: 375px;
+  -webkit-transform: scale(4);
+  transform: scale(4);
+  -webkit-transform-origin: 0 0;
+  transform-origin: 0 0
+}
+
+.container {
+  width: 800px;
+  height: 376px;
+  background-image: url('../../img/dailyNote/bg.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  border-radius: 20px;
+  color: #ffffff;
+}
+
+.logo {
+  position: absolute;
+  height: 72px;
+  width: 72px;
+  left: 20px;
+  top: 1px
+}
+
+.header h1 {
+  position: absolute;
+  letter-spacing: 0.12em;
+  left: 120px;
+  top: 27px;
+  font-size: 25px;
+  color: #F56C6C
+}
+
+.header h1 span {
+  font-size: 15px
+}
+
+.header p {
+  position: absolute;
+  right: 120px;
+  top: 40px;
+  font-size: 18px;
+  color: #A28B6C
+}
+
+.header .date {
+  position: absolute;
+  right: 120px;
+  top: 20px;
+  font-size: 13px;
+  color: #F56C6C;
+}
+
+.logos {
+  position: absolute;
+  width: 100px;
+  right: 20px;
+  top: 5px
+}
+
+.resin {
+  position: absolute;
+  border-radius: 20px;
+  background-size: 100%;
+  background-repeat: no-repeat;
+  width: 290px;
+  height: 283px;
+  padding: 20px;
+  left: 20px;
+  top: 73px;
+}
+
+.resin img {
+  position: absolute;
+  width: 100px;
+  height: 100px
+}
+
+.resin p {
+  position: absolute;
+  font-size: 25px;
+  font-weight: bold;
+  color: #ffffff;
+  left: 125px;
+  top: 30px;
+  font-weight: lighter;
+}
+
+.resin .num {
+  position: absolute;
+  font-size: 25px;
+  left: 125px;
+  top: 65px;
+  font-weight: lighter;
+}
+
+.resin .num strong {
+  font-size: 45px;
+  font-weight: lighter;
+}
+
+
+.resin .status {
+  position: absolute;
+  padding: 5px;
+  background-color: #21201fa5;
+  border-radius: 30px;
+  width: 250px;
+  height: 135px;
+  top: 135px;
+  font-weight: lighter;
+}
+
+.resin .status .status-title {
+  font-weight: bold;
+  font-size: 15px;
+  margin-bottom: 10px;
+  text-align: center;
+  -webkit-box-flex: 0;
+  -webkit-flex: none;
+  -ms-flex: none;
+  flex: none;
+  font-weight: lighter;
+  margin-top: 20px;
+}
+
+.resin .status .status-date {
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 10px;
+  margin-top: 15px;
+  text-align: center;
+  -webkit-box-flex: 0;
+  -webkit-flex: none;
+  -ms-flex: none;
+  flex: none;
+  font-weight: lighter;
+  color: #F39000;
+}
+
+.resin .status .status-reserve {
+  font-weight: bold;
+  font-size: 16px;
+  margin-top: 10px;
+  text-align: center;
+  -webkit-box-flex: 0;
+  -webkit-flex: none;
+  -ms-flex: none;
+  flex: none;
+  font-weight: lighter;
+  color: #A28B6C;
+}
+
+
+.resin .status .time {
+  display: inline-block;
+  padding: 10px 10px;
+  line-height: 20px;
+  font-weight: bold;
+  font-size: 20px;
+  margin: 0 10px;
+  text-align: center;
+  border-radius: 30px;
+  font-weight: lighter;
+  background: #a9834f;
+  color: #EEE5D7;
+}
+
+.resin .status .status-whole {
+  font-weight: bold;
+  font-size: 25px;
+  text-align: center;
+  -webkit-box-flex: 0;
+  -webkit-flex: none;
+  -ms-flex: none;
+  flex: none;
+  color: #F56C6C;
+  margin-top: 36px;
+}
+
+.list {
+  position: absolute;
+  border-radius: 20px;
+  background-size: 100%;
+  background-repeat: no-repeat;
+  width: 447px;
+  height: 283px;
+  left: 331px;
+  top: 73px;
+  padding: 26px 20px 0px;
+}
+
+.item {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  position: relative;
+}
+
+.item p1 {
+  font-size: 12px;
+  position: absolute;
+  left: 70px;
+  top: 60px
+}
+
+.item p {
+  font-size: 12px;
+  position: absolute;
+  left: 70px;
+  top: 130px
+}
+
+.item img {
+  width: 20px;
+  height: 20px
+}
+
+.img-line {
+  position: relative;
+  background-image: url('../../img/dailyNote/line.png');
+  background-size: 100%;
+  background-repeat: no-repeat;
+  margin: 10px 0px;
+  width: 407px;
+  height: 10px
+}
+
+.item .title {
+  margin-left: 10px;
+  font-weight: bold;
+  font-size: 20px;
+  font-weight: lighter;
+}
+
+.item .title span {
+  position: absolute;
+  z-index: 2;
+  right: 10px;
+  top: -5px;
+  margin: 5px 0px;
+  font-weight: normal;
+}
+
+.role {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+  position: absolute;
+  background-color: #F7EFE2;
+  width: 380px;
+  height: 46px;
+  left: 33.5px;
+  bottom: 13px;
+  border-radius: 30px;
+}
+
+.role p {
+  position: relative;
+  color: #A28B6C;
+  font-size: 18px;
+  width: 100%;
+  margin-top: 12px;
+  text-align: center;
+}
+
+.role .avatar {
+  position: relative;
+  margin: 5px -38px 5px 60px
+}
+
+.role .avatar .status {
+  width: 35px;
+  height: 35px
+}
+
+.role .avatar .icon {
+  position: absolute;
+  top: -10px;
+  left: -5px;
+  width: 40px;
+  height: 40px
+}
+
+.role .avatar .ok {
+  position: absolute;
+  top: 18px;
+  left: 22px;
+  width: 18px;
+  height: 18px
+}

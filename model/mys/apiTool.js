@@ -1,4 +1,5 @@
 import crypto from 'crypto'
+import Cfg from '../Cfg.js'
 /**
  * 整合接口用于查询数据
  * 方便后续用于解耦
@@ -17,6 +18,7 @@ export default class apiTool {
     this.server = server
     this.biz = biz
     this.uuid = crypto.randomUUID()
+    this.api = Cfg.getConfig('api')
   }
 
   getUrlMap = (data = {}) => {
@@ -29,20 +31,154 @@ export default class apiTool {
     const board = data?.board || 'lahaina'
     const deviceBrand = deviceInfo.split('/')[0]
     const deviceDisplay = deviceInfo.split('/')[3]
-    let host, hostRecord, hostPublicData
+    let bbs_api = 'https://bbs-api.mihoyo.com/'
+    let host, host_hk4e, host_nap, hostRecord, hostPublicData
     if (['bh3_cn', 'bh2_cn'].includes(this.biz) || /cn_|_cn/.test(this.server)) {
       host = 'https://api-takumi.mihoyo.com/'
+      host_nap = 'https://act-nap-api.mihoyo.com/'
       hostRecord = 'https://api-takumi-record.mihoyo.com/'
       hostPublicData = 'https://public-data-api.mihoyo.com/'
     } else {
       host = 'https://sg-public-api.hoyolab.com/'
+      host_hk4e = 'https://sg-hk4e-api.hoyolab.com/'
+      host_nap = 'https://sg-act-nap-api.hoyolab.com/'
       hostRecord = 'https://bbs-api-os.hoyolab.com/'
       hostPublicData = 'https://sg-public-data-api.hoyoverse.com/'
     }
     let urlMap = {
+      all: {
+        createGeetest: {
+          url: `${host}event/toolcomsrv/risk/createGeetest`,
+          query: `is_high=true&app_key=${data.app_key}`
+        },
+        verifyGeetest: {
+          url: `${host}event/toolcomsrv/risk/verifyGeetest`,
+          body: {
+            geetest_challenge: data.challenge || data.geetest_challenge,
+            geetest_validate: data.validate || data.geetest_validate,
+            geetest_seccode: `${data.validate || data.geetest_validate}|jordan`,
+            app_key: data.app_key
+          }
+        },
+        createVerification: {
+          url: `${hostRecord}game_record/app/card/wapi/createVerification`,
+          query: 'is_high=true'
+        },
+        verifyVerification: {
+          url: `${hostRecord}game_record/app/card/wapi/verifyVerification`,
+          body: {
+            geetest_challenge: data.challenge || data.geetest_challenge,
+            geetest_validate: data.validate || data.geetest_validate,
+            geetest_seccode: `${data.validate || data.geetest_validate}|jordan`
+          }
+        },
+        recognize: {
+          url: `${this.api.api}`,
+          config: `${this.api.key}&${this.api.query}&gt=${data.gt}&challenge=${data.challenge}`
+        },
+        signrecognize: {
+          url: `${this.api.api}`,
+          config: `${this.api.key}&${this.api.signquery}&gt=${data.gt}&challenge=${data.challenge}`
+        },
+        bbssignrecognize: {
+          url: `${this.api.api}`,
+          config: `${this.api.key}&${this.api.bbssignquery}&gt=${data.gt}&challenge=${data.challenge}`
+        },
+        results: {
+          url: `${this.api.resapi}`,
+          config: `${this.api.key}&resultid=${data.resultid}`
+        },
+        in: {
+          url: `${this.api.api}`,
+          query: `${this.api.key}&${this.api.query}&gt=${data.gt}&challenge=${data.challenge}`
+        },
+        res: {
+          url: `${this.api.resapi}`,
+          query: `${this.api.key}&${this.api.resquery}&id=${data.request}`
+        }
+      },
+      bbs: {
+        bbsisSign: {
+          url: `${bbs_api}apihub/sapi/getUserMissionsState`,
+          types: 'bbs'
+        },
+        bbsSign: {
+          url: `${bbs_api}apihub/app/api/signIn`,
+          body: {
+            gids: data.signId
+          },
+          sign: true,
+          types: 'bbs'
+        },
+        bbsGetCaptcha: {
+          url: `${bbs_api}misc/api/createVerification`,
+          query: 'is_high=false',
+          types: 'bbs'
+        },
+        bbsCaptchaVerify: {
+          url: `${bbs_api}misc/api/verifyVerification`,
+          body: {
+            "geetest_challenge": data.challenge || data.geetest_challenge,
+            "geetest_validate": data.validate || data.geetest_validate,
+            "geetest_seccode": `${data.validate || data.geetest_validate}|jordan`
+          },
+          types: 'bbs'
+        },
+        bbsPostList: {
+          url: `${bbs_api}post/api/getForumPostList`,
+          query: `forum_id=${data.forumId}&is_good=false&is_hot=false&page_size=20&sort_type=1`,
+          types: 'bbs'
+        },
+        bbsPostFull: {
+          url: `${bbs_api}post/api/getPostFull`,
+          query: `post_id=${data.postId}`,
+          types: 'bbs'
+        },
+        bbsReply: {
+          url: `${bbs_api}post/api/releaseReply`,
+          body: {
+            "content": data.Replymsg,
+            "post_id": data.postId,
+            "reply_id": "",
+            "structured_content": data.Replymsg
+          },
+          types: 'bbs'
+        },
+        bbsShareConf: {
+          url: `${bbs_api}apihub/api/getShareConf`,
+          query: `entity_id=${data.postId}&entity_type=1`,
+          types: 'bbs'
+        },
+        bbsVotePost: {
+          url: `${bbs_api}apihub/sapi/upvotePost`,
+          body: {
+            "post_id": data.postId,
+            "is_cancel": false
+          },
+          types: 'bbs'
+        }
+      },
       gs: {
-        /** 体力接口fp参数用于避开验证码 */
         ...(['cn_gf01', 'cn_qd01'].includes(this.server) ? {
+          UserGame: {
+            url: `${host}binding/api/getUserGameRolesByCookie`,
+            query: `game_biz=hk4e_cn&region=${this.server}&game_uid=${this.uid}`
+          },
+          sign: {
+            url: `${host}event/luna/sign`,// 国服原神签到
+            body: { act_id: 'e202311201442471', region: this.server, uid: this.uid, lang: 'zh-cn' },
+            types: 'sign'
+          },
+          sign_info: {
+            url: `${host}event/luna/info`,
+            query: `lang=zh-cn&act_id=e202311201442471&region=${this.server}&uid=${this.uid}`,
+            types: 'sign'
+          },
+          sign_home: {
+            url: `${host}event/luna/home`,
+            query: 'lang=zh-cn&act_id=e202311201442471',
+            types: 'sign'
+          },
           getFp: {
             url: `${hostPublicData}device-fp/api/getFp`,
             body: {
@@ -57,6 +193,25 @@ export default class apiTool {
             }
           }
         } : {
+          UserGame: {
+            url: `${host}binding/api/getUserGameRolesByCookie`,
+            query: `game_biz=hk4e_global&region=${this.server}&game_uid=${this.uid}`
+          },
+          sign: {
+            url: `${host_hk4e}event/sol/sign`,// 国际服原神签到
+            body: { act_id: 'e202102251931481', lang: 'zh-cn' },
+            types: 'sign'
+          },
+          sign_info: {
+            url: `${host_hk4e}event/sol/info`,
+            query: 'lang=zh-cn&act_id=e202102251931481',
+            types: 'sign'
+          },
+          sign_home: {
+            url: `${host_hk4e}event/sol/home`,
+            query: 'lang=zh-cn&act_id=e202102251931481',
+            types: 'sign'
+          },
           getFp: {
             url: `${hostPublicData}device-fp/api/getFp`,
             body: {
@@ -199,7 +354,21 @@ export default class apiTool {
             url: `${host}binding/api/getUserGameRolesByCookie`,
             query: `game_biz=hkrpg_cn&region=${this.server}&game_uid=${this.uid}`
           },
-          /** 体力接口fp参数用于避开验证码 */
+          sign: {
+            url: `${host}event/luna/sign`,// 国服星铁签到
+            body: { act_id: 'e202304121516551', region: this.server, uid: this.uid, lang: 'zh-cn' },
+            types: 'sign'
+          },
+          sign_info: {
+            url: `${host}event/luna/info`,
+            query: `lang=zh-cn&act_id=e202304121516551&region=${this.server}&uid=${this.uid}`,
+            types: 'sign'
+          },
+          sign_home: {
+            url: `${host}event/luna/home`,
+            query: 'lang=zh-cn&act_id=e202304121516551',
+            types: 'sign'
+          },
           getFp: {
             url: `${hostPublicData}device-fp/api/getFp`,
             body: {
@@ -218,7 +387,21 @@ export default class apiTool {
             url: `${host}binding/api/getUserGameRolesByCookie`,
             query: `game_biz=hkrpg_global&region=${this.server}&game_uid=${this.uid}`
           },
-          /** 体力接口fp参数用于避开验证码 */
+          sign: {
+            url: `${host}event/luna/os/sign`,// 国际服星铁签到
+            body: { act_id: 'e202303301540311', lang: 'zh-cn' },
+            types: 'sign'
+          },
+          sign_info: {
+            url: `${host}event/luna/os/info`,
+            query: 'lang=zh-cn&act_id=e202303301540311',
+            types: 'sign'
+          },
+          sign_home: {
+            url: `${host}event/luna/os/home`,
+            query: 'lang=zh-cn&act_id=e202303301540311',
+            types: 'sign'
+          },
           getFp: {
             url: `${hostPublicData}device-fp/api/getFp`,
             body: {
@@ -312,7 +495,21 @@ export default class apiTool {
             url: `${host}binding/api/getUserGameRolesByCookie`,
             query: `game_biz=nap_cn&region=${this.server}&game_uid=${this.uid}`
           },
-          /** 体力接口fp参数用于避开验证码 */
+          sign: {
+            url: `${host_nap}event/luna/zzz/sign`,// 国服绝区零签到
+            body: { act_id: 'e202406242138391', region: this.server, uid: this.uid, lang: 'zh-cn' },
+            types: 'sign'
+          },
+          sign_info: {
+            url: `${host_nap}event/luna/zzz/info`,
+            query: `lang=zh-cn&act_id=e202406242138391&region=${this.server}&uid=${this.uid}`,
+            types: 'sign'
+          },
+          sign_home: {
+            url: `${host_nap}event/luna/zzz/home`,
+            query: 'lang=zh-cn&act_id=e202406242138391',
+            types: 'sign'
+          },
           getFp: {
             url: `${hostPublicData}device-fp/api/getFp`,
             body: {
@@ -331,7 +528,21 @@ export default class apiTool {
             url: `${host}binding/api/getUserGameRolesByCookie`,
             query: `game_biz=nap_global&region=${this.server}&game_uid=${this.uid}`
           },
-          /** 体力接口fp参数用于避开验证码 */
+          sign: {
+            url: `${host_nap}event/luna/zzz/os/sign`,// 国际服绝区零签到
+            body: { act_id: 'e202406031448091', lang: 'zh-cn' },
+            types: 'sign'
+          },
+          sign_info: {
+            url: `${host_nap}event/luna/zzz/os/info`,
+            query: 'lang=zh-cn&act_id=e202406031448091',
+            types: 'sign'
+          },
+          sign_home: {
+            url: `${host_nap}event/luna/zzz/os/home`,
+            query: 'lang=zh-cn&act_id=e202406031448091',
+            types: 'sign'
+          },
           getFp: {
             url: `${hostPublicData}device-fp/api/getFp`,
             body: {
@@ -400,7 +611,21 @@ export default class apiTool {
             url: `${host}binding/api/getUserGameRolesByCookie`,
             query: `game_biz=nxx_cn&region=${this.server}&game_uid=${this.uid}`
           },
-          /** 体力接口fp参数用于避开验证码 */
+          sign: {
+            url: `${host}event/luna/sign`,// 国服未定签到
+            body: { act_id: 'e202202251749321', region: this.server, uid: this.uid, lang: 'zh-cn' },
+            types: 'sign'
+          },
+          sign_info: {
+            url: `${host}event/luna/info`,
+            query: `lang=zh-cn&act_id=e202202251749321&region=${this.server}&uid=${this.uid}`,
+            types: 'sign'
+          },
+          sign_home: {
+            url: `${host}event/luna/home`,
+            query: 'lang=zh-cn&act_id=e202202251749321',
+            types: 'sign'
+          },
           getFp: {
             url: `${hostPublicData}device-fp/api/getFp`,
             body: {
@@ -419,7 +644,21 @@ export default class apiTool {
             url: `${host}binding/api/getUserGameRolesByCookie`,
             query: `${['tw_prod_wd01'].includes(this.server) ? 'game_biz=nxx_tw' : 'game_biz=nxx_global'}&region=${this.server}&game_uid=${this.uid}`
           },
-          /** 体力接口fp参数用于避开验证码 */
+          sign: {
+            url: `${host}event/luna/os/sign`,// 国际服未定签到
+            body: ['tw_prod_wd01'].includes(this.server) ? { act_id: 'e202308141137581', lang: 'zh-tw' } : { act_id: 'e202202281857121', lang: 'zh-cn' },
+            types: 'sign'
+          },
+          sign_info: {
+            url: `${host}event/luna/os/info`,
+            query: ['tw_prod_wd01'].includes(this.server) ? 'lang=zh-tw&act_id=e202308141137581' : 'lang=zh-cn&act_id=e202202281857121',
+            types: 'sign'
+          },
+          sign_home: {
+            url: `${host}event/luna/os/home`,
+            query: ['tw_prod_wd01'].includes(this.server) ? 'lang=zh-tw&act_id=e202308141137581' : 'lang=zh-cn&act_id=e202202281857121',
+            types: 'sign'
+          },
           getFp: {
             url: `${hostPublicData}device-fp/api/getFp`,
             body: {
@@ -471,7 +710,21 @@ export default class apiTool {
             url: `${host}binding/api/getUserGameRolesByCookie`,
             query: `game_biz=bh3_cn&region=${this.server}&game_uid=${this.uid}`
           },
-          /** 体力接口fp参数用于避开验证码 */
+          sign: {
+            url: `${host}event/luna/bh3/sign`,// 国服崩三签到
+            body: { act_id: 'e202306201626331', region: this.server, uid: this.uid, lang: 'zh-cn' },
+            types: 'sign'
+          },
+          sign_info: {
+            url: `${host}event/luna/bh3/info`,
+            query: `lang=zh-cn&act_id=e202306201626331&region=${this.server}&uid=${this.uid}`,
+            types: 'sign'
+          },
+          sign_home: {
+            url: `${host}event/luna/bh3/home`,
+            query: 'lang=zh-cn&act_id=e202306201626331',
+            types: 'sign'
+          },
           getFp: {
             url: `${hostPublicData}device-fp/api/getFp`,
             body: {
@@ -490,7 +743,21 @@ export default class apiTool {
             url: `${host}binding/api/getUserGameRolesByCookie`,
             query: `game_biz=bh3_global&region=${this.server}&game_uid=${this.uid}`
           },
-          /** 体力接口fp参数用于避开验证码 */
+          sign: {
+            url: `${host}event/mani/sign`,// 国际服崩三签到
+            body: { act_id: 'e202110291205111', lang: 'zh-cn' },
+            types: 'sign'
+          },
+          sign_info: {
+            url: `${host}event/mani/info`,
+            query: 'lang=zh-cn&act_id=e202110291205111',
+            types: 'sign'
+          },
+          sign_home: {
+            url: `${host}event/mani/home`,
+            query: 'lang=zh-cn&act_id=e202110291205111',
+            types: 'sign'
+          },
           getFp: {
             url: `${hostPublicData}device-fp/api/getFp`,
             body: {
@@ -542,7 +809,21 @@ export default class apiTool {
           url: `${host}binding/api/getUserGameRolesByCookie`,
           query: `game_biz=bh2_cn&region=${this.server}&game_uid=${this.uid}`
         },
-        /** 体力接口fp参数用于避开验证码 */
+        sign: {
+          url: `${host}event/luna/sign`,// 国服崩二签到
+          body: { act_id: 'e202203291431091', region: this.server, uid: this.uid, lang: 'zh-cn' },
+          types: 'sign'
+        },
+        sign_info: {
+          url: `${host}event/luna/info`,
+          query: `lang=zh-cn&act_id=e202203291431091&region=${this.server}&uid=${this.uid}`,
+          types: 'sign'
+        },
+        sign_home: {
+          url: `${host}event/luna/home`,
+          query: 'lang=zh-cn&act_id=e202203291431091',
+          types: 'sign'
+        },
         getFp: {
           url: `${hostPublicData}device-fp/api/getFp`,
           body: {
