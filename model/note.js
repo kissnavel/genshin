@@ -315,11 +315,30 @@ export default class Note extends base {
 
     /** 派遣 */
     let remainedTime = ''
-    for (let val of data.expeditions)
-      if (String(val.status) === 'Finished')
+    for (let val of data.expeditions) {
+      if (String(val.status) === 'Finished') {
         val.percentage = 100
-      else
+      } else {
         val.percentage = 50
+        if (data.expeditions && data.expeditions.length >= 1) {
+          remainedTime = _.map(data.expeditions, "remained_time")
+          remainedTime = _.min(remainedTime)
+
+          if (remainedTime > 0) {
+            let nowUnix = Number(moment().format("X"))
+            remainedTime = nowUnix + Number(remainedTime)
+            let remainedDate = moment.unix(remainedTime)
+            remainedTime = remainedDate.format("HH:mm")
+
+            if (remainedDate.date() != nowDay) {
+              remainedTime = `明天 ${remainedTime}`
+            } else {
+              remainedTime = `今天 ${remainedTime}`
+            }
+          }
+        }
+      }
+    }
 
     /** 宝钱 */
     let coinTime = ''
@@ -350,23 +369,6 @@ export default class Note extends base {
           coinTime = moment(coinDate).format('hh:mm', coinDate)
         }
       }
-    }
-
-    /** 参量质变仪 */
-    if (data?.transformer?.obtained) {
-      data.transformer.reached = data.transformer.recovery_time.reached
-      let recoveryTime = ''
-
-      if (data.transformer.recovery_time.Day > 0)
-        recoveryTime += `${data.transformer.recovery_time.Day}天`
-
-      if (data.transformer.recovery_time.Hour > 0)
-        recoveryTime += `${data.transformer.recovery_time.Hour}小时`
-
-      if (data.transformer.recovery_time.Minute > 0)
-        recoveryTime += `${data.transformer.recovery_time.Minute}分钟`
-
-      data.transformer.recovery_time = recoveryTime
     }
 
     return {

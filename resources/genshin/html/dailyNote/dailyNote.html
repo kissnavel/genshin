@@ -58,6 +58,19 @@
 			</div>
 			<div class="list">
 				<div class="div">
+					<img src="{{pluResPath}}img/dailyNote/周本.png" alt="">
+				</div>
+				<div class="div">
+					<span class="title light">值得铭记的强敌</span>
+					<div class="kb"></div>
+					<span class="bottom">{{if remain_resin_discount_num<=0}}周本已完成{{else}}周本树脂减半次数已用{{/if}}</span>
+				</div>
+				<div class="div sumCount">
+					<span class="{{if remain_resin_discount_num>0}}red{{/if}}">{{3-remain_resin_discount_num}}</span>/{{resin_discount_num_limit}}
+				</div>
+			</div>
+			<div class="list">
+				<div class="div">
 					<img src="{{pluResPath}}img/dailyNote/签到福利.webp" alt="">
 				</div>
 				<div class="div">
@@ -91,7 +104,7 @@
 						<span>未派遣</span>
 						{{else}}
 						<span class="{{if list.percentage!=100}}red{{/if}}">
-							{{if list.percentage==100}}已完成{{else}}派遣未完成{{/if}}
+							{{if list.percentage==100}}已完成{{else}}将于 {{remainedTime}} 完成{{/if}}
 						</span>
 						{{/if}}
 					</div>
