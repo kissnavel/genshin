@@ -1,7 +1,7 @@
 import lodash from 'lodash'
 import { getTargetUid } from '../../miao-plugin/apps/profile/ProfileCommon.js'
 import { Common, Data } from '../../miao-plugin/components/index.js'
-import { Button, ProfileRank, Player } from '../../miao-plugin/models/index.js'
+import { ProfileRank, Player } from '../../miao-plugin/models/index.js'
 
 const ProfileList = {
   /**
@@ -13,7 +13,7 @@ const ProfileList = {
   async render (e) {
     let uid = await getTargetUid(e)
     if (!uid) {
-      e._replyNeedUid || e.reply(['请先发送【#绑定+你的UID】来绑定查询目标\n星铁请使用【#星铁绑定+UID】', new Button(e).bindUid()])
+      e._replyNeedUid || e.reply('请先发送【#绑定+你的UID】来绑定查询目标\n星铁请使用【#星铁绑定+UID】')
       return true
     }
 
@@ -48,7 +48,7 @@ const ProfileList = {
       await player.refresh({ profile: true })
     }
     if (!player.hasProfile) {
-      e.reply([`本地暂无uid${uid}[${player.game}]的面板数据...`, new Button(e).profileList(uid)])
+      e.reply(`本地暂无uid${uid}[${player.game}]的面板数据...`)
       return true
     }
     let profiles = player.getProfiles()
@@ -92,7 +92,7 @@ const ProfileList = {
      
     player.save()
     // 渲染图像
-    return e.reply([await Common.render('character/profile-list', {
+    return e.reply(await Common.render('character/profile-list', {
       save_id: uid,
       uid,
       chars,
@@ -104,7 +104,7 @@ const ProfileList = {
       allowRank: rank && rank.allowRank,
       rankCfg,
       elem: player.isGs ? 'hydro' : 'sr'
-    }, { e, scale: 1.6, retType: 'base64' }), new Button(e).profileList(uid, newChar)])
+    }, { e, scale: 1.6, retType: 'base64' }))
   },
 
 
