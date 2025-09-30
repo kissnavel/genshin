@@ -35,10 +35,10 @@ const ProfileList = {
 
     let chars = []
     let msg = ''
-    let newChar = {}
+    // let newChar = {}
     if (e.newChar) {
       msg = '获取角色面板数据成功'
-      newChar = e.newChar
+      //  newChar = e.newChar
     }
     const cfg = await Data.importCfg('cfg')
     // 获取面板数据
@@ -88,8 +88,7 @@ const ProfileList = {
 
     chars = lodash.sortBy(chars, ['isNew', 'star', 'level', 'id'])
     chars = chars.reverse()
-     
-     
+
     player.save()
     // 渲染图像
     return e.reply(await Common.render('character/profile-list', {
@@ -106,7 +105,6 @@ const ProfileList = {
       elem: player.isGs ? 'hydro' : 'sr'
     }, { e, scale: 1.6, retType: 'base64' }))
   },
-
 
   async reload (e) {
     let uid = await getTargetUid(e)
