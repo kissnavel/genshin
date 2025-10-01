@@ -330,6 +330,7 @@ export default class Myspanel {
             if (v.id == 8006) v.name = '星·同谐'
             if (v.id == 8008) v.name = '星·记忆'
             if (v.id == 1213) v.name = '丹恒•饮月'
+            if (v.id == 1414) v.name = '丹恒•腾荒'
             if (v.id == 1112) v.name = '托帕&账账'
             if (v.id == 1303) v.name = '阮•梅'
 
@@ -519,6 +520,7 @@ export default class Myspanel {
                                 else p = Math.floor(p)
                             }
                         }
+                        //因米游社面板的副词条速度特殊性，故取整减少面板总体误差(5星遗器)
                         if (at[0] == 7 && at[1] == 2 && p !== 0) p = 3.3
                         attrIds.push(`${at[0]},${v_.times},${p}`)
                     }
