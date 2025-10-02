@@ -107,6 +107,8 @@ export default class BBsSign extends base {
                         } else {
                             message += `社区签到: 验证码失败\n`
                         }
+                    } else {
+                        message += `社区签到: ${res.message}\n`
                     }
                 }
                 logger.mark(`${sk.id}:${forum.name} 社区签到结果: [${res?.data?.is_signed == true ? '今日已签到' : `${res.message}`}]`)
