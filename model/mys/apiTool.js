@@ -102,6 +102,11 @@ export default class apiTool {
           url: `${bbs_api}apihub/sapi/getUserMissionsState`,
           types: 'bbs'
         },
+        querySignInStatus: {
+          url: `${bbs_api}apihub/sapi/querySignInStatus`,
+          query: `gids=${data.signId}`,
+          types: 'bbs'
+        },
         bbsSign: {
           url: `${bbs_api}apihub/app/api/signIn`,
           body: {

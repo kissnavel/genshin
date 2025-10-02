@@ -43,6 +43,7 @@ export default class MysApi {
       'in',
       'res',
       'bbsisSign',
+      'querySignInStatus',
       'bbsSign',
       'bbsGetCaptcha',
       'bbsCaptchaVerify',
@@ -63,7 +64,7 @@ export default class MysApi {
 
   /* eslint-disable quotes */
   get device() {
-    if (!this._device) this._device = `Yz-${md5(this.uid).substring(0, 5)}`
+    if (!this._device) this._device = this.getGuid()
     return this._device
   }
 
@@ -306,7 +307,7 @@ export default class MysApi {
     const header = {
       'x-rpc-app_version': '2.73.1',
       'x-rpc-client_type': '5',
-      'x-rpc-device_id': this.device_id,
+      'x-rpc-device_id': this._device,
       'User-Agent': 'Mozilla/5.0 (Linux; Android 13; XQ-BC52 Build/61.2.A.0.472A; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/111.0.5563.116 Mobile Safari/537.36 miHoYoBBS/2.73.1',
       Referer: 'https://webstatic.mihoyo.com/'
     }
@@ -314,7 +315,7 @@ export default class MysApi {
     const header_os = {
       'x-rpc-app_version': '2.57.1',
       'x-rpc-client_type': '2',
-      'x-rpc-device_id': this.device_id,
+      'x-rpc-device_id': this._device,
       'User-Agent': 'Mozilla/5.0 (Linux; Android 13; XQ-BC52 Build/61.2.A.0.472A; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/111.0.5563.116 Mobile Safari/537.36 miHoYoBBSOversea/2.57.1',
       Referer: 'https://act.hoyolab.com/'
     }
@@ -325,7 +326,7 @@ export default class MysApi {
       'x-rpc-client_type': '2',
       Referer: 'https://app.mihoyo.com/',
       'User-Agent': 'okhttp/4.9.3',
-      'x-rpc-device_id': this.device_id,
+      'x-rpc-device_id': this._device,
       'x-rpc-device_model': 'XQ-BC52',
       'x-rpc-device_name': 'Sony XQ-BC52',
       'x-rpc-sys_version': '12'

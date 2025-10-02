@@ -14,7 +14,7 @@
   },
   {
     "id": "2",
-    "signId": "26",
+    "signId": "2",
     "forumId": "26",
     "name": "原神",
     "url": "https://bbs.mihoyo.com/ys/",
@@ -24,7 +24,7 @@
   },
   {
     "id": "3",
-    "signId": "30",
+    "signId": "3",
     "forumId": "30",
     "name": "崩坏学园2",
     "url": "https://bbs.mihoyo.com/bh2/",
@@ -38,7 +38,7 @@
   },
   {
     "id": "4",
-    "signId": "37",
+    "signId": "4",
     "forumId": "37",
     "name": "未定事件簿",
     "url": "https://bbs.mihoyo.com/wd/",
@@ -50,7 +50,7 @@
   },
   {
     "id": "5",
-    "signId": "35",
+    "signId": "5",
     "forumId": "35",
     "name": "大别野",
     "url": "https://bbs.mihoyo.com/dby/",
@@ -60,7 +60,7 @@
   },
   {
     "id": "6",
-    "signId": "52",
+    "signId": "6",
     "forumId": "52",
     "name": "崩坏：星穹铁道",
     "url": "https://bbs.mihoyo.com/sr/",
@@ -72,7 +72,7 @@
   },
   {
     "id": "8",
-    "signId": "57",
+    "signId": "8",
     "forumId": "57",
     "name": "绝区零",
     "url": "https://bbs.mihoyo.com/zzz/",
@@ -82,7 +82,7 @@
   },
   {
     "id": "9",
-    "signId": "948",
+    "signId": "9",
     "forumId": "948",
     "name": "崩坏：因缘精灵",
     "url": "https://bbs.mihoyo.com/hna/",
@@ -95,7 +95,7 @@
   },
   {
     "id": "10",
-    "signId": "950",
+    "signId": "10",
     "forumId": "950",
     "name": "星布谷地",
     "url": "https://bbs.mihoyo.com/planet/",

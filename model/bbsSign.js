@@ -78,33 +78,38 @@ export default class BBsSign extends base {
             }
 
             for (let forum of forumData) {
-                let trueDetail = 0; let trueReply = 0; let Vote = 0; let Share = 0; let detal = 3
+                let trueDetail = 0; let Vote = 0; let Share = 0; let detal = 3
                 if (forumData.length >= 3) detal = 1
 
                 message += `\n**${forum.name}**\n`
-                res = await mysApi.getData("bbsSign", forum)
-                await common.sleep(5000)
-                if (res?.retcode == -100)
+                res = await mysApi.getData("querySignInStatus", forum)
+                if (res?.data?.is_signed == true) {
+                    message += `社区签到: 今日已签到\n`
+                } else if (res?.retcode == -100) {
                     return { message: '登录失效，请【#扫码登录】', retcode: -100 }
-
-                if (res?.retcode == 1034) {
-                    let retry = 0
-                    challenge = await this.bbsGeetest(mysApi)
-                    while (!challenge && retry < this.set.bbsRetry) {
-                        challenge = await this.bbsGeetest(mysApi)
-                        retry++
-                    }
-                    if (challenge) {
-                        forum["headers"] = { "x-rpc-challenge": challenge }
-                        res = await mysApi.getData("bbsSign", forum)
-                        message += `社区签到: 验证码${res?.retcode == 1034 ? '失败' : '成功'}\n`
-                    } else {
-                        message += `社区签到: 验证码失败\n`
-                    }
                 } else {
-                    message += `社区签到: ${res.retcode == 1008 ? '今日已签到' : `${res.message}`}\n`
+                    res = await mysApi.getData("bbsSign", forum)
+                    await common.sleep(5000)
+                    if (res?.retcode == -100)
+                        return { message: '登录失效，请【#扫码登录】', retcode: -100 }
+
+                    if (res?.retcode == 1034) {
+                        let retry = 0
+                        challenge = await this.bbsGeetest(mysApi)
+                        while (!challenge && retry < this.set.bbsRetry) {
+                            challenge = await this.bbsGeetest(mysApi)
+                            retry++
+                        }
+                        if (challenge) {
+                            forum["headers"] = { "x-rpc-challenge": challenge }
+                            res = await mysApi.getData("bbsSign", forum)
+                            message += `社区签到: 验证码${res?.retcode == 1034 ? '失败' : '成功'}\n`
+                        } else {
+                            message += `社区签到: 验证码失败\n`
+                        }
+                    }
                 }
-                logger.mark(`${sk.id}:${forum.name} 社区签到结果: [${res.retcode == 1008 ? '今日已签到' : `${res.message}`}]`)
+                logger.mark(`${sk.id}:${forum.name} 社区签到结果: [${res?.data?.is_signed == true ? '今日已签到' : `${res.message}`}]`)
 
                 res = await mysApi.getData("bbsPostList", forum)
                 let Listretry = 0
