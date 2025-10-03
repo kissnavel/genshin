@@ -49,7 +49,6 @@ export default class MysApi {
       'bbsCaptchaVerify',
       'bbsPostList',
       'bbsPostFull',
-      'bbsReply',
       'bbsShareConf',
       'bbsVotePost'
     ]
