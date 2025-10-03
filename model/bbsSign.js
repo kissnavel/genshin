@@ -187,24 +187,29 @@ export default class BBsSign extends base {
                 for (let post of postList) {
                     post = post.post
                     postId = post['post_id']
+                    data = {
+                        ...data,
+                        postId: postId,
+                        headers: { 'x-rpc-device_fp': device_fp }
+                    }
 
                     if (trueDetail < detal) {
-                        res = await mysApi.getData("bbsPostFull", { postId })
+                        res = await mysApi.getData("bbsPostFull", data)
                         if (res?.retcode == 1034)
-                            res = await this.bbsGeetest(mysApi, "bbsPostFull", { postId })
+                            res = await this.bbsGeetest(mysApi, "bbsPostFull", data)
                         if (res?.message && res?.retcode == 0) trueDetail++
                     }
 
                     if (Vote < time) {
-                        res = await mysApi.getData("bbsVotePost", { postId })
+                        res = await mysApi.getData("bbsVotePost", data)
                         if (res?.retcode == 1034)
-                            res = await this.bbsGeetest(mysApi, "bbsVotePost", { postId })
+                            res = await this.bbsGeetest(mysApi, "bbsVotePost", data)
                         if (res?.message && res?.retcode == 0) Vote++
                     }
 
                     if (trueDetail >= detal && Vote >= time) break
                 }
-                res = await mysApi.getData("bbsShareConf", { postId })
+                res = await mysApi.getData("bbsShareConf", data)
                 if (res?.message && res?.retcode == 0) Share++
 
                 message += `浏览：${trueDetail}|点赞：${Vote}|分享：${Share}\n`
