@@ -164,6 +164,28 @@ export default class apiTool {
             seed_id: `${this.uuid}`,
             seed_time: new Date().getTime() + ''
           }
+        },
+        deviceLogin: {
+          url: `${bbs_api}apihub/api/deviceLogin`,
+          body: {
+            app_version: '2.73.1',
+            device_id: data.deviceId,
+            device_name: `${deviceBrand}${modelName}`,
+            os_version: '33',
+            platform: 'Android',
+            registration_id: this.generateSeed(19)
+          }
+        },
+        saveDevice: {
+          url: `${bbs_api}apihub/api/saveDevice`,
+          body: {
+            app_version: '2.73.1',
+            device_id: data.deviceId,
+            device_name: `${deviceBrand}${modelName}`,
+            os_version: '33',
+            platform: 'Android',
+            registration_id: this.generateSeed(19)
+          }
         }
       },
       gs: {
@@ -334,7 +356,7 @@ export default class apiTool {
           query: `cdkey=${data.cdk}&game_biz=hk4e_global&lang=zh-cn&region=${this.server}&t=${new Date().getTime() + ''}&uid=${this.uid}`
         },
         deviceLogin: {
-          url: 'https://bbs-api.miyoushe.com/apihub/api/deviceLogin',
+          url: `${bbs_api}apihub/api/deviceLogin`,
           body: {
             app_version: '2.73.1',
             device_id: data.deviceId,
@@ -345,7 +367,7 @@ export default class apiTool {
           }
         },
         saveDevice: {
-          url: 'https://bbs-api.miyoushe.com/apihub/api/saveDevice',
+          url: `${bbs_api}apihub/api/saveDevice`,
           body: {
             app_version: '2.73.1',
             device_id: data.deviceId,
@@ -475,7 +497,7 @@ export default class apiTool {
           query: `cdkey=${data.cdk}&game_biz=hkrpg_global&lang=zh-cn&region=${this.server}&t=${new Date().getTime() + ''}&uid=${this.uid}`
         },
         deviceLogin: {
-          url: 'https://bbs-api.miyoushe.com/apihub/api/deviceLogin',
+          url: `${bbs_api}apihub/api/deviceLogin`,
           body: {
             app_version: '2.73.1',
             device_id: data.deviceId,
@@ -486,7 +508,7 @@ export default class apiTool {
           }
         },
         saveDevice: {
-          url: 'https://bbs-api.miyoushe.com/apihub/api/saveDevice',
+          url: `${bbs_api}apihub/api/saveDevice`,
           body: {
             app_version: '2.73.1',
             device_id: data.deviceId,
@@ -591,7 +613,7 @@ export default class apiTool {
           query: `cdkey=${data.cdk}&game_biz=nap_global&lang=zh-cn&region=${this.server}&t=${new Date().getTime() + ''}&uid=${this.uid}`
         },
         deviceLogin: {
-          url: 'https://bbs-api.miyoushe.com/apihub/api/deviceLogin',
+          url: `${bbs_api}apihub/api/deviceLogin`,
           body: {
             app_version: '2.73.1',
             device_id: data.deviceId,
@@ -602,7 +624,7 @@ export default class apiTool {
           }
         },
         saveDevice: {
-          url: 'https://bbs-api.miyoushe.com/apihub/api/saveDevice',
+          url: `${bbs_api}apihub/api/saveDevice`,
           body: {
             app_version: '2.73.1',
             device_id: data.deviceId,
@@ -682,7 +704,7 @@ export default class apiTool {
           }
         }),
         deviceLogin: {
-          url: 'https://bbs-api.miyoushe.com/apihub/api/deviceLogin',
+          url: `${bbs_api}apihub/api/deviceLogin`,
           body: {
             app_version: '2.73.1',
             device_id: data.deviceId,
@@ -693,7 +715,7 @@ export default class apiTool {
           }
         },
         saveDevice: {
-          url: 'https://bbs-api.miyoushe.com/apihub/api/saveDevice',
+          url: `${bbs_api}apihub/api/saveDevice`,
           body: {
             app_version: '2.73.1',
             device_id: data.deviceId,
@@ -786,7 +808,7 @@ export default class apiTool {
           query: `role_id=${this.uid}&server=${this.server}`
         },
         deviceLogin: {
-          url: 'https://bbs-api.miyoushe.com/apihub/api/deviceLogin',
+          url: `${bbs_api}apihub/api/deviceLogin`,
           body: {
             app_version: '2.73.1',
             device_id: data.deviceId,
@@ -797,7 +819,7 @@ export default class apiTool {
           }
         },
         saveDevice: {
-          url: 'https://bbs-api.miyoushe.com/apihub/api/saveDevice',
+          url: `${bbs_api}apihub/api/saveDevice`,
           body: {
             app_version: '2.73.1',
             device_id: data.deviceId,
@@ -846,7 +868,7 @@ export default class apiTool {
           }
         },
         deviceLogin: {
-          url: 'https://bbs-api.miyoushe.com/apihub/api/deviceLogin',
+          url: `${bbs_api}apihub/api/deviceLogin`,
           body: {
             app_version: '2.73.1',
             device_id: data.deviceId,
@@ -857,7 +879,7 @@ export default class apiTool {
           }
         },
         saveDevice: {
-          url: 'https://bbs-api.miyoushe.com/apihub/api/saveDevice',
+          url: `${bbs_api}apihub/api/saveDevice`,
           body: {
             app_version: '2.73.1',
             device_id: data.deviceId,

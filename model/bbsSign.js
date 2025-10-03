@@ -6,6 +6,7 @@ import Data from "./Data.js"
 import Cfg from './Cfg.js'
 import moment from 'moment'
 import _ from 'lodash'
+import fetch from 'node-fetch'
 
 let signing = false
 let finishTime
@@ -78,14 +79,62 @@ export default class BBsSign extends base {
             }
 
             for (let forum of forumData) {
-                let trueDetail = 0; let Vote = 0; let Share = 0; let detal = 3
+                let trueDetail = 0; let Vote = 0; let Share = 0; let detal = 3; let data = {}
                 if (forumData.length >= 3) detal = 1
 
                 message += `\n**${forum.name}**\n`
-                let device_fp = await mysApi.getData('getFp')
+                let device_fp = await redis.get(`genshin:device_fp:${sk.stuid}:fp`)
+                if (!device_fp) {
+                    let bindInfo = await redis.get(`genshin:device_fp:${sk.stuid}:bind`)
+                    if (bindInfo) {
+                        try {
+                            bindInfo = JSON.parse(bindInfo)
+                            data = {
+                                productName: bindInfo?.deviceProduct,
+                                deviceType: bindInfo?.deviceName,
+                                modelName: bindInfo?.deviceModel,
+                                oaid: bindInfo?.oaid,
+                                osVersion: bindInfo?.androidVersion,
+                                deviceInfo: bindInfo?.deviceFingerprint,
+                                board: bindInfo?.deviceBoard
+                            }
+                        } catch (error) {
+                            bindInfo = null
+                        }
+                    }
+                    device_fp = await mysApi.getData('getFp', data)
+                    device_fp = device_fp?.data?.device_fp
+                    if (device_fp) {
+                        await redis.set(`genshin:device_fp:${sk.stuid}:fp`, device_fp, {
+                            EX: 86400 * 7
+                        })
+                        const deviceLogin = mysApi.getUrl('deviceLogin', data)
+                        const saveDevice = mysApi.getUrl('saveDevice', data)
+                        if (!!deviceLogin && !!saveDevice) {
+                            logger.debug(`[米游社][设备登录]保存设备信息`)
+                            try {
+                                logger.debug(`[米游社][设备登录]${JSON.stringify(deviceLogin)}`)
+                                const login = await fetch(deviceLogin.url, {
+                                    headers: deviceLogin.headers,
+                                    method: 'POST',
+                                    body: deviceLogin.body
+                                })
+                                const save = await fetch(saveDevice.url, {
+                                    headers: saveDevice.headers,
+                                    method: 'POST',
+                                    body: saveDevice.body
+                                })
+                                const result = await Promise.all([login.json(), save.json()])
+                                logger.debug(`[米游社][设备登录]${JSON.stringify(result)}`)
+                            } catch (error) {
+                                logger.error(`[米游社][设备登录]${error.message}`)
+                            }
+                        }
+                    }
+                }
                 forum = {
                     ...forum,
-                    headers: { 'x-rpc-device_fp': device_fp?.data?.device_fp }
+                    headers: { 'x-rpc-device_fp': device_fp }
                 }
                 res = await mysApi.getData("querySignInStatus", forum)
                 if (res?.data?.is_signed == true) {
@@ -106,7 +155,7 @@ export default class BBsSign extends base {
                             forum = {
                                 ...forum,
                                 headers: {
-                                    'x-rpc-device_fp': device_fp?.data?.device_fp,
+                                    'x-rpc-device_fp': device_fp,
                                     'x-rpc-challenge': challenge
                                 }
                             }
