@@ -99,9 +99,30 @@ export function supportGuoba() {
           },
         },
         {
+          field: 'api.signtype',
+          label: '签到使用的平台',
+          bottomHelpMessage: '0：test_nine；1：ttocr.com；2：2captcha.com',
+          component: 'InputNumber',
+          required: true,
+          componentProps: {
+            min: 0,
+            max: 2,
+            placeholder: '请输入类型',
+          },
+        },
+        {
           field: 'api.api',
           label: '使用的api',
           bottomHelpMessage: 'ttocr、2captcha必填',
+          component: 'Input',
+          componentProps: {
+            placeholder: '例：https://api.example.com/recognize',
+          },
+        },
+        {
+          field: 'api.signapi',
+          label: '签到使用的api',
+          bottomHelpMessage: 'test_nine必填',
           component: 'Input',
           componentProps: {
             placeholder: '例：https://api.example.com/recognize',
@@ -136,16 +157,7 @@ export function supportGuoba() {
         },
         {
           field: 'api.signquery',
-          label: '游戏签到需要的其他参数',
-          bottomHelpMessage: '除“key、gt、challenge”以外的，ttocr必填',
-          component: 'Input',
-          componentProps: {
-            placeholder: '例: referer=***',
-          },
-        },
-        {
-          field: 'api.bbssignquery',
-          label: '社区签到需要的其他参数',
+          label: '签到需要的其他参数',
           bottomHelpMessage: '除“key、gt、challenge”以外的，ttocr必填',
           component: 'Input',
           componentProps: {

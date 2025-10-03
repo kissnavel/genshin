@@ -31,7 +31,7 @@ export default class apiTool {
     const board = data?.board || 'lahaina'
     const deviceBrand = deviceInfo.split('/')[0]
     const deviceDisplay = deviceInfo.split('/')[3]
-    let bbs_api = 'https://bbs-api.mihoyo.com/'
+    let bbs_api = 'https://bbs-api.miyoushe.com/'
     let host, host_hk4e, host_nap, hostRecord, hostPublicData
     if (['bh3_cn', 'bh2_cn'].includes(this.biz) || /cn_|_cn/.test(this.server)) {
       host = 'https://api-takumi.mihoyo.com/'
@@ -72,6 +72,10 @@ export default class apiTool {
             geetest_seccode: `${data.validate || data.geetest_validate}|jordan`
           }
         },
+        test_nine: {
+          url: `${this.api.signapi}`,
+          query: `gt=${data.gt}&challenge=${data.challenge}`
+        },
         recognize: {
           url: `${this.api.api}`,
           config: `${this.api.key}&${this.api.query}&gt=${data.gt}&challenge=${data.challenge}`
@@ -79,10 +83,6 @@ export default class apiTool {
         signrecognize: {
           url: `${this.api.api}`,
           config: `${this.api.key}&${this.api.signquery}&gt=${data.gt}&challenge=${data.challenge}`
-        },
-        bbssignrecognize: {
-          url: `${this.api.api}`,
-          config: `${this.api.key}&${this.api.bbssignquery}&gt=${data.gt}&challenge=${data.challenge}`
         },
         results: {
           url: `${this.api.resapi}`,
@@ -117,7 +117,7 @@ export default class apiTool {
         },
         bbsGetCaptcha: {
           url: `${bbs_api}misc/api/createVerification`,
-          query: 'is_high=false',
+          query: 'is_high=true',
           types: 'bbs'
         },
         bbsCaptchaVerify: {
@@ -139,16 +139,6 @@ export default class apiTool {
           query: `post_id=${data.postId}`,
           types: 'bbs'
         },
-        bbsReply: {
-          url: `${bbs_api}post/api/releaseReply`,
-          body: {
-            "content": data.Replymsg,
-            "post_id": data.postId,
-            "reply_id": "",
-            "structured_content": data.Replymsg
-          },
-          types: 'bbs'
-        },
         bbsShareConf: {
           url: `${bbs_api}apihub/api/getShareConf`,
           query: `entity_id=${data.postId}&entity_type=1`,
@@ -161,6 +151,19 @@ export default class apiTool {
             "is_cancel": false
           },
           types: 'bbs'
+        },
+        getFp: {
+          url: `${hostPublicData}device-fp/api/getFp`,
+          body: {
+            app_name: 'bbs_cn',
+            bbs_device_id: `${this.uuid}`,
+            device_fp: '38d805c20d53d',
+            device_id: 'cc57c40f763ae4cc',
+            ext_fields: `{"proxyStatus":1,"isRoot":0,"romCapacity":"768","deviceName":"${modelName}","productName":"${productName}","romRemain":"727","hostname":"BuildHost","screenSize":"1096x2434","isTablet":0,"aaid":"${this.uuid}","model":"${modelName}","brand":"${deviceBrand}","hardware":"qcom","deviceType":"${deviceType}","devId":"REL","serialNumber":"unknown","sdCapacity":224845,"buildTime":"1692775759000","buildUser":"BuildUser","simState":1,"ramRemain":"218344","appUpdateTimeDiff":1740498108042,"deviceInfo":"${deviceInfo}","vaid":"${this.uuid}","buildType":"user","sdkVersion":"33","ui_mode":"UI_MODE_TYPE_NORMAL","isMockLocation":0,"cpuType":"arm64-v8a","isAirMode":0,"ringMode":2,"chargeStatus":1,"manufacturer":"${deviceBrand}","emulatorStatus":0,"appMemory":"768","osVersion":"${osVersion}","vendor":"unknown","accelerometer":"-1.588236x6.8404818x6.999604","sdRemain":218214,"buildTags":"release-keys","packageName":"com.mihoyo.hyperion","networkType":"WiFi","oaid":"${oaid}","debugStatus":1,"ramCapacity":"224845","magnetometer":"-47.04375x51.3375x137.96251","display":"${deviceDisplay}","appInstallTimeDiff":1740498108042,"packageVersion":"2.35.0","gyroscope":"-0.22601996x-0.09453133x0.09040799","batteryStatus":88,"hasKeyboard":0,"board":"${board}"}`,
+            platform: '2',
+            seed_id: `${this.uuid}`,
+            seed_time: new Date().getTime() + ''
+          }
         }
       },
       gs: {

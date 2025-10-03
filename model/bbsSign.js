@@ -82,6 +82,11 @@ export default class BBsSign extends base {
                 if (forumData.length >= 3) detal = 1
 
                 message += `\n**${forum.name}**\n`
+                let device_fp = await mysApi.getData('getFp')
+                forum = {
+                    ...forum,
+                    headers: { 'x-rpc-device_fp': device_fp?.data?.device_fp }
+                }
                 res = await mysApi.getData("querySignInStatus", forum)
                 if (res?.data?.is_signed == true) {
                     message += `社区签到: 今日已签到\n`
@@ -90,9 +95,6 @@ export default class BBsSign extends base {
                 } else {
                     res = await mysApi.getData("bbsSign", forum)
                     await common.sleep(5000)
-                    if (res?.retcode == -100)
-                        return { message: '登录失效，请【#扫码登录】', retcode: -100 }
-
                     if (res?.retcode == 1034) {
                         let retry = 0
                         challenge = await this.bbsGeetest(mysApi)
@@ -101,7 +103,13 @@ export default class BBsSign extends base {
                             retry++
                         }
                         if (challenge) {
-                            forum["headers"] = { "x-rpc-challenge": challenge }
+                            forum = {
+                                ...forum,
+                                headers: {
+                                    'x-rpc-device_fp': device_fp?.data?.device_fp,
+                                    'x-rpc-challenge': challenge
+                                }
+                            }
                             res = await mysApi.getData("bbsSign", forum)
                             message += `社区签到: 验证码${res?.retcode == 1034 ? '失败' : '成功'}\n`
                         } else {
@@ -337,11 +345,19 @@ export default class BBsSign extends base {
         let api = Cfg.getConfig('api')
         let vall = new MysApi(mysApi.uid, mysApi.cookie, {}, '', '', 'all')
         let res = await mysApi.getData('bbsGetCaptcha')
-        if (api.type == 1) {
-            res = await vall.getData("bbssignrecognize", res.data)
+        let retry = 0; let test_nine = res
+        if (api.signtype == 0) {
+            res = await vall.getData('test_nine', res?.data)
+            if (res?.data?.validate) res = {
+                data: {
+                    challenge: test_nine?.data?.challenge,
+                    validate: res?.data?.validate
+                }
+            }
+        } else if (api.signtype == 1) {
+            res = await vall.getData("signrecognize", res.data)
             if (res?.resultid) {
                 let results = res
-                let retry = 0
                 await common.sleep(5000)
                 res = await vall.getData("results", results)
                 while ((res?.status == 2) && retry < 10) {
@@ -350,11 +366,10 @@ export default class BBsSign extends base {
                     retry++
                 }
             }
-        } else if (api.type == 2) {
+        } else if (api.signtype == 2) {
             res = await vall.getData("in", res.data)
             if (res?.request) {
                 let request = res
-                let retry = 0
                 await common.sleep(5000)
                 res = await vall.getData("res", request)
                 while ((res?.request == "CAPCHA_NOT_READY") && retry < 10) {

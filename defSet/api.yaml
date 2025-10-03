@@ -1,16 +1,18 @@
 #使用的平台，1：ttocr.com；2：2captcha.com
 type: 1
+#签到使用的平台，0：test_nine；1：ttocr.com；2：2captcha.com
+signtype: 1
 #使用的api(ttocr、2captcha必填)，例：https://api.example.com/recognize
 api: 
+#签到使用的api(test_nine必填)，例：https://api.example.com/recognize
+signapi: 
 #使用的resapi(ttocr、2captcha必填)，例：https://api.example.com/results
 resapi: 
 #api、resapi需要的key(ttocr、2captcha必填)，例: appkey=***
 key: 
 #api需要的其他参数(除“key、gt、challenge”以外的，ttocr、2captcha必填)，例: referer=***
 query: 
-#游戏签到需要的其他参数(除“key、gt、challenge”以外的，ttocr必填)，例: referer=***
+#签到需要的其他参数(除“key、gt、challenge”以外的，ttocr必填)，例: referer=***
 signquery: 
-#社区签到需要的其他参数(除“key、gt、challenge”以外的，ttocr必填)，例: referer=***
-bbssignquery: 
 #resapi需要的其他参数(除“key”以外的，2captcha必填)，例: action=***
 resquery: 

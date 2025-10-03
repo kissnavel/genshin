@@ -279,12 +279,20 @@ export default class MysSign extends base {
             this.signMsg = '验证码失败'
             sign.message = '验证码失败'
 
-            if (api.type == 1) {
-                let vall = new MysApi(this.mysApi.uid, this.mysApi.cookie, {}, '', '', 'all')
-                let res = await vall.getData('signrecognize', sign.data)
+            let vall = new MysApi(this.mysApi.uid, this.mysApi.cookie, {}, '', '', 'all')
+            let res; let retry = 0; let test_nine = sign
+            if (api.signtype == 0) {
+                res = await vall.getData('test_nine', sign?.data)
+                if (res?.data?.validate) res = {
+                    data: {
+                        challenge: test_nine?.data?.challenge,
+                        validate: res?.data?.validate
+                    }
+                }
+            } else if (api.signtype == 1) {
+                res = await vall.getData('signrecognize', sign.data)
                 if (res?.resultid) {
                     let results = res
-                    let retry = 0
                     await common.sleep(5000)
                     res = await vall.getData('results', results)
                     while ((res?.status == 2) && retry < 10) {
@@ -293,11 +301,10 @@ export default class MysSign extends base {
                         retry++
                     }
                 }
-            } else if (api.type == 2) {
-                let res = await vall.getData('in', sign.data)
+            } else if (api.signtype == 2) {
+                res = await vall.getData('in', sign.data)
                 if (res?.request) {
                     let request = res
-                    let retry = 0
                     await common.sleep(5000)
                     res = await vall.getData('res', request)
                     while ((res?.request == 'CAPCHA_NOT_READY') && retry < 10) {
