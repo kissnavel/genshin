@@ -80,8 +80,8 @@ export class myspanel extends plugin {
             res.data.list.map((value) => {
                 ids.push(value.id)
             })
-            data = await mysApi.getData('character_detail', { headers, character_ids: ids })
-            data = await new MysInfo(e).checkCode(data, 'character_detail', mysApi, {}, true)
+            data = await mysApi.getData('characterDetail', { headers, character_ids: ids })
+            data = await new MysInfo(e).checkCode(data, 'characterDetail', mysApi, {}, true)
             if (!data.data) {
                 logger.mark('米游社查询失败')
                 return false
