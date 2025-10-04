@@ -79,8 +79,11 @@ export default class BBsSign extends base {
             }
 
             for (let forum of forumData) {
-                let trueDetail = 0; let Vote = 0; let Share = 0; let detal = 3; let data = {}
-                if (forumData.length >= 3) detal = 1
+                let trueDetail = 0; let Vote = 0; let trueShare = 0; let Share = 3; let detal = 3; let data = {}
+                if (forumData.length >= 3) {
+                    Share = 1
+                    detal = 1
+                }
 
                 message += `\n**${forum.name}**\n`
                 let device_fp = await redis.get(`genshin:device_fp:${sk.stuid}:fp`)
@@ -194,6 +197,7 @@ export default class BBsSign extends base {
                     }
 
                     if (trueDetail < detal) {
+                        await common.sleep(1000)
                         res = await mysApi.getData("bbsPostFull", data)
                         if (res?.retcode == 1034)
                             res = await this.bbsGeetest(mysApi, "bbsPostFull", data)
@@ -201,16 +205,23 @@ export default class BBsSign extends base {
                     }
 
                     if (Vote < time) {
+                        await common.sleep(1000)
                         res = await mysApi.getData("bbsVotePost", data)
                         if (res?.retcode == 1034)
                             res = await this.bbsGeetest(mysApi, "bbsVotePost", data)
                         if (res?.message && res?.retcode == 0) Vote++
                     }
 
-                    if (trueDetail >= detal && Vote >= time) break
+                    if (trueShare < Share) {
+                        await common.sleep(1000)
+                        res = await mysApi.getData("bbsShareConf", data)
+                        if (res?.retcode == 1034)
+                            res = await this.bbsGeetest(mysApi, "bbsShareConf", data)
+                        if (res?.message && res?.retcode == 0) trueShare++
+                    }
+
+                    if (trueDetail >= detal && Vote >= time && trueShare >= Share) break
                 }
-                res = await mysApi.getData("bbsShareConf", data)
-                if (res?.message && res?.retcode == 0) Share++
 
                 message += `浏览：${trueDetail}|点赞：${Vote}|分享：${Share}\n`
             }
