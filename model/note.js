@@ -228,7 +228,7 @@ export default class Note extends base {
     }
   }
 
-  noteSr(res, uid) {
+  async noteSr(res, uid) {
     let { data } = res
 
     /** 树脂 */
@@ -278,13 +278,20 @@ export default class Note extends base {
         item.avatars.push('派遣头像')
       }
     }
-    // 头像
-    let sricon = _.sample(fs.readdirSync(`${this._path}/plugins/genshin/resources/StarRail/img/role`).filter(file => file.endsWith('.webp')))
-    sricon = `${this._path}/plugins/genshin/resources/StarRail/img/role/${sricon}`
-    let icon = _.sample(['希儿', '白露', '艾丝妲', '布洛妮娅', '姬子', '卡芙卡', '克拉拉', '停云', '佩拉', '黑塔', '希露瓦', '银狼'])
+    // 派遣头像
+    let promises = []
+    for (let avatars of data.expeditions) {
+      for (let avatar of avatars.avatars)
+        promises.push(avatar)
+    }
+    await Promise.all(promises)
+    let icon = Math.floor(Math.random() * promises.length)
+    let sricon = promises[icon]
+    if (!sricon) sricon = `${this._path}/plugins/genshin/resources/StarRail/img/other/face.png`
     return {
       uid,
-      saveId: uid, icon, sricon,
+      saveId: uid,
+      sricon,
       day: `${this.week[moment().day()]}`,
       resinMaxTime, nowDay: moment(new Date()).format('YYYY年MM月DD日'),
       ...data
