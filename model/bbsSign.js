@@ -223,7 +223,7 @@ export default class BBsSign extends base {
                     if (trueDetail >= detal && Vote >= time && trueShare >= Share) break
                 }
 
-                message += `浏览：${trueDetail}|点赞：${Vote}|分享：${Share}\n`
+                message += `浏览：${trueDetail}|点赞：${Vote}|分享：${trueShare}\n`
             }
 
             res = await this.bbsSeachSign(mysApi, sk.userId)
