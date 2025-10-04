@@ -176,6 +176,7 @@ export default class BBsSign extends base {
                 }
                 logger.mark(`${sk.id}:${forum.name} 社区签到结果: [${res?.data?.is_signed == true ? '今日已签到' : `${res.message}`}]`)
 
+                await common.sleep(1000)
                 res = await mysApi.getData("bbsPostList", forum)
                 let Listretry = 0
                 while (!res.data?.list || (res.data?.list?.length < time && Listretry < 2)) {
