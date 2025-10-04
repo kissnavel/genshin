@@ -136,6 +136,7 @@ export default class BBsSign extends base {
                     }
                 }
                 forum = {
+                    ...data,
                     ...forum,
                     headers: { 'x-rpc-device_fp': device_fp }
                 }
@@ -156,6 +157,7 @@ export default class BBsSign extends base {
                         }
                         if (challenge) {
                             forum = {
+                                ...data,
                                 ...forum,
                                 headers: {
                                     'x-rpc-device_fp': device_fp,
