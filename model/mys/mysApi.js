@@ -21,7 +21,7 @@ export default class MysApi {
     this.game = game || option.game
     this.server = Server || this.getServer()
     this.biz = Biz
-    this.apiTool = new ApiTool(uid, this.server, this.game, this.biz)
+    this.apiTool = new ApiTool(this.uid, this.server, this.game, this.biz)
     /** 5分钟缓存 */
     this.cacheCd = 300
 
@@ -56,7 +56,6 @@ export default class MysApi {
     this.gttypes = [
       'recognize',
       'signrecognize',
-      'bbssignrecognize',
       'results'
     ]
   }
@@ -178,41 +177,39 @@ export default class MysApi {
   }
 
   async getData(type, data = { headers: {} }, cached = false, game = '') {
-    const uid = this.uid
-    const ck = this.cookie
-    const Game = this.game
-    const biz = this.biz
-    const ltuid = ck.ltuid
-    if (ltuid) {
-      let bindInfo = await redis.get(`genshin:device_fp:${ltuid}:bind`)
-      if (bindInfo) {
-        try {
-          bindInfo = JSON.parse(bindInfo)
-          data = {
-            ...data,
-            productName: bindInfo?.deviceProduct,
-            deviceType: bindInfo?.deviceName,
-            modelName: bindInfo?.deviceModel,
-            oaid: bindInfo?.oaid,
-            osVersion: bindInfo?.androidVersion,
-            deviceInfo: bindInfo?.deviceFingerprint,
-            board: bindInfo?.deviceBoard
+    if (!this.game == 'bbs') {
+      if (this.cookie.ltuid) {
+        let bindInfo = await redis.get(`genshin:device_fp:${this.cookie.ltuid}:bind`)
+        if (bindInfo) {
+          try {
+            bindInfo = JSON.parse(bindInfo)
+            data = {
+              ...data,
+              productName: bindInfo?.deviceProduct,
+              deviceType: bindInfo?.deviceName,
+              modelName: bindInfo?.deviceModel,
+              oaid: bindInfo?.oaid,
+              osVersion: bindInfo?.androidVersion,
+              deviceInfo: bindInfo?.deviceFingerprint,
+              board: bindInfo?.deviceBoard
+            }
+          } catch (error) {
+            bindInfo = null
           }
-        } catch (error) {
-          bindInfo = null
+        }
+        const { deviceFp } = await getDeviceFp.Fp(this.uid, this.cookie, this.game, this.biz)
+        if (deviceFp) {
+          data.deviceFp = deviceFp
+          data.headers['x-rpc-device_fp'] = deviceFp
+        }
+        const device_id = await redis.get(`genshin:device_fp:${this.cookie.ltuid}:id`)
+        if (device_id) {
+          data.deviceId = device_id
+          data.headers['x-rpc-device_id'] = device_id
         }
       }
-      const { deviceFp } = await getDeviceFp.Fp(uid, ck, Game, biz)
-      if (deviceFp) {
-        data.deviceFp = deviceFp
-        data.headers['x-rpc-device_fp'] = deviceFp
-      }
-      const device_id = await redis.get(`genshin:device_fp:${ltuid}:id`)
-      if (device_id) {
-        data.deviceId = device_id
-        data.headers['x-rpc-device_id'] = device_id
-      }
     }
+
     if (!this.types.includes(type)) {
       if (!this._device_fp && !data?.Getfp && !data?.headers?.['x-rpc-device_fp']) {
         this._device_fp = await this.getData('getFp', {
@@ -232,7 +229,7 @@ export default class MysApi {
     let cahce = await redis.get(cacheKey)
     if (cahce) return JSON.parse(cahce)
 
-    headers.Cookie = ck
+    headers.Cookie = this.cookie
 
     if (data.headers) {
       headers = { ...headers, ...data.headers }
