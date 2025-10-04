@@ -343,9 +343,14 @@ export default class User extends base {
           if (player) {
             uidDs.name = player.name
             uidDs.level = player.level
-            let imgs = player?.faceImgs || {}
-            uidDs.face = imgs.face
-            uidDs.banner = imgs.banner
+            if (!uidDs.name || !uidDs.level) {
+              uidDs.other_face = true
+              uidDs.other_banner = true
+            } else {
+              let imgs = player?.faceImgs || {}
+              uidDs.face = imgs.face
+              uidDs.banner = imgs.banner
+            }
           }
         } else {
           uidDs.other_face = true
