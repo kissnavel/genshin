@@ -69,7 +69,7 @@ export default class BBsSign extends base {
 
         try {
             res = await this.bbsSeachSign(mysApi, sk.userId)
-            await common.sleep(5000)
+            await common.sleep(1000)
             if (res.retcode == -100) {
                 return { message: res.message, retcode: -100 }
             }
@@ -141,13 +141,14 @@ export default class BBsSign extends base {
                     headers: { 'x-rpc-device_fp': device_fp }
                 }
                 res = await mysApi.getData("querySignInStatus", forum)
+                await common.sleep(1000)
                 if (res?.data?.is_signed == true) {
                     message += `社区签到: 今日已签到\n`
                 } else if (res?.retcode == -100) {
                     return { message: '登录失效，请【#扫码登录】', retcode: -100 }
                 } else {
                     res = await mysApi.getData("bbsSign", forum)
-                    await common.sleep(5000)
+                    await common.sleep(1000)
                     if (res?.retcode == 1034) {
                         let retry = 0
                         challenge = await this.bbsGeetest(mysApi)
