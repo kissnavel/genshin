@@ -18,7 +18,7 @@ bh2:{mark:'￥'}
 <div class="uid-list">
   {{each uids game}}
   {{set mark = gameMap[game.key]?.mark}}
-  {{set Game = game.key == 'bh2' ? 'Bh2' : game.key == 'bh3' ? 'Bh3' : game.key == 'wd' ? 'Wd' : 'ZZZero'}}
+  {{set Game = game.key == 'bh2' ? 'Bh2' : game.key == 'bh3' ? 'Bh3' : game.key == 'wd' ? 'Wd' : game.key == 'zzz' ? 'ZZZero': game.key == 'sr' ? 'StarRail' : 'genshin'}}
   <div class="game-cont">
     <div class="game-title">
       <strong>{{mark}}{{game.name}}</strong>
