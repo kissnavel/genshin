@@ -146,6 +146,7 @@ export default class MysSign extends base {
             }
         }
 
+        await common.sleep(1000)
         let signInfo = await this.mysApi.getData('sign_info')
 
         if (!signInfo) return false
@@ -227,6 +228,7 @@ export default class MysSign extends base {
         if (reward) {
             reward = JSON.parse(reward)
         } else {
+            await common.sleep(1000)
             let res = await this.mysApi.getData('sign_home')
             if (!res || Number(res.retcode) !== 0) return false
 
@@ -260,9 +262,9 @@ export default class MysSign extends base {
     async bbsSign(name, game) {
         this.signApi = true
         let api = Cfg.getConfig('api')
+        await common.sleep(3000)
         let sign = await this.mysApi.getData('sign')
         this.signMsg = sign?.message ?? 'Too Many Requests'
-        await common.sleep(5000)
 
         if (!sign || this.signMsg == 'Too Many Requests') {
             logger.mark(`[${name}签到失败]${this.log}：${sign.message || this.signMsg}`)
