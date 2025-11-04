@@ -1,4 +1,4 @@
-#使用的平台，1：ttocr.com；2：2captcha.com
+#使用的平台，0：test_nine；1：ttocr.com；2：2captcha.com
 type: 1
 #签到使用的平台，0：test_nine；1：ttocr.com；2：2captcha.com
 signtype: 1

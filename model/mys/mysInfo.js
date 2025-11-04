@@ -499,11 +499,20 @@ export default class MysInfo {
       res = await vali.getData(retcode == 10035 ? "createGeetest" : "createVerification", { headers, app_key })
       if (!res) return { "data": null, "message": "公共ck失效", "retcode": 10103 }
 
-      if (api.type == 1) {
+      let retry = 0
+      if (api.type == 0) {
+        let test_nine = res
+        res = await vali.getData("test_nine", res?.data)
+        if (res?.data?.validate) res = {
+          data: {
+            challenge: test_nine?.data?.challenge,
+            validate: res?.data?.validate
+          }
+        }
+      } else if (api.type == 1) {
         res = await vali.getData("recognize", res?.data)
         if (res?.resultid) {
           let results = res
-          let retry = 0
           await common.sleep(5000)
           res = await vali.getData("results", results)
           while ((res?.status == 2) && retry < 10) {
@@ -516,7 +525,6 @@ export default class MysInfo {
         res = await vali.getData("in", res?.data)
         if (res?.request) {
           let request = res
-          let retry = 0
           await common.sleep(5000)
           res = await vali.getData("res", request)
           while ((res?.request == "CAPCHA_NOT_READY") && retry < 10) {
