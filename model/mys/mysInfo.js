@@ -497,7 +497,7 @@ export default class MysInfo {
       let app_key = mysApi.game == 'zzz' ? 'game_record_zzz' : mysApi.game == 'sr' ? 'hkrpg_game_record' : ''
 
       res = await vali.getData(retcode == 10035 ? "createGeetest" : "createVerification", { headers, app_key })
-      if (!res) return { "data": null, "message": "公共ck失效", "retcode": 10103 }
+      if (!res) return { "data": null, "message": "ck失效", "retcode": 10103 }
 
       let retry = 0
       if (api.type == 0) {
@@ -541,7 +541,7 @@ export default class MysInfo {
           app_key
         })
       } else {
-        return { "data": null, "message": `${api.api}验证码失败`, "retcode": 1034 }
+        return { "data": null, "message": `${api.api}验证码失败`, "retcode": retcode }
       }
 
       if (res?.data?.challenge) {
@@ -554,11 +554,11 @@ export default class MysInfo {
         })
       }
       if (res?.retcode !== 0)
-        return { "data": null, "message": "", "retcode": 1034 }
+        return { "data": null, "message": "", "retcode": retcode }
 
     } catch (error) {
       logger.error("无感日志：" + error)
-      return { "data": null, "message": "", "retcode": 1034 }
+      return { "data": null, "message": "", "retcode": retcode }
     }
     return res
   }
