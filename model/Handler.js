@@ -1,10 +1,14 @@
 import common from '../../../lib/common/common.js'
 import getDeviceFp from './getDeviceFp.js'
 import MysApi from './mys/mysApi.js'
+import MysInfo from './mys/mysInfo.js'
 import fetch from 'node-fetch'
 import Cfg from './Cfg.js'
 
 export default class Handler {
+  constructor() {
+    this.apiCfg = Cfg.getConfig('api')
+  }
   async getvali (e, mysApi, type, data = {}) {
     let res
     try {
@@ -43,34 +47,31 @@ export default class Handler {
     let res
     let { uid, cookie, game } = data
     if (e?.game) game = e?.game
-    let vali = new MysApi(uid, cookie, data.option || {}, '', '', game)
-
+    let vali = new MysApi(uid, cookie, data.option || {}, '', '', 'all')
 
     try {
-      let challenge_game = game === 'zzz' ? '8' : game === 'sr' ? '6' : '2'
-      let { deviceFp } = await getDeviceFp.Fp(uid, cookie, game, '')
+      let challenge_game = game == 'zzz' ? '8' : game == 'sr' ? '6' : '2'
+      let { deviceFp } = await getDeviceFp.Fp(uid, cookie, game)
       let headers = { 'x-rpc-device_fp': deviceFp, 'x-rpc-challenge_game': challenge_game }
-      let app_key = game === 'zzz' ? 'game_record_zzz' : game === 'sr' ? 'hkrpg_game_record' : ''
+      let app_key = game == 'zzz' ? 'game_record_zzz' : game == 'sr' ? 'hkrpg_game_record' : ''
 
       res = await vali.getData(retcode === 10035 ? 'createGeetest' : 'createVerification', { headers, app_key })
       if (!res || res?.retcode !== 0) {
         return { data: null, message: '未知错误，可能为cookie失效', retcode: 10103 }
       }
 
-      let type = Cfg.api.type
-      let GtestType = Cfg.api.GtestType
       let test_nine = res
       let retry = 0
-      if (type == 0) {
-        if ([2, 1].includes(GtestType)) res = await vali.getData('test_nine', res?.data)
+      if (this.apiCfg.type == 0) {
+        if ([2, 1].includes(this.apiCfg.GtestType)) res = await vali.getData('test_nine', res?.data)
         if (res?.data?.validate) res = {
           data: {
             challenge: test_nine?.data?.challenge,
             validate: res?.data?.validate
           }
         }
-      } else if (type == 1) {
-        if ([2, 1].includes(GtestType)) res = await vali.getData('recognize', res?.data)
+      } else if (this.apiCfg.type == 1) {
+        if ([2, 1].includes(this.apiCfg.GtestType)) res = await vali.getData('recognize', res?.data)
         if (res?.resultid) {
           let results = res
           await common.sleep(5000)
@@ -81,8 +82,8 @@ export default class Handler {
             retry++
           }
         }
-      } else if (type == 2) {
-        if ([2, 1].includes(GtestType)) res = await vali.getData('in', res?.data)
+      } else if (this.apiCfg.type == 2) {
+        if ([2, 1].includes(this.apiCfg.GtestType)) res = await vali.getData('in', res?.data)
         if (res?.request) {
           let request = res
           await common.sleep(5000)
@@ -101,8 +102,8 @@ export default class Handler {
           app_key
         })
       } else {
-        if ([2, 0].includes(GtestType)) {
-          if (GtestType === 2) res = await vali.getData(retcode === 10035 ? 'createGeetest' : 'createVerification', { headers, app_key })
+        if ([2, 0].includes(this.apiCfg.GtestType)) {
+          if (this.apiCfg.GtestType == 2) res = await vali.getData(retcode === 10035 ? 'createGeetest' : 'createVerification', { headers, app_key })
           res = await this.Manual_geetest(e, res?.data)
           if (res?.data?.validate || res?.data?.geetest_validate) {
             res = await vali.getData(retcode === 10035 ? 'verifyGeetest' : 'verifyVerification', {
@@ -125,17 +126,97 @@ export default class Handler {
     return { data: null, message: '验证码失败', retcode: retcode }
   }
 
+  async bbsVerification (e) {
+    let res
+    let uid = await MysInfo.getUid(e, false)
+    let game = e.game
+    let ck = await MysInfo.checkUidBing(uid, game)
+    let mysApi = new MysApi(uid, ck, {}, '', '', 'bbs')
+
+    try {
+      let vali = new MysApi(uid, ck, {}, '', '', 'all')
+      let { deviceFp } = await getDeviceFp.Fp(uid, ck, game)
+      let headers = { 'x-rpc-device_fp': deviceFp }
+
+      res = await mysApi.getData('bbsGetCaptcha', { headers })
+      if (!res || res?.retcode !== 0) {
+        return { data: null, message: '未知错误，可能为cookie失效', retcode: 10103 }
+      }
+
+      let test_nine = res
+      let retry = 0
+      if (this.apiCfg.type == 0) {
+        if ([2, 1].includes(this.apiCfg.GtestType)) res = await vali.getData('test_nine', res?.data)
+        if (res?.data?.validate) res = {
+          data: {
+            challenge: test_nine?.data?.challenge,
+            validate: res?.data?.validate
+          }
+        }
+      } else if (this.apiCfg.type == 1) {
+        if ([2, 1].includes(this.apiCfg.GtestType)) res = await vali.getData('recognize', res?.data)
+        if (res?.resultid) {
+          let results = res
+          await common.sleep(5000)
+          res = await vali.getData('results', results)
+          while ((res?.status == 2) && retry < 10) {
+            await common.sleep(5000)
+            res = await vali.getData('results', results)
+            retry++
+          }
+        }
+      } else if (this.apiCfg.type == 2) {
+        if ([2, 1].includes(this.apiCfg.GtestType)) res = await vali.getData('in', res?.data)
+        if (res?.request) {
+          let request = res
+          await common.sleep(5000)
+          res = await vali.getData('res', request)
+          while ((res?.request == 'CAPCHA_NOT_READY') && retry < 10) {
+            await common.sleep(5000)
+            res = await vali.getData('res', request)
+            retry++
+          }
+        }
+      }
+      if (res?.data?.validate || res?.request?.geetest_validate) {
+        res = await mysApi.getData('bbsCaptchaVerify', {
+          ...res?.data ? res.data : res.request,
+          headers
+        })
+      } else {
+        if ([2, 0].includes(this.apiCfg.GtestType)) {
+          if (this.apiCfg.GtestType == 2) res = await mysApi.getData('bbsGetCaptcha', { headers })
+          res = await this.Manual_geetest(e, res?.data)
+          if (res?.data?.validate || res?.data?.geetest_validate) {
+            res = await mysApi.getData('bbsCaptchaVerify', {
+              ...res.data,
+              headers
+            })
+          } else {
+            return e.reply('米游社账号验证失败')
+          }
+        } else {
+          return e.reply('米游社账号验证失败')
+        }
+      }
+
+      if (res?.data?.challenge) return e.reply('米游社账号验证成功')
+    } catch (error) {
+      logger.error(error)
+    }
+    return e.reply('米游社账号验证失败')
+  }
+
   /**
    * @param {{gt, challenge}} data
    */
   async Manual_geetest (e, data) {
     if (!data.gt || !data.challenge || !e?.reply) return false
-    let apiCfg = Cfg.getConfig('api')
-    if (!apiCfg.verifyAddr || (!apiCfg.startApi && !(apiCfg.Host || apiCfg.Port || apiCfg.Address))) {
+    if (!this.apiCfg.verifyAddr || (!this.apiCfg.startApi && !(this.apiCfg.Host || this.apiCfg.Port || this.apiCfg.Address))) {
       return { data: null, message: '未正确填写配置文件[api.yaml]', retcode: null }
     }
 
-    let res = await fetch(`${apiCfg.verifyAddr}`, {
+    let res = await fetch(`${this.apiCfg.verifyAddr}`, {
       method: 'post',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(data)

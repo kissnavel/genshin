@@ -1,5 +1,6 @@
 import plugin from '../../../lib/plugins/plugin.js'
 import Cfg from '../model/Cfg.js'
+import Handler from '../model/Handler.js'
 import _ from 'lodash'
 
 export class config extends plugin {
@@ -22,6 +23,10 @@ export class config extends plugin {
                 {
                     reg: '^#?(原神|星铁|绝区零|崩三|崩二|未定)?(禁用|解禁)(uid)?\\s*((1[0-9]|[1-9])[0-9]{8}|[1-9][0-9]{5,7})$',
                     fnc: 'banUid'
+                },
+                {
+                    reg: '^#?(原神|星铁|绝区零)?(米游社|mys)?账号验证$',
+                    fnc: 'bbsVerify'
                 }
             ]
         })
@@ -135,5 +140,9 @@ export class config extends plugin {
             }
             return
         }
+    }
+
+    async bbsVerify(e) {
+        await new Handler().bbsVerification(e)
     }
 }
