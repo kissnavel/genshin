@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import Cfg from './model/Cfg.js'
+import Handler from './model/Handler.js'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'node:path'
 
@@ -62,6 +63,10 @@ if (!fs.existsSync(genshinPluginDir)) {
   fs.writeFileSync(join(genshinPluginDir, 'index.js'), indexJsContent)
   logger.info('index.js 文件已创建')
 }
+
+Cfg.startGT()
+// 暂时仍保留全局的Gtest以兼容老版本调用，待Handler普及后删除
+global.Gtest = new Handler()
 
 const files = fs.readdirSync('./plugins/genshin/apps').filter(file => file.endsWith('.js'))
 

@@ -16,3 +16,17 @@ query:
 signquery: 
 #resapi需要的其他参数(除“key”以外的，2captcha必填)，例: action=***
 resquery: 
+
+# 使用他人的手动api或者不想使用手动请关闭
+startApi: false
+# 你的手动ip
+Host: 127.0.0.1
+# 你的手动端口
+Port: 3000
+# 你的手动地址(反向代理需要，不使用反向代理请保持ip、端口一致)
+Address: http://127.0.0.1:3000
+# 使用他人的手动api请修改(使用自己的手动api请保持ip、端口一致)
+verifyAddr: http://127.0.0.1:3000/GTest/register
+
+# 0:仅手动；1:仅自动；2:自动失败换手动
+GtestType: 0

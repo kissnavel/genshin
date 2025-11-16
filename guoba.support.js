@@ -175,6 +175,65 @@ export function supportGuoba() {
         },
         {
           component: 'Divider',
+          label: 'GT-Manual设置'
+        },
+        {
+          field: 'api.startApi',
+          label: '开启或关闭手动api',
+          bottomHelpMessage: '使用他人的手动api或者不想使用手动请关闭',
+          component: 'Switch',
+        },
+        {
+          field: 'api.Host',
+          label: '手动ip',
+          bottomHelpMessage: '你的手动ip',
+          component: 'Input',
+          componentProps: {
+            placeholder: '例: 127.0.0.1',
+          },
+        },
+        {
+          field: 'api.Port',
+          label: '手动端口',
+          bottomHelpMessage: '你的手动端口',
+          component: 'InputNumber',
+          componentProps: {
+            min: 0,
+            placeholder: '例: 3000',
+          },
+        },
+        {
+          field: 'api.Address',
+          label: '手动地址',
+          bottomHelpMessage: '你的手动地址(反向代理需要，不使用反向代理请保持ip、端口一致)',
+          component: 'Input',
+          componentProps: {
+            placeholder: '例: http://127.0.0.1:3000',
+          },
+        },
+        {
+          field: 'api.verifyAddr',
+          label: '手动api',
+          bottomHelpMessage: '使用他人的手动api请修改(使用自己的手动api请保持ip、端口一致)',
+          component: 'Input',
+          componentProps: {
+            placeholder: '例: http://127.0.0.1:3000/GTest/register',
+          },
+        },
+        {
+          field: 'api.GtestType',
+          label: '类型',
+          bottomHelpMessage: '0:仅手动；1:仅自动；2:自动失败换手动',
+          component: 'InputNumber',
+          required: true,
+          componentProps: {
+            min: 0,
+            max: 2,
+            placeholder: '请输入类型',
+          },
+        },
+        {
+          component: 'Divider',
           label: '游戏签到设置'
         },
         {

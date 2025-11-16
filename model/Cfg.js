@@ -6,6 +6,7 @@ import MysApi from './mys/mysApi.js'
 import fs from 'node:fs'
 import yaml from 'yaml'
 import _ from 'lodash'
+import GT_Manual from './GT-Manual/GT-Manual.js'
 let sqlite3
 try {
   sqlite3 = (await import('sqlite3')).default
@@ -21,6 +22,8 @@ class Cfg {
     this.resfile = `${_path}/plugins/genshin/resources/`
     this.dir = `${_path}/plugins/xiaoyao-cvs-plugin/data/yaml/`
   }
+
+  get api(){ return this.getConfig('api') }
 
   /** 用户配置 */
   getConfig(app, y = true) {
@@ -343,6 +346,11 @@ class Cfg {
     if (min > 0) msg += `${min}分钟`
     if (sec > 0) msg += `${sec}秒`
     return msg
+  }
+
+  startGT () {
+    let apiCfg = this.getConfig('api')
+    if (apiCfg.startApi && apiCfg.Host && apiCfg.Port && apiCfg.Address) new GT_Manual().load()
   }
 }
 
