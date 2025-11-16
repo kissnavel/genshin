@@ -129,6 +129,7 @@ export default class Handler {
   async bbsVerification (e) {
     let res
     let uid = await MysInfo.getUid(e, false)
+    if ((/^(1[0-9]|[6-9])[0-9]{8}/i).test(uid)) return e.reply('国际服不需要账号验证')
     let game = e.game
     let ck = await MysInfo.checkUidBing(uid, game)
     let mysApi = new MysApi(uid, ck, {}, '', '', 'bbs')
