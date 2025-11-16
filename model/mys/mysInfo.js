@@ -441,7 +441,8 @@ export default class MysInfo {
         break
       case 5003:
       case 10041:
-        if (!isTask) this.e.reply([`UID:${this.uid}，米游社账号异常，暂时无法查询，发送“#绑定设备帮助”查看如何绑定设备`, this.mysButton])
+        let gametype = this.e?.game == 'zzz' ? '%' : this.e?.game == 'sr' ? '*' : '#'
+        if (!isTask) this.e.reply([`UID:${this.uid}，米游社账号异常，暂时无法查询，可尝试“${gametype}米游社账号验证”或发送“#绑定设备帮助”查看如何绑定设备`, this.mysButton])
         break
       case 1034:
       case 10035:
