@@ -31,7 +31,7 @@ export function supportGuoba() {
       // 配置项 schemas
       schemas: [
         {
-          component: 'Divider',
+          component: 'SOFT_GROUP_BEGIN',
           label: '插件设置'
         },
         {
@@ -83,7 +83,7 @@ export function supportGuoba() {
           },
         },
         {
-          component: 'Divider',
+          component: 'SOFT_GROUP_BEGIN',
           label: 'api设置'
         },
         {
@@ -174,7 +174,7 @@ export function supportGuoba() {
           },
         },
         {
-          component: 'Divider',
+          component: 'SOFT_GROUP_BEGIN',
           label: 'GT-Manual设置'
         },
         {
@@ -233,7 +233,7 @@ export function supportGuoba() {
           },
         },
         {
-          component: 'Divider',
+          component: 'SOFT_GROUP_BEGIN',
           label: '游戏签到设置'
         },
         {
@@ -291,7 +291,7 @@ export function supportGuoba() {
           component: 'Switch',
         },
         {
-          component: 'Divider',
+          component: 'SOFT_GROUP_BEGIN',
           label: '社区签到设置'
         },
         {
@@ -344,7 +344,7 @@ export function supportGuoba() {
           component: 'Switch',
         },
         {
-          component: 'Divider',
+          component: 'SOFT_GROUP_BEGIN',
           label: '体力查询·推送设置'
         },
         {
@@ -433,7 +433,7 @@ export function supportGuoba() {
           },
         },
         {
-          component: 'Divider',
+          component: 'SOFT_GROUP_BEGIN',
           label: '禁用/解禁UID设置'
         },
         {
@@ -497,7 +497,7 @@ export function supportGuoba() {
           },
         },
         {
-          component: 'Divider',
+          component: 'SOFT_GROUP_BEGIN',
           label: '白名单设置'
         },
         {

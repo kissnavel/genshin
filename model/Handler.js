@@ -129,9 +129,16 @@ export default class Handler {
   async bbsVerification (e) {
     let res
     let uid = await MysInfo.getUid(e, false)
+    if (!uid) {
+      return e.reply('找不到uid，请：#刷新ck 或者：#扫码登录', true)
+    }
     if ((/^(1[0-9]|[6-9])[0-9]{8}/i).test(uid)) return e.reply('国际服不需要账号验证')
     let game = e.game
     let ck = await MysInfo.checkUidBing(uid, game)
+    ck = ck.ck
+    if (!ck) {
+      return e.reply(`uid:${uid}当前尚未绑定Cookie`)
+    }
     let mysApi = new MysApi(uid, ck, {}, '', '', 'bbs')
 
     try {
