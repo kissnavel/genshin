@@ -73,7 +73,7 @@ export default class apiTool {
           }
         },
         test_nine: {
-          url: `${this.api.signapi}`,
+          url: `${this.api.api}`,
           query: `gt=${data.gt}&challenge=${data.challenge}`
         },
         recognize: {

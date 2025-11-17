@@ -1,11 +1,7 @@
 #使用的平台，0：test_nine；1：ttocr.com；2：2captcha.com
 type: 1
-#签到使用的平台，0：test_nine；1：ttocr.com；2：2captcha.com
-signtype: 1
-#使用的api(ttocr、2captcha必填)，例：https://api.example.com/recognize
+#使用的api(test_nine、ttocr、2captcha必填)，例：https://api.example.com/recognize
 api: 
-#签到使用的api(test_nine必填)，例：https://api.example.com/recognize
-signapi: 
 #使用的resapi(ttocr、2captcha必填)，例：https://api.example.com/results
 resapi: 
 #api、resapi需要的key(ttocr、2captcha必填)，例: appkey=***

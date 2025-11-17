@@ -283,7 +283,7 @@ export default class MysSign extends base {
 
             let vall = new MysApi(this.mysApi.uid, this.mysApi.cookie, {}, '', '', 'all')
             let res; let retry = 0; let test_nine = sign
-            if (api.signtype == 0) {
+            if (api.type == 0) {
                 res = await vall.getData('test_nine', sign?.data)
                 if (res?.data?.validate) res = {
                     data: {
@@ -291,7 +291,7 @@ export default class MysSign extends base {
                         validate: res?.data?.validate
                     }
                 }
-            } else if (api.signtype == 1) {
+            } else if (api.type == 1) {
                 res = await vall.getData('signrecognize', sign.data)
                 if (res?.resultid) {
                     let results = res
@@ -303,7 +303,7 @@ export default class MysSign extends base {
                         retry++
                     }
                 }
-            } else if (api.signtype == 2) {
+            } else if (api.type == 2) {
                 res = await vall.getData('in', sign.data)
                 if (res?.request) {
                     let request = res

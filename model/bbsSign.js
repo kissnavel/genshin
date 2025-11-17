@@ -415,7 +415,7 @@ export default class BBsSign extends base {
         let vall = new MysApi(mysApi.uid, mysApi.cookie, {}, '', '', 'all')
         let res = await mysApi.getData('bbsGetCaptcha')
         let retry = 0; let test_nine = res
-        if (api.signtype == 0) {
+        if (api.type == 0) {
             res = await vall.getData('test_nine', res?.data)
             if (res?.data?.validate) res = {
                 data: {
@@ -423,7 +423,7 @@ export default class BBsSign extends base {
                     validate: res?.data?.validate
                 }
             }
-        } else if (api.signtype == 1) {
+        } else if (api.type == 1) {
             res = await vall.getData("signrecognize", res.data)
             if (res?.resultid) {
                 let results = res
@@ -435,7 +435,7 @@ export default class BBsSign extends base {
                     retry++
                 }
             }
-        } else if (api.signtype == 2) {
+        } else if (api.type == 2) {
             res = await vall.getData("in", res.data)
             if (res?.request) {
                 let request = res

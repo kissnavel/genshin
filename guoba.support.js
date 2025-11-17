@@ -99,30 +99,9 @@ export function supportGuoba() {
           },
         },
         {
-          field: 'api.signtype',
-          label: '签到使用的平台',
-          bottomHelpMessage: '0：test_nine；1：ttocr.com；2：2captcha.com',
-          component: 'InputNumber',
-          required: true,
-          componentProps: {
-            min: 0,
-            max: 2,
-            placeholder: '请输入类型',
-          },
-        },
-        {
           field: 'api.api',
           label: '使用的api',
-          bottomHelpMessage: 'ttocr、2captcha必填',
-          component: 'Input',
-          componentProps: {
-            placeholder: '例：https://api.example.com/recognize',
-          },
-        },
-        {
-          field: 'api.signapi',
-          label: '签到使用的api',
-          bottomHelpMessage: 'test_nine必填',
+          bottomHelpMessage: 'test_nine、ttocr、2captcha必填',
           component: 'Input',
           componentProps: {
             placeholder: '例：https://api.example.com/recognize',
