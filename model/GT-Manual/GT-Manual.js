@@ -24,7 +24,7 @@ export default class GT_Manual {
     this.app.get('/GTest/validate/:key', this.get_validate)
     this.app.use(this.invalid)
     this.app.use(this.error)
-    logger.mark(`[genshin]手动接口启动, http://${this.cfg.Host}:${this.cfg.Port}/GTest/register`)
+    logger.info(`[genshin]手动接口启动, http://${this.cfg.Host}:${this.cfg.Port}/GTest/register`)
   }
 
   index (req, res, next) {

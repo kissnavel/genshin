@@ -4,6 +4,10 @@ import Handler from './model/Handler.js'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'node:path'
 
+logger.info('*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*')
+logger.info('genshin 加载中')
+logger.info('仓库地址 https://github.com/kissnavel/genshin')
+
 if (!fs.existsSync(Cfg.file))
   fs.mkdirSync(Cfg.file)
 
@@ -43,7 +47,7 @@ try {
       }
     }
   }
-  logger.mark('[genshin]配置文件更新完成')
+  logger.info('[genshin]配置文件更新完成')
 } catch (error) {
   logger.error(error)
 }
@@ -65,6 +69,7 @@ if (!fs.existsSync(genshinPluginDir)) {
 }
 
 Cfg.startGT()
+logger.info('*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*')
 // 暂时仍保留全局的Gtest以兼容老版本调用，待Handler普及后删除
 global.Gtest = new Handler()
 
