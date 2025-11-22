@@ -1,23 +1,19 @@
 import plugin from '../../../lib/plugins/plugin.js'
 import common from '../../../lib/common/common.js'
 import fetch from 'node-fetch'
-import MysInfo from '../model/mys/mysInfo.js'
+import Cfg from '../model/Cfg.js'
 
 export class exchange extends plugin {
   constructor() {
     super({
       name: '兑换码',
-      dsc: '前瞻直播兑换码',
+      dsc: '国服前瞻直播兑换码',
       event: 'message',
-      priority: 1000,
+      priority: Cfg.getConfig('config').priority,
       rule: [
         {
           reg: /^(#|\*)?(原神|星铁|崩铁|崩三|崩坏三|崩坏3|绝区零)?(国服)?(直播|前瞻)?兑换码$/,
           fnc: 'getCode'
-        },
-        {
-          reg: '^#(原神|星铁|绝区零)?(兑换码使用|cdk-u).+',
-          fnc: 'useCode'
         }
       ]
     })
@@ -157,15 +153,6 @@ export class exchange extends plugin {
       if (result) {
         return result[1]
       }
-    }
-  }
-
-  // 兑换码使用
-  async useCode() {
-    const cdkCode = this.e.msg.replace(/#(原神|星铁|绝区零)?(兑换码使用|cdk-u)/, '').trim()
-    const res = await MysInfo.get(this.e, 'useCdk', { cdk: cdkCode })
-    if (res.retcode == 0) {
-      this.e.reply(`${res.data.msg}`)
     }
   }
 
