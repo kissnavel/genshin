@@ -5,7 +5,6 @@ import MysApi from './mys/mysApi.js'
 import base from './base.js'
 import moment from 'moment'
 import Cfg from './Cfg.js'
-import fs from 'node:fs'
 import _ from 'lodash'
 
 export default class Note extends base {
@@ -79,7 +78,7 @@ export default class Note extends base {
             qq: user_id,
             msg: "体力",
             isSr: false,
-            isZzz: false,
+            isZzz: false
           }
           let sendMsg = [segment.at(user_id), this.set.TaskMsg]
           let length = sendMsg.length
@@ -105,8 +104,8 @@ export default class Note extends base {
               if (!cks[g][uid]) continue
               let ck = cks[g][uid]
 
-              let { Data, User, Sign } = await this.noteData(ck, g)
-              if (Data?.retcode !== 0 || !User || !Sign) continue
+              let { Data, Sign } = await this.noteData(ck, g)
+              if (Data?.retcode !== 0 || !Sign) continue
 
               Resins[`${g}_${uid}`] = this.e.isZzz ? Data?.data.energy.progress.current : Data?.data[`current_${this.e.isSr ? 'stamina' : 'resin'}`]
               if (Number(Resins[`${g}_${uid}`]) >= Number(Resin)) {
@@ -117,7 +116,6 @@ export default class Note extends base {
                   quality: 80,
                   ...this.screenNote,
                   ...data,
-                  ...User,
                   ...Sign
                 }
                 imgs[`${g}_${uid}`] = await puppeteer.screenshot(`${data.gstempFile}dailyNote`, data)
@@ -141,7 +139,7 @@ export default class Note extends base {
 
   async getData(ck, game) {
     let res = await this.noteData(ck, game)
-    if (res?.Data?.retcode !== 0 || !res?.User || !res?.Sign) return false
+    if (res?.Data?.retcode !== 0 || !res?.Sign) return false
 
     this.e.isSr = game == 'sr' ? true : false
     this.e.isZzz = game == 'zzz' ? true : false
@@ -151,7 +149,6 @@ export default class Note extends base {
       quality: 80,
       ...this.screenNote,
       ...data,
-      ...res.User,
       ...res.Sign
     }
     let img = await puppeteer.screenshot(`${data.gstempFile}dailyNote`, data)
@@ -172,26 +169,13 @@ export default class Note extends base {
     if (Data?.retcode !== 0) return false
     await common.sleep(200)
 
-    let resUser = await mysApi.getData('UserGame')
-    resUser = await new MysInfo(this.e).checkCode(resUser, 'UserGame', mysApi, {}, true)
-    if (resUser?.retcode !== 0 || _.isEmpty(resUser?.data?.list)) return false
-    let User = resUser?.data?.list.find(item => item.game_uid === ck.uid)
-    if (User) {
-      resUser = {
-        game_uid: User.game_uid,
-        nickname: User.nickname,
-        level: User.level
-      }
-    }
-    await common.sleep(200)
-
     let signInfo = await mysApi.getData('sign_info')
     signInfo = await new MysInfo(this.e).checkCode(signInfo, 'sign_info', mysApi, {}, true)
     if (signInfo?.retcode !== 0) return false
     signInfo = signInfo?.data
     await common.sleep(200)
 
-    return { Data, User: resUser, Sign: signInfo }
+    return { Data, Sign: signInfo }
   }
 
   async noteZzz(res, uid) {
@@ -379,6 +363,7 @@ export default class Note extends base {
     }
 
     return {
+      uid,
       saveId: uid,
       resinMaxTime,
       resinMaxTimeMb2,
