@@ -105,7 +105,7 @@ export default class Note extends base {
               let ck = cks[g][uid]
 
               let { Data, Sign } = await this.noteData(ck, g)
-              if (Data?.retcode !== 0 || !Sign) continue
+              if (Data?.retcode !== 0 || _.isEmpty(res?.Sign)) continue
 
               Resins[`${g}_${uid}`] = this.e.isZzz ? Data?.data.energy.progress.current : Data?.data[`current_${this.e.isSr ? 'stamina' : 'resin'}`]
               if (Number(Resins[`${g}_${uid}`]) >= Number(Resin)) {
@@ -139,7 +139,7 @@ export default class Note extends base {
 
   async getData(ck, game) {
     let res = await this.noteData(ck, game)
-    if (res?.Data?.retcode !== 0 || !res?.Sign) return false
+    if (res?.Data?.retcode !== 0 || _.isEmpty(res?.Sign)) return false
 
     this.e.isSr = game == 'sr' ? true : false
     this.e.isZzz = game == 'zzz' ? true : false
@@ -172,10 +172,9 @@ export default class Note extends base {
     let signInfo = await mysApi.getData('sign_info')
     signInfo = await new MysInfo(this.e).checkCode(signInfo, 'sign_info', mysApi, {}, true)
     if (signInfo?.retcode !== 0) return false
-    signInfo = signInfo?.data
     await common.sleep(200)
 
-    return { Data, Sign: signInfo }
+    return { Data, Sign: signInfo?.data || {} }
   }
 
   async noteZzz(res, uid) {
