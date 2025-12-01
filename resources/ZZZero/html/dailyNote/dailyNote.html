@@ -15,8 +15,8 @@
       <img class="logos" src="{{pluResPath}}img/dailyNote/right.png">
       <h1>UID: {{uid}}</h1>
       <p class="date">{{dayMb2}}</p>
-      <p style="color: {{if is_sign==true}}#DE4848{{/if}}">
-        签到福利: {{if is_sign==true}}已{{else}}尚未{{/if}}签到
+      <p style="color: {{if !is_sign}}#DE4848{{/if}}">
+        签到福利: {{if is_sign}}已{{else}}尚未{{/if}}签到
       </p>
     </div>
     <div class="resin">

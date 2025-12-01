@@ -24,9 +24,13 @@
               <span class="recovery-label">剩余恢复时间</span>
               <span class="recovery-value {{ daily.stamina_recover_time === 0 ? 'full' : '' }}">{{daily.stamina_recover_time === 0 ? '已全部恢复' : daily.stamina_recover_time}}</span>
             </div>
+            <div class="recovery-section">
+              <span class="recovery-label">每日历练值</span>
+              <span class="recovery-value">{{daily.current_train_score}} / {{daily.max_train_score}}</span>
+            </div>
             <div class="train-section">
-              <span class="train-label">每日历练值</span>
-              <span class="train-value">{{daily.current_train_score}} / {{daily.max_train_score}}</span>
+              <span class="train-label">签到福利</span>
+              <span class="train-value">{{if Sign.is_sign}}已{{else}}尚未{{/if}}签到</span>
             </div>
           </div>
         </div>
