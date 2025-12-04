@@ -22,11 +22,11 @@
           <div class="stamina-train-info">
             <div class="recovery-section">
               <span class="recovery-label">剩余恢复时间</span>
-              <span class="recovery-value {{ daily.stamina_recover_time === 0 ? 'full' : '' }}">{{daily.stamina_recover_time === 0 ? '已全部恢复' : daily.stamina_recover_time}}</span>
+              <span class="recovery-value {{ daily.stamina_recover_time === '已全部恢复' ? 'full' : '' }}">{{daily.stamina_recover_time}}</span>
             </div>
             <div class="recovery-section">
               <span class="recovery-label">每日历练值</span>
-              <span class="recovery-value">{{daily.current_train_score}} / {{daily.max_train_score}}</span>
+              <span class="recovery-value">{{daily.current_train_score >= daily.max_train_score ? 'completed' : ''}}">{{daily.current_train_score >= daily.max_train_score ? '奖励条件已达成' : daily.current_train_score + ' / ' + daily.max_train_score}}</span>
             </div>
             <div class="train-section">
               <span class="train-label">签到福利</span>
@@ -35,34 +35,79 @@
           </div>
         </div>
 
-        <div class="section-box endless-box">
-          <div class="section-title">超弦空间</div>
-          <div class="section-status">{{daily.greedy_endless.is_open ? '已开启' : '未开启'}}</div>
-        </div>
-
-       <div class="section-box battle-box">
-        <div class="section-header">
-          <div class="section-title">记忆战场</div>
-        </div>
-        <div class="rewards-section">
-          <div class="reward-item">
-            <span class="reward-value">{{daily?.battle_field?.cur_reward || '0'}} / {{daily?.battle_field?.max_reward || '11'}}</span>
-            <span class="reward-label">挑战奖励</span>
+        <div class="section-box battle-box">
+          <div class="section-header">
+            <div class="section-title">量子流形</div>
           </div>
-          <div class="reward-separator"></div> <!-- 分隔线 -->
-          <div class="reward-item">
-            <span class="reward-value">{{daily?.battle_field?.cur_sss_reward || '0'}} / {{daily?.battle_field?.max_sss_reward || '10'}}</span>
-            <span class="reward-label">SSS奖励</span>
+          <div class="rewards-section">
+            <div class="reward-item">
+              <span class="reward-value">{{daily?.greedy_endless?.schedule_end || '暂无数据'}}</span>
+              <span class="reward-label">剩余时间</span>
+            </div>
+            <div class="reward-separator"></div> <!-- 分隔线 -->
+            <div class="reward-item">
+              <span class="reward-value">{{daily?.greedy_endless?.cur_reward || '0'}}/{{daily?.greedy_endless?.max_reward || '0'}}</span>
+              <span class="reward-label">挑战奖励</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="section-box god-war-box">
-        <div class="section-title">往世乐土</div>
-        <div class="reward-item single-reward">
-          <span class="reward-value">{{daily.god_war.cur_reward || '0'}} / {{daily.god_war.max_reward || '20000'}}</span>
+        <div class="section-box battle-box">
+          <div class="section-header">
+            <div class="section-title">超弦空间</div>
+          </div>
+          <div class="rewards-section">
+            <div class="reward-item">
+              <span class="reward-value">{{daily?.ultra_endless?.schedule_end || '暂无数据'}}</span>
+              <span class="reward-label">剩余时间</span>
+            </div>
+            <div class="reward-separator"></div> <!-- 分隔线 -->
+            <div class="reward-item">
+              <span class="reward-value">{{daily?.ultra_endless?.challenge_score || '0'}}</span>
+              <span class="reward-label">当前积分</span>
+            </div>
+          </div>
         </div>
-     </div>
+
+        <div class="section-box battle-box">
+          <div class="section-header">
+            <div class="section-title">记忆战场</div>
+          </div>
+          <div class="rewards-section">
+            <div class="reward-item">
+              <span class="reward-value">{{daily?.battle_field?.schedule_end || '暂无数据'}}</span>
+              <span class="reward-label">剩余时间</span>
+            </div>
+            <div class="reward-separator"></div> <!-- 分隔线 -->
+            <div class="reward-item">
+              <span class="reward-value">{{daily?.battle_field?.cur_reward || '0'}}/{{daily?.battle_field?.max_reward || '0'}}</span>
+              <span class="reward-label">挑战奖励</span>
+            </div>
+            <div class="reward-separator"></div> <!-- 分隔线 -->
+            <div class="reward-item">
+              <span class="reward-value">{{daily?.battle_field?.cur_sss_reward || '0'}}/{{daily?.battle_field?.max_sss_reward || '0'}}</span>
+              <span class="reward-label">SSS奖励</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-box battle-box">
+          <div class="section-header">
+            <div class="section-title">往世乐土</div>
+          </div>
+          <div class="rewards-section">
+            <div class="reward-item">
+              <span class="reward-value">{{daily?.god_war?.schedule_end || '暂无数据'}}</span>
+              <span class="reward-label">剩余时间</span>
+            </div>
+            <div class="reward-separator"></div> <!-- 分隔线 -->
+            <div class="reward-item">
+              <span class="reward-value">{{daily?.god_war?.cur_reward || '0'}}/{{daily?.god_war?.max_reward || '20000'}}</span>
+              <span class="reward-label">当前积分</span>
+            </div>
+          </div>
+        </div>
+
       </div>
       </div>
     </div>
