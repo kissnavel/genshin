@@ -26,11 +26,11 @@
             </div>
             <div class="recovery-section">
               <span class="recovery-label">每日历练值</span>
-              <span class="recovery-value {{daily.current_train_score >= daily.max_train_score ? 'completed' : ''}}">{{daily.current_train_score >= daily.max_train_score ? '奖励条件已达成' : daily.current_train_score + ' / ' + daily.max_train_score}}</span>
+              <span class="recovery-value {{daily.current_train_score >= daily.max_train_score ? 'full' : ''}}">{{daily.current_train_score >= daily.max_train_score ? '奖励条件已达成' : daily.current_train_score + ' / ' + daily.max_train_score}}</span>
             </div>
             <div class="train-section">
               <span class="train-label">签到福利</span>
-              <span class="train-value">{{if Sign.is_sign}}已{{else}}尚未{{/if}}签到</span>
+              <span class="train-value {{Sign.is_sign === '已签到' ? 'full' : '' }}">{{if Sign.is_sign}}已{{else}}尚未{{/if}}签到</span>
             </div>
           </div>
         </div>

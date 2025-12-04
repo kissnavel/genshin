@@ -152,6 +152,10 @@ body {
     color: #666;
 }
 
+.train-value.full {
+    color: #7cba23;
+}
+
 .section-box {
     background-color: #F4F3F8;
     padding: 12px 15px 12px 15px;
