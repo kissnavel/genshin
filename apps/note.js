@@ -8,7 +8,7 @@ export class note extends plugin {
     constructor() {
         super({
             name: 'genshin·体力',
-            dsc: '',
+            dsc: '多体力查询',
             event: 'message',
             priority: Cfg.getConfig('config').priority,
             rule: [

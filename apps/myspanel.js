@@ -12,7 +12,7 @@ export class myspanel extends plugin {
     constructor() {
         super({
             name: 'genshin·米游社更新面板',
-            dsc: '',
+            dsc: '获取米游社角色数据',
             event: 'message',
             priority: Cfg.getConfig('config').priority,
             rule: [{

@@ -5,6 +5,8 @@
 
 2、本仓库已整合：“<a href="https://github.com/kissnavel/loveMys">loveMys</a>”仓库的全部功能。
 
+3、本仓库已整合：“<a href="https://github.com/kissnavel/SR-plugin">SR-plugin</a>”仓库的深渊功能。
+
 ## 下面是原仓库说明
 
 | 米游社查询指令 | 说明|

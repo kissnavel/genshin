@@ -7,7 +7,7 @@ export class config extends plugin {
     constructor() {
         super({
             name: 'genshin·配置',
-            dsc: '',
+            dsc: '签到等部分功能的配置',
             event: 'message',
             priority: Cfg.getConfig('config').priority,
             rule: [

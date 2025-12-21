@@ -491,6 +491,38 @@ export default class apiTool {
           url: `${host}event/rpgcalc/avatar/detail`,
           query: `game=hkrpg&lang=zh-cn&item_id=${data.avatar_id}&tab_from=${data.tab_from}&change_target_level=0&uid=${this.uid}&region=${this.server}`
         },
+        srChallenge: {
+          url: `${hostRecord}game_record/app/hkrpg/api/challenge`,
+          query: `isPrev=&need_all=true&role_id=${this.uid}&schedule_type=${data.schedule_type || '1'}&server=${this.server}`
+        },
+        srChallengeSimple: {
+          url: `${hostRecord}game_record/app/hkrpg/api/challenge`,
+          query: `role_id=${this.uid}&schedule_type=${data.schedule_type || '1'}&server=${this.server}`
+        },
+        srChallengeStory: {
+          url: `${hostRecord}game_record/app/hkrpg/api/challenge_story`,
+          query: `isPrev=&need_all=true&role_id=${this.uid}&schedule_type=${data.schedule_type || '1'}&server=${this.server}`
+        },
+        srChallengeStorySimple: {
+          url: `${hostRecord}game_record/app/hkrpg/api/challenge_story`,
+          query: `role_id=${this.uid}&schedule_type=${data.schedule_type || '1'}&server=${this.server}`
+        },
+        srChallengeBoss: {
+          url: `${hostRecord}game_record/app/hkrpg/api/challenge_boss`,
+          query: `isPrev=&need_all=true&role_id=${this.uid}&schedule_type=${data.schedule_type || '1'}&server=${this.server}`
+        },
+        srChallengeBossSimple: {
+          url: `${hostRecord}game_record/app/hkrpg/api/challenge_boss`,
+          query: `role_id=${this.uid}&schedule_type=${data.schedule_type || '1'}&server=${this.server}`
+        },
+        srChallengePeak: {
+          url: `${hostRecord}game_record/app/hkrpg/api/challenge_peak`,
+          query: `isPrev=&need_all=true&role_id=${this.uid}&schedule_type=${data.schedule_type || '1'}&server=${this.server}`
+        },
+        srChallengePeakSimple: {
+          url: `${hostRecord}game_record/app/hkrpg/api/challenge_peak`,
+          query: `role_id=${this.uid}&schedule_type=${data.schedule_type || '1'}&server=${this.server}`
+        },
         /**使用兑换码 目前仅限国际服,来自于国服的uid请求已在mysInfo.js的init方法提前拦截 */
         useCdk: {
           url: 'https://sg-hkrpg-api.hoyolab.com/common/apicdkey/api/webExchangeCdkeyHyl',

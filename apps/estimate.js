@@ -8,7 +8,7 @@ export class estimate extends plugin {
   constructor(e) {
     super({
       name: 'genshin·预估',
-      dsc: '',
+      dsc: '原石、星琼预估',
       event: 'message',
       priority: Cfg.getConfig('config').priority,
       rule: [

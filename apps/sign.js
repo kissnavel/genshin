@@ -11,7 +11,7 @@ export class sign extends plugin {
     constructor() {
         super({
             name: 'genshin·签到',
-            dsc: '',
+            dsc: '游戏及社区签到',
             event: 'message',
             priority: Cfg.getConfig('config').priority,
             rule: [
