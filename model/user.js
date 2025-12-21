@@ -160,7 +160,12 @@ export default class User extends base {
         '【*星琼】查看星琼月历',
         '【*星琼统计】星琼统计数据',
         '【*练度统计】角色列表数据',
-        '【*面板】【*更新面板】面板信息'
+        '【*面板】【*更新面板】面板信息',
+        '【*忘却】忘却之庭信息',
+        '【*虚构】虚构叙事信息',
+        '【*末日】末日幻影信息',
+        '【*深渊】全部深渊信息',
+        '【*异相】异相仲裁信息'
       )
       button.push([
         { text: '*uid', callback: '*uid' },
@@ -174,6 +179,13 @@ export default class User extends base {
         { text: '*练度统计', callback: '*练度统计' },
         { text: '*面板', callback: '*面板' },
         { text: '*更新面板', callback: '*更新面板' }
+      ], [
+        { text: '*忘却', callback: '*忘却' },
+        { text: '*虚构', callback: '*虚构' },
+        { text: '*末日', callback: '*末日' }
+      ], [
+        { text: '*深渊', callback: '*深渊' },
+        { text: '*异相', callback: '*异相' }
       ])
     }
     if (mys.hasGame('zzz')) {
