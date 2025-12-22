@@ -12,32 +12,7 @@ export default class srChallenge extends base {
 
   static async get (e, challengeType, all) {
     let challenge = new srChallenge()
-    if (all !== true) {
-      return await challenge.queryChallenge(e, challengeType)
-    } else {
-      let uid = await challenge.userUid(e)
-      let ck = await challenge.userCk(e, uid)
-      let game = e.game
-      let api = new MysApi(uid, ck, {}, '', '', game)
-      let device_fp = await api.getData('getFp')
-      let hall = await challenge.queryChallenge(e, 2, true, uid, ck, device_fp)
-      if (!hall) return false
-      let story = await challenge.queryChallenge(e, 1, true, uid, ck, device_fp)
-      if (!story) return false
-      let boss = await challenge.queryChallenge(e, 0, true, uid, ck, device_fp)
-      if (!boss) return false
-
-      let screenData = challenge.allData()
-      let res = {
-        ...screenData,
-        saveId: e.user_id,
-        quality: 80,
-        hall,
-        story,
-        boss
-      }
-      return res
-    }
+    return await challenge.allData(e, challengeType, all)
   }
 
   async queryChallenge (e, challengeType, all, uid, ck, device_fp) {
@@ -166,18 +141,7 @@ export default class srChallenge extends base {
       })
     }
 
-    let screenData = this.screenData
-    if (challengeType == 3) {
-      screenData.pluResPath = `${this._path}/plugins/genshin/resources/StarRail/`
-      screenData.tplFile = `${this._path}/plugins/genshin/resources/StarRail/html/challenge/index_peak.html`
-    } else {
-      screenData.pluResPath = `${this._path}/plugins/genshin/resources/StarRail/`
-      screenData.tplFile = `${this._path}/plugins/genshin/resources/StarRail/html/challenge/index.html`
-    }
     return {
-      ...screenData,
-      saveId: e.user_id,
-      quality: 80,
       data,
       uid,
       challengeType,
@@ -244,11 +208,48 @@ export default class srChallenge extends base {
     return ck
   }
 
-  allData () {
+  async allData (e, challengeType, all) {
+    this.e.isSr = true
     let screenData = this.screenData
-    screenData.pluResPath = `${this._path}/plugins/genshin/resources/StarRail/`
-    screenData.tplFile = `${this._path}/plugins/genshin/resources/StarRail/html/challenge/index_all.html`
+    let data
+    if (all !== true) {
+      data = await this.queryChallenge(e, challengeType)
 
-    return screenData
+      if (challengeType == 3) {
+        screenData.tplFile = `${this._path}/plugins/genshin/resources/StarRail/html/challenge/index_peak.html`
+      } else {
+        screenData.tplFile = `${this._path}/plugins/genshin/resources/StarRail/html/challenge/index.html`
+      }
+      data = {
+        ...data,
+        ...screenData,
+        saveId: data.uid,
+        quality: 80
+      }
+    } else {
+      let uid = await this.userUid(e)
+      let ck = await this.userCk(e, uid)
+      let game = e.game
+      let api = new MysApi(uid, ck, {}, '', '', game)
+      let device_fp = await api.getData('getFp')
+      let hall = await this.queryChallenge(e, 2, true, uid, ck, device_fp)
+      if (!hall) return false
+      let story = await this.queryChallenge(e, 1, true, uid, ck, device_fp)
+      if (!story) return false
+      let boss = await this.queryChallenge(e, 0, true, uid, ck, device_fp)
+      if (!boss) return false
+
+      screenData.tplFile = `${this._path}/plugins/genshin/resources/StarRail/html/challenge/index_all.html`
+      data = {
+        ...screenData,
+        saveId: uid,
+        quality: 80,
+        hall,
+        story,
+        boss
+      }
+    }
+
+    return data
   }
 }

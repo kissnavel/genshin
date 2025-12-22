@@ -43,7 +43,7 @@ export class Challenge extends plugin {
     await e.reply('正在获取忘却之庭数据，请稍后……')
     let res = await srChallenge.get(e, 2)
     if (!res) return false
-    let img = await puppeteer.screenshot('StarRail/challenge', res)
+    let img = await puppeteer.screenshot(`${res.srtempFile}challenge`, res)
     return await e.reply(img)
   }
 
@@ -51,7 +51,7 @@ export class Challenge extends plugin {
     await e.reply('正在获取虚构叙事数据，请稍后……')
     let res = await srChallenge.get(e, 1)
     if (!res) return false
-    let img = await puppeteer.screenshot('StarRail/challenge', res)
+    let img = await puppeteer.screenshot(`${res.srtempFile}challenge`, res)
     return await e.reply(img)
   }
 
@@ -59,7 +59,7 @@ export class Challenge extends plugin {
     await e.reply('正在获取末日幻影数据，请稍后……')
     let res = await srChallenge.get(e, 0)
     if (!res) return false
-    let img = await puppeteer.screenshot('StarRail/challenge', res)
+    let img = await puppeteer.screenshot(`${res.srtempFile}challenge`, res)
     return await e.reply(img)
   }
 
@@ -67,7 +67,7 @@ export class Challenge extends plugin {
     await e.reply('正在获取异相仲裁数据，请稍后……')
     let res = await srChallenge.get(e, 3)
     if (!res) return false
-    let img = await puppeteer.screenshot('StarRail/challenge', res)
+    let img = await puppeteer.screenshot(`${res.srtempFile}challenge`, res)
     return await e.reply(img)
   }
 
@@ -75,7 +75,7 @@ export class Challenge extends plugin {
     await e.reply('正在获取全部深渊数据，请稍后……')
     let res = await srChallenge.get(e, '', true)
     if (!res) return false
-    let img = await puppeteer.screenshot('StarRail/challenge', res)
+    let img = await puppeteer.screenshot(`${res.srtempFile}challenge`, res)
     return await e.reply(img)
   }
 
@@ -83,7 +83,7 @@ export class Challenge extends plugin {
     await e.reply('正在获取最新深渊数据，请稍后……')
     let res = await srChallenge.get(e, this.getCurrentChallengeType())
     if (!res) return false
-    let img = await puppeteer.screenshot('StarRail/challenge', res)
+    let img = await puppeteer.screenshot(`${res.srtempFile}challenge`, res)
     return await e.reply(img)
   }
 
