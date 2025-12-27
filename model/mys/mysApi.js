@@ -176,8 +176,8 @@ export default class MysApi {
     return isWd ? 'cn_prod_gf01' : (isZzz || isSr) ? 'prod_gf_cn' : 'cn_gf01'// 官服
   }
 
-  async getData(type, data = { headers: {} }, cached = false, game = '') {
-    if (!this.game == 'bbs') {
+  async getData(type, data = { headers: {} }, cached = false) {
+    if (this.game !== 'bbs') {
       if (this.cookie.ltuid) {
         let bindInfo = await redis.get(`genshin:device_fp:${this.cookie.ltuid}:bind`)
         if (bindInfo) {
@@ -220,7 +220,6 @@ export default class MysApi {
       if (type === 'getFp' && !data?.Getfp) return this._device_fp
     }
 
-    if (game) this.game = game
     let { url, headers, body, config } = this.getUrl(type, data)
 
     if (!url) return false
