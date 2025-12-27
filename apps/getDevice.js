@@ -48,7 +48,8 @@ export class getDevice extends plugin {
   async toBindDevice() {
     const uid = await redis.get(`genshin:getDevice:${this.e.user_id}:uid`)
     const game = await redis.get(`genshin:getDevice:${this.e.user_id}:game`)
-    const ck = await MysInfo.checkUidBing(uid, game)
+    let ck = await MysInfo.checkUidBing(uid, game)
+    ck = ck.ck
     let ltuid = ck.match(/ltuid=(\d+)/)
     ltuid = ltuid[1]
     if (!ltuid) {
@@ -108,8 +109,10 @@ export class getDevice extends plugin {
     const uid = await MysInfo.getUid(e, false)
     if (!uid) return false
     if (/^(18|[6-9])[0-9]{8}/i.test(uid)) return false
-    const ck = await MysInfo.checkUidBing(uid, e)
-    const ltuid = ck.ltuid
+    let ck = await MysInfo.checkUidBing(uid, e)
+    ck = ck.ck
+    let ltuid = ck.match(/ltuid=(\d+)/)
+    ltuid = ltuid[1]
     await redis.del(`genshin:device_fp:${ltuid}:fp`)
     await redis.del(`genshin:device_fp:${ltuid}:bind`)
     await redis.del(`genshin:device_fp:${ltuid}:id`)
