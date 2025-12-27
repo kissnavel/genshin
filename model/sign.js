@@ -191,7 +191,7 @@ export default class MysSign extends base {
 
         /** 签到 */
 
-        let res = await this.bbsSign(name, game)
+        let res = await this.bbsSign(name)
 
         if (res) {
             let totalSignDay = this.signInfo.total_sign_day
@@ -259,7 +259,7 @@ export default class MysSign extends base {
         redis.setEx(this.key, end, String(day))
     }
 
-    async bbsSign(name, game) {
+    async bbsSign(name) {
         this.signApi = true
         let api = Cfg.getConfig('api')
         await common.sleep(3000)

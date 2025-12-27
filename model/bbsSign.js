@@ -135,6 +135,7 @@ export default class BBsSign extends base {
                         }
                     }
                 }
+                this.device_fp = device_fp
                 forum = {
                     ...data,
                     ...forum,
@@ -413,7 +414,7 @@ export default class BBsSign extends base {
     async bbsGeetest(mysApi, type = "", data = {}) {
         let api = Cfg.getConfig('api')
         let vall = new MysApi(mysApi.uid, mysApi.cookie, {}, '', '', 'all')
-        let res = await mysApi.getData('bbsGetCaptcha')
+        let res = await mysApi.getData('bbsGetCaptcha', { headers: { 'x-rpc-device_fp': this.device_fp } })
         let retry = 0; let test_nine = res
         if (api.type == 0) {
             res = await vall.getData('test_nine', res?.data)
@@ -457,6 +458,7 @@ export default class BBsSign extends base {
                             ...data,
                             headers: {
                                 "x-rpc-challenge": res["data"]["challenge"],
+                                "x-rpc-device_fp": this.device_fp
                             }
                         })
                 } else {
