@@ -3,7 +3,8 @@ import MysApi from './mys/mysApi.js'
 
 export default class getDeviceFp {
   static async Fp(uid, ck, game, biz) {
-    let ltuid = ck.ltuid
+    let ltuid = ck.match(/ltuid=(\d+)/)
+    ltuid = ltuid[1]
     let mysapi = new MysApi(uid, ck, { game }, '', biz)
     let deviceFp = await redis.get(`genshin:device_fp:${ltuid}:fp`)
     let data = {}

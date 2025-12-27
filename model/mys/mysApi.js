@@ -176,10 +176,13 @@ export default class MysApi {
     return isWd ? 'cn_prod_gf01' : (isZzz || isSr) ? 'prod_gf_cn' : 'cn_gf01'// 官服
   }
 
-  async getData(type, data = { headers: {} }, cached = false) {
+  async getData(type, data = {}, cached = false) {
     if (this.game !== 'bbs') {
-      if (this.cookie.ltuid) {
-        let bindInfo = await redis.get(`genshin:device_fp:${this.cookie.ltuid}:bind`)
+      if (!data?.headers) data.headers = {}
+      let ltuid = this.cookie.match(/ltuid=(\d+)/)
+      ltuid = ltuid[1]
+      if (ltuid) {
+        let bindInfo = await redis.get(`genshin:device_fp:${ltuid}:bind`)
         if (bindInfo) {
           try {
             bindInfo = JSON.parse(bindInfo)
@@ -202,7 +205,7 @@ export default class MysApi {
           data.deviceFp = deviceFp
           data.headers['x-rpc-device_fp'] = deviceFp
         }
-        const device_id = await redis.get(`genshin:device_fp:${this.cookie.ltuid}:id`)
+        const device_id = await redis.get(`genshin:device_fp:${ltuid}:id`)
         if (device_id) {
           data.deviceId = device_id
           data.headers['x-rpc-device_id'] = device_id
