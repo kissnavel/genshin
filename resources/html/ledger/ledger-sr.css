@@ -27,7 +27,7 @@ body {
   width: 1200px;
   height: 1835px;
   background-color: #f5f6fb;
-  background-image: url("../../StarRail/img/note/bg.png");
+  background-image: url("../../StarRail/img/dailyNote/bg.png");
 }
 
 .uid {
@@ -39,7 +39,7 @@ body {
   flex-direction: column;
   margin-top: 195px;
   margin-left: 50px;
-  background-image: url('../../StarRail/img/note/uidbg.png');
+  background-image: url('../../StarRail/img/dailyNote/uidbg.png');
 }
 
 .uid_item {
