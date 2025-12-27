@@ -319,7 +319,7 @@ export default class MysSign extends base {
 
             try {
                 if (res?.data?.validate || res?.request?.geetest_validate) {
-                    sign = await this.mysApi.getData('sign', res?.data || res?.request, false, game)
+                    sign = await this.mysApi.getData('sign', res?.data || res?.request, false)
 
                     if (sign.data?.gt) {
                         logger.mark(`[${name}签到失败]${this.log}：${sign.message} 第${this.ckNum}个`)

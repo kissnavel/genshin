@@ -177,7 +177,7 @@ export default class MysApi {
   }
 
   async getData(type, data = {}, cached = false) {
-    if (this.game !== 'bbs') {
+    if (!['bbs', 'all'].includes(this.game)) {
       if (!data?.headers) data.headers = {}
       let ltuid = this.cookie.match(/ltuid=(\d+)/)
       ltuid = ltuid[1]
