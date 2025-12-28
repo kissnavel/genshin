@@ -55,7 +55,7 @@ export default class Handler {
       let headers = { 'x-rpc-device_fp': deviceFp, 'x-rpc-challenge_game': challenge_game }
       let app_key = game == 'zzz' ? 'game_record_zzz' : game == 'sr' ? 'hkrpg_game_record' : ''
 
-      res = await vali.getData(retcode === 10035 ? 'createGeetest' : 'createVerification', { headers, app_key })
+      res = await vali.getData([5003, 10041].includes(retcode) ? 'bbsGetCaptcha' : retcode === 10035 ? 'createGeetest' : 'createVerification', { headers, app_key })
       if (!res || res?.retcode !== 0) {
         return { data: null, message: '未知错误，可能为cookie失效', retcode: 10103 }
       }
@@ -96,17 +96,17 @@ export default class Handler {
         }
       }
       if (res?.data?.validate || res?.request?.geetest_validate) {
-        res = await vali.getData(retcode === 10035 ? 'verifyGeetest' : 'verifyVerification', {
+        res = await vali.getData([5003, 10041].includes(retcode) ? 'bbsCaptchaVerify' : retcode === 10035 ? 'verifyGeetest' : 'verifyVerification', {
           ...res?.data ? res.data : res.request,
           headers,
           app_key
         })
       } else {
         if ([2, 0].includes(this.apiCfg.GtestType)) {
-          if (this.apiCfg.GtestType == 2) res = await vali.getData(retcode === 10035 ? 'createGeetest' : 'createVerification', { headers, app_key })
+          if (this.apiCfg.GtestType == 2) res = await vali.getData([5003, 10041].includes(retcode) ? 'bbsGetCaptcha' : retcode === 10035 ? 'createGeetest' : 'createVerification', { headers, app_key })
           res = await this.Manual_geetest(e, res?.data)
           if (res?.data?.validate || res?.data?.geetest_validate) {
-            res = await vali.getData(retcode === 10035 ? 'verifyGeetest' : 'verifyVerification', {
+            res = await vali.getData([5003, 10041].includes(retcode) ? 'bbsCaptchaVerify' : retcode === 10035 ? 'verifyGeetest' : 'verifyVerification', {
               ...res.data,
               headers,
               app_key
@@ -124,95 +124,6 @@ export default class Handler {
       logger.error(error)
     }
     return { data: null, message: '验证码失败', retcode: retcode }
-  }
-
-  async bbsVerification (e) {
-    let res
-    let uid = await MysInfo.getUid(e, false)
-    if (!uid) {
-      return e.reply('找不到uid，请：#刷新ck 或者：#扫码登录', true)
-    }
-    if ((/^(1[0-9]|[6-9])[0-9]{8}/i).test(uid)) return e.reply('国际服不需要账号验证')
-    let game = e.game
-    let ck = await MysInfo.checkUidBing(uid, game)
-    ck = ck.ck
-    if (!ck) {
-      return e.reply(`uid:${uid}当前尚未绑定Cookie`)
-    }
-    let mysApi = new MysApi(uid, ck, {}, '', '', 'bbs')
-
-    try {
-      let vali = new MysApi(uid, ck, {}, '', '', 'all')
-      let { deviceFp } = await getDeviceFp.Fp(uid, ck, game)
-      let headers = { 'x-rpc-device_fp': deviceFp }
-
-      res = await mysApi.getData('bbsGetCaptcha', { headers })
-      if (!res || res?.retcode !== 0) {
-        return { data: null, message: '未知错误，可能为cookie失效', retcode: 10103 }
-      }
-
-      let test_nine = res
-      let retry = 0
-      if (this.apiCfg.type == 0) {
-        if ([2, 1].includes(this.apiCfg.GtestType)) res = await vali.getData('test_nine', res?.data)
-        if (res?.data?.validate) res = {
-          data: {
-            challenge: test_nine?.data?.challenge,
-            validate: res?.data?.validate
-          }
-        }
-      } else if (this.apiCfg.type == 1) {
-        if ([2, 1].includes(this.apiCfg.GtestType)) res = await vali.getData('recognize', res?.data)
-        if (res?.resultid) {
-          let results = res
-          await common.sleep(5000)
-          res = await vali.getData('results', results)
-          while ((res?.status == 2) && retry < 10) {
-            await common.sleep(5000)
-            res = await vali.getData('results', results)
-            retry++
-          }
-        }
-      } else if (this.apiCfg.type == 2) {
-        if ([2, 1].includes(this.apiCfg.GtestType)) res = await vali.getData('in', res?.data)
-        if (res?.request) {
-          let request = res
-          await common.sleep(5000)
-          res = await vali.getData('res', request)
-          while ((res?.request == 'CAPCHA_NOT_READY') && retry < 10) {
-            await common.sleep(5000)
-            res = await vali.getData('res', request)
-            retry++
-          }
-        }
-      }
-      if (res?.data?.validate || res?.request?.geetest_validate) {
-        res = await mysApi.getData('bbsCaptchaVerify', {
-          ...res?.data ? res.data : res.request,
-          headers
-        })
-      } else {
-        if ([2, 0].includes(this.apiCfg.GtestType)) {
-          if (this.apiCfg.GtestType == 2) res = await mysApi.getData('bbsGetCaptcha', { headers })
-          res = await this.Manual_geetest(e, res?.data)
-          if (res?.data?.validate || res?.data?.geetest_validate) {
-            res = await mysApi.getData('bbsCaptchaVerify', {
-              ...res.data,
-              headers
-            })
-          } else {
-            return e.reply('米游社账号验证失败')
-          }
-        } else {
-          return e.reply('米游社账号验证失败')
-        }
-      }
-
-      if (res?.data?.challenge) return e.reply('米游社账号验证成功')
-    } catch (error) {
-      logger.error(error)
-    }
-    return e.reply('米游社账号验证失败')
   }
 
   /**

@@ -441,14 +441,11 @@ export default class MysInfo {
         break
       case 5003:
       case 10041:
-        let gametype = this.e?.game == 'zzz' ? '%' : this.e?.game == 'sr' ? '*' : '#'
-        if (!isTask) this.e.reply([`UID:${this.uid}，米游社账号异常，暂时无法查询，可尝试“${gametype}米游社账号验证”或发送“#绑定设备帮助”查看如何绑定设备`, this.mysButton])
-        break
       case 1034:
       case 10035:
         let retry = 0
         res = await this.geetest(type, mysApi, data, res.retcode)
-        while ((res?.retcode == 1034 || res?.retcode == 10035) && retry < Cfg.getConfig('config').retrytime) {
+        while ([1034, 10035, 5003, 10041].includes(res?.retcode) && retry < Cfg.getConfig('config').retrytime) {
           res = await this.geetest(type, mysApi, data, res?.retcode)
           retry++
         }
@@ -461,9 +458,11 @@ export default class MysInfo {
             logger.mark(`[米游社查询][uid:${this.uid}][qq:${this.userId}] 遇到验证码，尝试调用 Handler mys.req.err`)
             res = await handler.call('mys.req.err', this.e, { mysApi, type, res, data, mysInfo: this }) || res
           }
-          if (!res || res?.retcode == 1034 || res?.retcode == 10035) {
+          if (!res || [1034, 10035].includes(res?.retcode)) {
             logger.mark(`[米游社查询失败][uid:${this.uid}][qq:${this.userId}] 遇到验证码`)
             if (!isTask) this.e.reply([`UID:${this.uid}，米游社查询遇到验证码，请稍后再试`, this.mysButton])
+          } else if (!res || [5003, 10041].includes(res?.retcode)) {
+            if (!isTask) this.e.reply([`UID:${this.uid}，米游社账号异常，暂时无法查询，发送“#绑定设备帮助”查看如何绑定设备`, this.mysButton])
           }
         }
         break
@@ -497,7 +496,7 @@ export default class MysInfo {
       let headers = { 'x-rpc-device_fp': deviceFp, 'x-rpc-challenge_game': challenge_game }
       let app_key = mysApi.game == 'zzz' ? 'game_record_zzz' : mysApi.game == 'sr' ? 'hkrpg_game_record' : ''
 
-      res = await vali.getData(retcode == 10035 ? "createGeetest" : "createVerification", { headers, app_key })
+      res = await vali.getData([5003, 10041].includes(retcode) ? "bbsGetCaptcha" : retcode == 10035 ? "createGeetest" : "createVerification", { headers, app_key })
       if (!res) return { "data": null, "message": "ck失效", "retcode": 10103 }
 
       let retry = 0
@@ -536,7 +535,7 @@ export default class MysInfo {
         }
       }
       if (res?.data?.validate || res?.request?.geetest_validate) {
-        res = await vali.getData(retcode == 10035 ? "verifyGeetest" : "verifyVerification", {
+        res = await vali.getData([5003, 10041].includes(retcode) ? "bbsCaptchaVerify" : retcode == 10035 ? "verifyGeetest" : "verifyVerification", {
           ...res?.data ? res.data : res.request,
           headers,
           app_key

@@ -27,8 +27,8 @@ export class MysHandler extends plugin {
     // 仅调用过码(供其他插件使用)
     if (args.OnlyGtest) return await Mys.geetest(e, mysApi, res?.retcode)
 
-    if (![1034, 10035].includes(Number(res.retcode))) {
-      // 处理1034, 10035情况
+    if (![1034, 10035, 5003, 10041].includes(Number(res.retcode))) {
+      // 处理1034, 10035, 5003, 10041情况
       return reject()
     }
 

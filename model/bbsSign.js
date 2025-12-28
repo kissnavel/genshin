@@ -414,10 +414,11 @@ export default class BBsSign extends base {
     async bbsGeetest(mysApi, type = "", data = {}) {
         let api = Cfg.getConfig('api')
         let vall = new MysApi(mysApi.uid, mysApi.cookie, {}, '', '', 'all')
-        let res = await mysApi.getData('bbsGetCaptcha', { headers: { 'x-rpc-device_fp': this.device_fp } })
+        let headers = { 'x-rpc-device_fp': this.device_fp }
+        let res = await mysApi.getData("bbsGetCaptcha", { headers })
         let retry = 0; let test_nine = res
         if (api.type == 0) {
-            res = await vall.getData('test_nine', res?.data)
+            res = await vall.getData("test_nine", res?.data)
             if (res?.data?.validate) res = {
                 data: {
                     challenge: test_nine?.data?.challenge,
