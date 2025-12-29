@@ -5,6 +5,7 @@ import MysApi from './mys/mysApi.js'
 import base from './base.js'
 import moment from 'moment'
 import Cfg from './Cfg.js'
+import getDeviceFp from './getDeviceFp.js'
 import _ from 'lodash'
 
 export default class Note extends base {
@@ -158,10 +159,8 @@ export default class Note extends base {
   async noteData(ck, game) {
     let mysApi = new MysApi(ck.uid, ck.ck, {}, '', '', game)
 
-    let device_fp = await mysApi.getData('getFp')
-    device_fp = await new MysInfo(this.e).checkCode(device_fp, 'getFp', mysApi, {}, true)
-    if (device_fp?.retcode !== 0) return false
-    let headers = { 'x-rpc-device_fp': device_fp?.data?.device_fp }
+    let { deviceFp } = await getDeviceFp.Fp(ck.uid, ck.ck, game)
+    let headers = { 'x-rpc-device_fp': deviceFp }
     await common.sleep(200)
 
     let Data = await mysApi.getData('dailyNote', { headers })
