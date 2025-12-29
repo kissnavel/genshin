@@ -178,7 +178,6 @@ export default class MysApi {
 
   async getData(type, data = {}, cached = false) {
     if (!['bbs', 'all'].includes(this.game)) {
-      if (!data?.headers) data.headers = {}
       let ltuid = this.cookie.match(/ltuid=(\d+)/)
       ltuid = ltuid[1]
       if (ltuid) {
@@ -201,14 +200,14 @@ export default class MysApi {
           }
         }
         const { deviceFp } = await getDeviceFp.Fp(this.uid, this.cookie, this.game, this.biz)
-        if (deviceFp) {
-          data.deviceFp = deviceFp
-          data.headers['x-rpc-device_fp'] = deviceFp
+        if (deviceFp) data = {
+          ...data,
+          deviceFp: deviceFp
         }
         const device_id = await redis.get(`genshin:device_fp:${ltuid}:id`)
-        if (device_id) {
-          data.deviceId = device_id
-          data.headers['x-rpc-device_id'] = device_id
+        if (device_id) data = {
+          ...data,
+          deviceId: device_id
         }
       }
     }
