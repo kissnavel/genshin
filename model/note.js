@@ -106,7 +106,7 @@ export default class Note extends base {
               let ck = cks[g][uid]
 
               let { Data, Sign } = await this.noteData(ck, g)
-              if (Data?.retcode !== 0 || _.isEmpty(res?.Sign)) continue
+              if (Data?.retcode !== 0 || _.isEmpty(Sign)) continue
 
               Resins[`${g}_${uid}`] = this.e.isZzz ? Data?.data.energy.progress.current : Data?.data[`current_${this.e.isSr ? 'stamina' : 'resin'}`]
               if (Number(Resins[`${g}_${uid}`]) >= Number(Resin)) {
