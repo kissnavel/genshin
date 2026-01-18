@@ -6,7 +6,7 @@ import srChallenge from '../model/challenge.js'
 export class Challenge extends plugin {
   constructor () {
     super({
-      name: 'genshin-星铁深渊',
+      name: 'genshin·星铁深渊',
       dsc: '星穹铁道深渊信息',
       event: 'message',
       priority: Cfg.getConfig('config').priority,

@@ -7,7 +7,7 @@ let Mys = new Handler()
 export class MysHandler extends plugin {
   constructor() {
     super({
-      name: 'mys请求错误处理',
+      name: 'genshin·mys请求错误处理',
       priority: Cfg.getConfig('config').priority,
       namespace: 'genshin',
       handler: [{

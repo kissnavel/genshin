@@ -1,11 +1,16 @@
 ### yunzai v3 genshin独立仓库，自用修改
 
+## 停更说明
+1、本仓库将暂停更新，修复致命错误除外。
+
 ## 说明
-1、本仓库已整合：“<a href="https://github.com/kissnavel/bujidaoRUN">bujidaoRUN</a>”仓库的体力、签到、米游社面板等功能。
+1、本仓库miao崽与trss崽均可使用，自行替换即可。
 
-2、本仓库已整合：“<a href="https://github.com/kissnavel/loveMys">loveMys</a>”仓库的全部功能。
+2、本仓库已整合：“<a href="https://github.com/kissnavel/bujidaoRUN">bujidaoRUN</a>”仓库的体力、签到、米游社面板等功能。
 
-3、本仓库已整合：“<a href="https://github.com/kissnavel/SR-plugin">SR-plugin</a>”仓库的深渊功能。
+3、本仓库已整合：“<a href="https://github.com/kissnavel/loveMys">loveMys</a>”仓库的全部功能。
+
+4、本仓库已整合：“<a href="https://github.com/kissnavel/SR-plugin">SR-plugin</a>”仓库的深渊功能。
 
 ## 下面是原仓库说明
 

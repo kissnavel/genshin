@@ -7,8 +7,8 @@ import Cfg from '../model/Cfg.js'
 export class hoyocode extends plugin {
   constructor() {
     super({
-      name: '兑换码',
-      dsc: '国际服兑换码',
+      name: 'genshin·国际服兑换码',
+      dsc: '获取国际服可用兑换码',
       event: 'message',
       priority: Cfg.getConfig('config').priority,
       rule: [
@@ -40,14 +40,14 @@ export class hoyocode extends plugin {
     let codes = await this.getCode()
     if (codes.length == 0) return this.e.reply('未获取到兑换码')
     let msgData = []
-    msgData.push('当前可用兑换码如下')
+    msgData.push('当前可用兑换码如下：')
     codes.forEach(val => {
       msgData.push(val)
     })
-    msgData.push(`兑换码使用网站: ${url}`)
+    msgData.push(`兑换码使用网站：${url}`)
     msgData.push(`可使用命令 ${gametype}兑换码使用+(空格)+兑换码 进行兑换。若兑换失败，请尝试刷新cookie或重新绑定cookie`)
 
-    let fwdMsg = await common.makeForwardMsg(this.e, msgData, msgData[0])
+    let fwdMsg = await common.makeForwardMsg(this.e, msgData)
     return this.e.reply(fwdMsg)
   }
 

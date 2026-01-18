@@ -1,13 +1,14 @@
 import plugin from '../../../lib/plugins/plugin.js'
 import Note from '../model/NoteBh3.js'
+import Cfg from '../model/Cfg.js'
 
 export class dailyNote extends plugin {
   constructor () {
     super({
-      name: '体力查询',
+      name: 'genshin·崩三体力查询',
       dsc: '崩三体力查询',
       event: 'message',
-      priority: 300,
+      priority: Cfg.getConfig('config').priority,
       rule: [
         {
           reg: '^#*崩三?(体力|查询体力)$',

@@ -2,14 +2,15 @@ import plugin from '../../../lib/plugins/plugin.js'
 import common from '../../../lib/common/common.js'
 import getDeviceFp from '../model/getDeviceFp.js'
 import MysInfo from '../model/mys/mysInfo.js'
+import Cfg from '../model/Cfg.js'
 
 export class getDevice extends plugin {
   constructor () {
     super({
-      name: '绑定设备',
+      name: 'genshin·绑定设备',
       dsc: '绑定设备',
       event: 'message',
-      priority: 300,
+      priority: Cfg.getConfig('config').priority,
       rule: [
         {
             reg: '^#*(原神|星铁)?绑定设备$',

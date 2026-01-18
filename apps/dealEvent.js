@@ -25,6 +25,8 @@ if (yunzaiName == 'trss-yunzai') {
     if (!this.checkLimit(e)) return
     /** 处理事件 */
     this.dealEvent(e)
+    /** 设置冷却 */
+    if (e.only_reply_at) this.setLimit(e)
     /** 处理回复 */
     this.reply(e)
     /** 注册runtime */
@@ -33,7 +35,8 @@ if (yunzaiName == 'trss-yunzai') {
     const priority = []
     for (const i of this.priority) {
     /** 判断是否启用功能，过滤事件 */
-      if (this.checkDisable(Object.assign(i.plugin, { e })) && this.filtEvent(e, i.plugin)) priority.push(i)
+      if (this.checkDisable(Object.assign(i.plugin, { e })) && this.filtEvent(e, i.plugin))
+        priority.push(i)
     }
 
     for (const i of priority) {
@@ -53,9 +56,7 @@ if (yunzaiName == 'trss-yunzai') {
     }
 
     /** 是否只关注主动at */
-    if (!this.onlyReplyAt(e)) return
-    /** 设置冷却 */
-    this.setLimit(e)
+    if (!e.only_reply_at) return
 
     /** 判断是否是星铁命令，若是星铁命令则标准化处理 */
     /** e.isSr = true，且命令标准化为 #星铁 开头 */

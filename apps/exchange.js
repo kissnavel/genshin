@@ -6,7 +6,7 @@ import Cfg from '../model/Cfg.js'
 export class exchange extends plugin {
   constructor() {
     super({
-      name: '兑换码',
+      name: 'genshin·兑换码',
       dsc: '国服前瞻直播兑换码',
       event: 'message',
       priority: Cfg.getConfig('config').priority,
