@@ -30,11 +30,22 @@ export default class getDeviceFp {
         }
       }
       const sdk = mysapi.getUrl('getFp', data)
-      const res = await fetch(sdk.url, {
-        headers: sdk.headers,
-        method: 'POST',
-        body: sdk.body
-      })
+      let res
+      try {
+        res = await fetch(sdk.url, {
+          headers: sdk.headers,
+          method: 'POST',
+          body: sdk.body
+        })
+      } catch (error) {
+        logger.error(error.toString())
+        if (['bh3_cn', 'bh2_cn'].includes(biz) || !(game == 'wd' ? /^(10|20)[0-9]{7}/i : /^(1[0-9]|[6-9])[0-9]{8}/i).test(uid)) {
+          deviceFp = '38d805c20d53d'
+        } else {
+          deviceFp = '38d7f4c72b736'
+        }
+        return { deviceFp }
+      }
       const fpRes = await res.json()
       logger.debug(`[米游社][设备指纹]${JSON.stringify(fpRes)}`)
       deviceFp = fpRes?.data?.device_fp
