@@ -108,7 +108,7 @@ export default class base {
         fontsPath: `${this._path}/plugins/genshin/resources/fonts/`,
         pluResPath: `${this._path}/plugins/genshin/resources/StarRail/`,
         genshinPath: `${this._path}/plugins/genshin/resources/`,
-        headStyle: `<style> .head_box { background: url(${this._path}/plugins/genshin/resources/StarRail/img/worldcard/${headImg}) #fff; background-position-x: -10px; background-repeat: no-repeat; background-size: 540px; background-position-y: -100px; </style>`,
+        headStyle: `<style> .head_box { background: url(${this._path}/plugins/genshin/resources/StarRail/img/worldcard/${headImg}) #fff; background-position-x: -10px; background-repeat: no-repeat; background-size: 660px; background-position-y: -100px; </style>`,
         gstempFile: 'StarRail/'
       }
     } else {

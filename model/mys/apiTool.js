@@ -451,6 +451,10 @@ export default class apiTool {
           url: `${hostRecord}game_record/app/hkrpg/api/index`,
           query: `role_id=${this.uid}&server=${this.server}`
         },
+        brief: {
+          url: `${hostRecord}game_record/app/hkrpg/api/challenge_brief`,
+          query: `role_id=${this.uid}&server=${this.server}`
+        },
         basicInfo: {
           url: `${hostRecord}game_record/app/hkrpg/api/role/basicInfo`,
           query: `role_id=${this.uid}&server=${this.server}`

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+  <link rel="shortcut icon" href="#" />
+  <link rel="stylesheet" type="text/css" href="{{pluResPath}}html/roleIndex/roleIndex.css" />
+  {{@headStyle}}
+</head>
+
+<body>
+  <div class="container" id="container">
+    <div class="head_box">
+      <div class="id_text">UID: {{uid}}</div>
+      <div class="day_text">{{activeDay}}</div>
+      <img class="genshin_logo" src="{{pluResPath}}/img/other/logo.png" />
+    </div>
+    <div class="data_box">
+      <div class="tab_lable">数据总览</div>
+      {{each line val}}
+      <div class="data_line">
+        {{each val item}}
+        <div class="data_line_item">
+          <div style="color:{{ item.color }};font-size:20px" class="num">
+            {{item.num}} {{ if item.extra}}<span
+              style="font-size: 16px; color: #757575; margin-left: -4px">/{{item.extra}}</span>{{/if}}
+          </div>
+          <div class="lable">{{item.lable}}</div>
+        </div>
+        {{/each}}
+      </div>
+      {{/each}}
+    </div>
+    <div class="data_box">
+      <div class="tab_lable">逐光捡金</div>
+      {{each schedule val}}
+      <div class="data_line">
+        {{each val item}}
+        <div class="data_line_item">
+          <div style="color:{{ item.color }};font-size:20px" class="num">
+            {{item.num}} {{ if item.extra}}<span
+              style="font-size: 16px; color: #757575; margin-left: -4px">/{{item.extra}}</span>{{/if}}
+          </div>
+          <div class="lable">{{item.lable}}</div>
+        </div>
+        {{/each}}
+      </div>
+      {{/each}}
+    </div>
+
+    {{if avatars.length>0}}
+    <div class="avatars_box">
+      <div class="tab_lable">我的角色</div>
+      {{each avatars val}}
+      <div class="item">
+        <div class="role_box">
+          <span class="life life{{val.rank}}"> {{val.rank}}魂</span>
+          <div class="elem_icon" style="background-image:url('{{pluResPath}}html/challenge/images/{{val.element}}.png')"></div>
+          <div class="bg{{val.rarity}}"></div>
+          <img class="role_img" src="{{val.icon}}" />
+          <div class="desc">Lv.{{val.level}}</div>
+        </div>
+        <div class="text_box">
+          <div class="weapon_box{{if val.equip}} star{{val.equip.rarity}}{{/if}}">
+            {{if val.equip}}
+            <div class="weapon_boder">
+              <img class="weapon_img" src="{{val.equip.icon}}" />
+            </div>
+            {{/if}}
+          </div>
+          <div class="weapon_name_box">
+            {{if val.equip}}
+            <div class="weapon_name">{{val.equip.name}}</div>
+            <div class="weapon_level">
+              Lv.{{val.equip.level}}<span class="weapon_affix equip{{val.equip.rank}}">{{val.equip.rank}}</span>
+            </div>
+            {{else}}
+            <div class="weapon_name_no">未装备光锥</div>
+            {{/if}}
+          </div>
+        </div>
+      </div>
+      {{/each}}
+    </div>
+    {{/if}}
+    <div class="logo">Created By genshin</div>
+  </div>
+</body>
+
+</html>

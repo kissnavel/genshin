@@ -59,6 +59,7 @@ export class myspanel extends plugin {
         await e.reply(`开始查询uid:${uid}的米游社面板数据，可能会需要一定时间~`, true)
         let mysApi = new MysApi(uid, ck, {}, '', '', game)
         let device_fp = await mysApi.getData('getFp')
+        if (device_fp?.retcode !== 0) return false
         let headers = { 'x-rpc-device_fp': device_fp?.data?.device_fp }
         let res, data
         if (game == 'sr') {

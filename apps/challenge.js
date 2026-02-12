@@ -6,11 +6,15 @@ import srChallenge from '../model/challenge.js'
 export class Challenge extends plugin {
   constructor () {
     super({
-      name: 'genshin·星铁深渊',
-      dsc: '星穹铁道深渊信息',
+      name: 'genshin·星铁信息',
+      dsc: '星穹铁道角色、深渊信息',
       event: 'message',
       priority: Cfg.getConfig('config').priority,
       rule: [
+        {
+          reg: '^#*星铁?(角色|查询|查询角色|角色查询|人物|卡片)',
+          fnc: 'roleIndex'
+        },
         {
           reg: '^#*星铁?(上期|本期)?(简易)?(深渊)',
           fnc: 'challenge'
@@ -39,12 +43,20 @@ export class Challenge extends plugin {
     })
   }
 
+  async roleIndex (e) {
+    await e.reply('角色数据获取中，请稍后……')
+    let res = await srChallenge.getIndex(e)
+    if (!res) return false
+    let img = await puppeteer.screenshot(`${res.gstempFile}roleIndex`, res)
+    if (img) return await e.reply(img)
+  }
+
   async challengeForgottenHall (e) {
     await e.reply('正在获取忘却之庭数据，请稍后……')
     let res = await srChallenge.get(e, 2)
     if (!res) return false
     let img = await puppeteer.screenshot(`${res.srtempFile}challenge`, res)
-    return await e.reply(img)
+    if (img) return await e.reply(img)
   }
 
   async challengeStory (e) {
@@ -52,7 +64,7 @@ export class Challenge extends plugin {
     let res = await srChallenge.get(e, 1)
     if (!res) return false
     let img = await puppeteer.screenshot(`${res.srtempFile}challenge`, res)
-    return await e.reply(img)
+    if (img) return await e.reply(img)
   }
 
   async challengeBoss (e) {
@@ -60,7 +72,7 @@ export class Challenge extends plugin {
     let res = await srChallenge.get(e, 0)
     if (!res) return false
     let img = await puppeteer.screenshot(`${res.srtempFile}challenge`, res)
-    return await e.reply(img)
+    if (img) return await e.reply(img)
   }
 
   async challengePeak (e) {
@@ -68,7 +80,7 @@ export class Challenge extends plugin {
     let res = await srChallenge.get(e, 3)
     if (!res) return false
     let img = await puppeteer.screenshot(`${res.srtempFile}challenge`, res)
-    return await e.reply(img)
+    if (img) return await e.reply(img)
   }
 
   async challenge (e) {
@@ -76,7 +88,7 @@ export class Challenge extends plugin {
     let res = await srChallenge.get(e, '', true)
     if (!res) return false
     let img = await puppeteer.screenshot(`${res.srtempFile}challenge`, res)
-    return await e.reply(img)
+    if (img) return await e.reply(img)
   }
 
   async challengeCurrent (e) {
@@ -84,7 +96,7 @@ export class Challenge extends plugin {
     let res = await srChallenge.get(e, this.getCurrentChallengeType())
     if (!res) return false
     let img = await puppeteer.screenshot(`${res.srtempFile}challenge`, res)
-    return await e.reply(img)
+    if (img) return await e.reply(img)
   }
 
   getCurrentChallengeType () {

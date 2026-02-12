@@ -7,7 +7,120 @@ import MysInfo from './mys/mysInfo.js'
 export default class srChallenge extends base {
   constructor (e) {
     super(e)
-    this.model = 'StarRail'
+    this.e.isSr = true
+    this.model = 'roleIndex'
+  }
+
+
+  static async getIndex (e) {
+    let challenge = new srChallenge()
+
+    let uid = await challenge.userUid(e)
+    let ck = await challenge.userCk(e, uid)
+    let game = e.game
+    let api = new MysApi(uid, ck, {}, '', '', game)
+
+    let device_fp = await api.getData('getFp')
+    if (device_fp?.retcode !== 0) return false
+    let headers = { 'x-rpc-device_fp': device_fp?.data?.device_fp }
+
+    let resIndex = await api.getData('index')
+    resIndex = await new MysInfo(e).checkCode(resIndex, 'index', api, { headers }, true)
+    if (resIndex?.retcode !== 0) return false
+
+    let resBrief = await api.getData('brief')
+    resBrief = await new MysInfo(e).checkCode(resBrief, 'brief', api, { headers }, true)
+    if (resBrief?.retcode !== 0) return false
+
+    let resDetail = await api.getData('avatarInfo')
+    resDetail = await new MysInfo(e).checkCode(resDetail, 'avatarInfo', api, { headers }, true)
+    if (resDetail?.retcode !== 0) return false
+
+    /** 截图数据 */
+    return {
+      ...challenge.detailData(resDetail),
+      ...challenge.indexData({ ...resIndex, ...resBrief.data }),
+      uid: uid,
+      saveId: uid,
+      quality: 80
+    }
+  }
+
+  detailData (res) {
+    let { data } = res
+
+    let avatars = data.avatar_list || []
+
+    for (let avatar of avatars) {
+      let rarity = avatar.rarity
+      let liveNum = avatar.rank
+      let level = avatar.level
+      let id = avatar.id - 1000
+
+      if (rarity >= 5) rarity = 5
+
+      avatar.sortLevel = level
+      // id倒序，最新出的角色拍前面
+      avatar.sort = rarity * 100000 + liveNum * 10000 + level * 100 + id
+      for (let type of ['role', 'weapon']) {
+        if (type == 'weapon' && !avatar.equip) continue
+        avatar[`${type}Img`] = type == 'role' ? avatar.icon : avatar.equip.icon
+      }
+      if (avatar.equip)
+        avatar.equip.name = this.equip.shortEquip[avatar.equip.name] || avatar.equip.name
+    }
+
+    if (avatars.length > 0) {
+      // 重新排序
+      avatars = _.chain(avatars).orderBy(['sortLevel'], ['desc'])
+      avatars = avatars.orderBy(['sort'], ['desc']).value()
+    }
+
+    return {
+      ...this.screenNote,
+      avatars
+    }
+  }
+
+  indexData (res) {
+    let { data, list } = res
+
+    let stats = data.stats || {}
+
+    let line = [
+      [
+        { lable: '角色数', num: stats.avatar_num, extra: this.lable.avatar },
+        { lable: '成就', num: stats.achievement_num, extra: this.lable.achievement },
+        { lable: '战利品', num: stats.chest_num, extra: this.lable.chest },
+        { lable: "梦境贴纸", num: stats.dream_paster_num, extra: this.lable.dream_paster }
+      ]
+    ]
+
+    let challengeType = {
+      Chasm: '忘却之庭',
+      Story: '虚构叙事',
+      Boss: '末日幻影'
+    }
+
+    let schedule = [
+      [
+        { lable: challengeType[list[0].challenge_type], num: list[0].cur_schedule.finish_star_count, extra: list[0].cur_schedule.total_star_count },
+        { lable: challengeType[list[1].challenge_type], num: list[1].cur_schedule.finish_star_count, extra: list[1].cur_schedule.total_star_count },
+        { lable: challengeType[list[2].challenge_type], num: list[2].cur_schedule.finish_star_count, extra: list[2].cur_schedule.total_star_count }
+      ]
+    ]
+
+    return {
+      activeDay: this.dayCount(stats.active_days),
+      line,
+      schedule
+    }
+  }
+
+  dayCount (num) {
+    let daysDifference = Math.floor((new Date() - new Date('2023-04-25')) / (1000 * 60 * 60 * 24))
+    let msg = '活跃天数：' + Math.floor(num) + `/${daysDifference}天`
+    return msg
   }
 
   static async get (e, challengeType, all) {
@@ -33,7 +146,10 @@ export default class srChallenge extends base {
 
     let game = e.game
     let api = new MysApi(uid, ck, {}, '', '', game)
-    if (all !== true) device_fp = await api.getData('getFp')
+    if (all !== true) {
+      device_fp = await api.getData('getFp')
+      if (device_fp?.retcode !== 0) return false
+    }
     let headers = { 'x-rpc-device_fp': device_fp?.data?.device_fp }
 
     let challengeData, res, simpleRes
@@ -209,7 +325,6 @@ export default class srChallenge extends base {
   }
 
   async allData (e, challengeType, all) {
-    this.e.isSr = true
     let screenData = this.screenData
     let data
     if (all !== true) {
@@ -232,6 +347,7 @@ export default class srChallenge extends base {
       let game = e.game
       let api = new MysApi(uid, ck, {}, '', '', game)
       let device_fp = await api.getData('getFp')
+      if (device_fp?.retcode !== 0) return false
       let hall = await this.queryChallenge(e, 2, true, uid, ck, device_fp)
       if (!hall) return false
       let story = await this.queryChallenge(e, 1, true, uid, ck, device_fp)

@@ -160,10 +160,8 @@ export default class Note extends base {
     let mysApi = new MysApi(ck.uid, ck.ck, {}, '', '', game)
 
     let device_fp = await mysApi.getData('getFp')
-    device_fp = await new MysInfo(this.e).checkCode(device_fp, 'getFp', mysApi, {}, true)
     if (device_fp?.retcode !== 0) return false
     let headers = { 'x-rpc-device_fp': device_fp?.data?.device_fp }
-    await common.sleep(200)
 
     let Data = await mysApi.getData('dailyNote', { headers })
     Data = await new MysInfo(this.e).checkCode(Data, 'dailyNote', mysApi, {}, true)
