@@ -11,7 +11,6 @@ export default class srChallenge extends base {
     this.model = 'roleIndex'
   }
 
-
   static async getIndex (e) {
     let challenge = new srChallenge()
 
@@ -32,14 +31,9 @@ export default class srChallenge extends base {
     resBrief = await new MysInfo(e).checkCode(resBrief, 'brief', api, { headers }, true)
     if (resBrief?.retcode !== 0) return false
 
-    let resDetail = await api.getData('avatarInfo')
-    resDetail = await new MysInfo(e).checkCode(resDetail, 'avatarInfo', api, { headers }, true)
-    if (resDetail?.retcode !== 0) return false
-
     /** 截图数据 */
     return {
-      ...challenge.detailData(resDetail),
-      ...challenge.indexData({ ...resIndex, ...resBrief.data }),
+      ...challenge.detailData({ ...resIndex, ...resBrief.data }),
       uid: uid,
       saveId: uid,
       quality: 80
@@ -47,7 +41,7 @@ export default class srChallenge extends base {
   }
 
   detailData (res) {
-    let { data } = res
+    let { data, list } = res
 
     let avatars = data.avatar_list || []
 
@@ -76,15 +70,6 @@ export default class srChallenge extends base {
       avatars = avatars.orderBy(['sort'], ['desc']).value()
     }
 
-    return {
-      ...this.screenNote,
-      avatars
-    }
-  }
-
-  indexData (res) {
-    let { data, list } = res
-
     let stats = data.stats || {}
 
     let line = [
@@ -92,7 +77,7 @@ export default class srChallenge extends base {
         { lable: '角色数', num: stats.avatar_num, extra: this.lable.avatar },
         { lable: '成就', num: stats.achievement_num, extra: this.lable.achievement },
         { lable: '战利品', num: stats.chest_num, extra: this.lable.chest },
-        { lable: "梦境贴纸", num: stats.dream_paster_num, extra: this.lable.dream_paster }
+        { lable: '梦境贴纸', num: stats.dream_paster_num, extra: this.lable.dream_paster }
       ]
     ]
 
@@ -111,9 +96,11 @@ export default class srChallenge extends base {
     ]
 
     return {
-      activeDay: this.dayCount(stats.active_days),
+      ...this.screenNote,
+      avatars,
       line,
-      schedule
+      schedule,
+      activeDay: this.dayCount(stats.active_days)
     }
   }
 
