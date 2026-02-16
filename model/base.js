@@ -95,6 +95,7 @@ export default class base {
         fontsPath: `${this._path}/plugins/genshin/resources/fonts/`,
         pluResPath: `${this._path}/plugins/genshin/resources/ZZZero/`,
         genshinPath: `${this._path}/plugins/genshin/resources/`,
+        miaoPath: `${this._path}/plugins/miao-plugin/resources/`,
         headStyle: '',
         gstempFile: 'ZZZero/',
       }
@@ -108,6 +109,7 @@ export default class base {
         fontsPath: `${this._path}/plugins/genshin/resources/fonts/`,
         pluResPath: `${this._path}/plugins/genshin/resources/StarRail/`,
         genshinPath: `${this._path}/plugins/genshin/resources/`,
+        miaoPath: `${this._path}/plugins/miao-plugin/resources/`,
         headStyle: `<style> .head_box { background: url(${this._path}/plugins/genshin/resources/StarRail/img/worldcard/${headImg}) #fff; background-position-x: -10px; background-repeat: no-repeat; background-size: 660px; background-position-y: -100px; </style>`,
         gstempFile: 'StarRail/'
       }
@@ -121,6 +123,7 @@ export default class base {
         fontsPath: `${this._path}/plugins/genshin/resources/fonts/`,
         pluResPath: `${this._path}/plugins/genshin/resources/genshin/`,
         genshinPath: `${this._path}/plugins/genshin/resources/`,
+        miaoPath: `${this._path}/plugins/miao-plugin/resources/`,
         headStyle: `<style> .head_box { background: url(${this._path}/plugins/genshin/resources/img/namecard/${headImg}) #fff; background-position-x: 42px; background-repeat: no-repeat; background-size: auto 101%; }</style>`,
         gstempFile: 'genshin/'
       }

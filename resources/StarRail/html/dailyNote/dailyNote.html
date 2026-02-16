@@ -22,7 +22,7 @@
             </div>
             <div class="title_date">
                 <div class="icon">
-                    <img src="{{sricon}}" />
+                    <img src="{{miaoPath}}{{sricon}}" />
                 </div>
                 <div class="title_date_text">
                     <div>{{nowDay}}</div>
@@ -52,27 +52,15 @@
                     class="{{if current_rogue_score < max_rogue_score}}yellow{{/if}}">{{current_rogue_score}}</span>/{{max_rogue_score}}
             </div>
         </div>
-        <div class="bottom">
-            {{each expeditions ex}}
-            <div class="bottom_item">
-                <div class="bottom_list">
-                    <div style="flex-grow: 1;    width: 240px;">{{ex.name}}</div>
-                    <div style="flex-grow: 1">{{ex.remaining_time==0?'已完成':ex.dateTime}}</div>
-                    <div class="bottom_icon">
-                        {{each ex.avatars avatars}}
-                        {{if avatars=='派遣头像'}}
-                        <div><img src="{{pluResPath}}img/dailyNote/派遣头像.png" alt=""></div>
-                        {{else}}
-                        <div><img src="{{avatars}}" alt=""></div>
-                        {{/if}}
-                        {{/each}}
-                    </div>
-                </div>
-                <div class="bottom_solid" style="width:{{ex.bfTime}}">
-                    <span></span>
-                </div>
+        <div class="center">
+            <div class="center_item" , style="padding-left: 60px;">
+                历战余响：<span
+                    class="{{if weekly_cocoon_cnt > 0}}yellow{{/if}}">{{3 - weekly_cocoon_cnt}}</span>/{{weekly_cocoon_limit}}
             </div>
-            {{/each}}
+            <div class="center_item">
+                货币战争：<span
+                    class="{{if grid_fight_weekly_cur < grid_fight_weekly_max}}yellow{{/if}}">{{grid_fight_weekly_cur}}</span>/{{grid_fight_weekly_max}}
+            </div>
         </div>
     </div>
 </body>

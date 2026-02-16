@@ -5,8 +5,8 @@ import MysApi from './mys/mysApi.js'
 import base from './base.js'
 import moment from 'moment'
 import Cfg from './Cfg.js'
-import getDeviceFp from './getDeviceFp.js'
 import _ from 'lodash'
+import { Character } from '#miao.models'
 
 export default class Note extends base {
   constructor(e) {
@@ -248,32 +248,26 @@ export default class Note extends base {
       }
     }
     data.bfStamina = data.current_stamina / data.max_stamina * 100 + '%'
-    /** 派遣 */
-    for (let item of data.expeditions) {
-      let d = moment.duration(item.remaining_time, 'seconds')
-      let day = Math.floor(d.asDays())
-      let hours = d.hours()
-      let minutes = d.minutes()
-      item.dateTime = ([day + '天', hours + '时', minutes + '分'].filter(v => !['0天', '0时', '0分'].includes(v))).join('')
-      item.bfTime = (72000 - item.remaining_time) / 72000 * 100 + '%'
-      if (item.avatars.length == 1) {
-        item.avatars.push('派遣头像')
-      }
-    }
-    // 派遣头像
-    let promises = []
-    for (let avatars of data.expeditions) {
-      for (let avatar of avatars.avatars)
-        promises.push(avatar)
-    }
-    await Promise.all(promises)
-    let icon = Math.floor(Math.random() * promises.length)
-    let sricon = promises[icon]
-    if (!sricon) sricon = `${this._path}/plugins/genshin/resources/StarRail/img/other/face.png`
+    // 头像
+    let iconChar = _.sample([
+      "希儿",
+      "白露",
+      "艾丝妲",
+      "布洛妮娅",
+      "姬子",
+      "卡芙卡",
+      "克拉拉",
+      "停云",
+      "佩拉",
+      "黑塔",
+      "希露瓦",
+      "银狼",
+    ])
+    let char = Character.get(iconChar, "gs")
     return {
       uid,
       saveId: uid,
-      sricon,
+      sricon: char.imgs?.face,
       day: `${this.week[moment().day()]}`,
       resinMaxTime, nowDay: moment(new Date()).format('YYYY年MM月DD日'),
       ...data
