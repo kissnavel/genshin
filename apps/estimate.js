@@ -27,7 +27,7 @@ export class estimate extends plugin {
     if (isSr) {
       res = await (await fetch("https://bbs-api.miyoushe.com/painter/api/user_instant/search/list?keyword=%E6%98%9F%E7%90%BC%E7%BB%9F%E8%AE%A1&uid=137101761&size=20&offset=0&sort_type=2")).json()
     } else {
-      res = await (await fetch("https://bbs-api.miyoushe.com/painter/api/user_instant/search/list?keyword=%E5%8E%9F%E7%9F%B3%E7%BB%9F%E8%AE%A1&uid=387899471&size=20&offset=0&sort_type=2")).json()
+      res = await (await fetch("https://bbs-api.miyoushe.com/painter/api/user_instant/search/list?keyword=%E5%89%8D%E7%9E%BB%E6%B1%87%E6%80%BB&uid=387899471&size=20&offset=0&sort_type=2")).json()
     }
     const post = res.data.list[0].post.post
 
