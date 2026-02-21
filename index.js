@@ -22,18 +22,8 @@ try {
     let data = Cfg.getConfig(type)
     let defdata = Cfg.getdef(type)
 
-    if (['command', 'lable'].includes(type)) {
-      for (let i in defdata)
-        if (!(i in data)) isNew = false
-
-      if (!isNew) {
-        let config = Cfg.getdef(type, false)
-        for (let i in defdata)
-          if (i in data)
-            config = config.replace(new RegExp(`${i}:(.*)`, 'g'), `${i}: ${data[i]}`)
-
-        Cfg.setConfig(type, config, false)
-      }
+    if (['equip', 'command', 'lable'].includes(type)) {
+      Cfg.setConfig(type, defdata)
     } else {
       for (let i in defdata)
         if (!(i in data)) isNew = false
