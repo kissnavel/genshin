@@ -23,7 +23,14 @@ try {
     let defdata = Cfg.getdef(type)
 
     if (['equip', 'command', 'lable'].includes(type)) {
-      Cfg.setConfig(type, defdata)
+      for (let i in defdata) {
+        if (!(i in data)) {
+          isNew = false
+        } else if ((i in data) && (data[i] !== defdata[i])) {
+          isNew = false
+        }
+      }
+      if (!isNew) Cfg.setConfig(type, defdata)
     } else {
       for (let i in defdata)
         if (!(i in data)) isNew = false

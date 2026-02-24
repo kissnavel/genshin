@@ -61,7 +61,7 @@ export default class srChallenge extends base {
         avatar[`${type}Img`] = type == 'role' ? avatar.icon : avatar.equip.icon
       }
       if (avatar.equip)
-        avatar.equip.name = this.equip.shortEquip[avatar.equip.name] || avatar.equip.name
+        avatar.equip.name = this.equip[avatar.equip.name] || avatar.equip.name
     }
 
     if (avatars.length > 0) {
