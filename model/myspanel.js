@@ -345,6 +345,7 @@ export default class Myspanel {
             let e = v.skills[1].level
             let q = v.skills[2].level
             let t = v.skills[3].level
+            let xe = v.skills[18] ? v.skills[18].level : null
             let servant = v.servant_detail.servant_skills
             let me, mt
             if (servant.length !== 0) {
@@ -387,6 +388,9 @@ export default class Myspanel {
                                 break
                             case 't':
                                 t = t - 2
+                                break
+                            case 'xe':
+                                xe = xe - 1
                                 break
                         }
                     }
@@ -552,7 +556,8 @@ export default class Myspanel {
                     'a': a,
                     'e': e,
                     'q': q,
-                    't': t
+                    't': t,
+                    'xe': xe
                 },
                 'trees': trees,
                 'weapon': v.equip ? {
