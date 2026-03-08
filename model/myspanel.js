@@ -80,7 +80,7 @@ export default class Myspanel {
             if (va.id == '10000007') va.name = '荧'
             //皮肤
             let costume = 0
-            if (mb.avatars[va.id]?.costume) costume = mb.avatars[va.id].costume
+            if (v.costumes[0]?.id) costume = v.costumes[0]?.id
 
             avatars[va.id] = {
                 'name': va.name,
@@ -318,7 +318,7 @@ export default class Myspanel {
             else if (v.equip.level > 20) gzpro = 1
             else if (v.equip.level > 0) gzpro = 0
             }
-            //处理三月七，开拓者，饮月，托帕，阮梅
+            //处理三月七，开拓者，丹恒，托帕，阮梅
             if (v.id == 1001) v.name = '三月七'
             if (v.id == 1224) v.name = '三月七·巡猎'
             if (v.id == 8001) v.name = '穹·毁灭'
@@ -353,7 +353,7 @@ export default class Myspanel {
                 mt = servant[1].level
             }
             for (let x in ava.talentCons) {
-                if ((v.rank > 4 && ava.talentCons[x] == 5) || (v.rank > 2 && ava.talentCons[x] == 3)) {
+                if ((v.rank > 4 && (ava.talentCons[x] == 5 || x == 'xe')) || (v.rank > 2 && (ava.talentCons[x] == 3 || x == 'xe'))) {
                     if (servant.length !== 0) {
                         switch (x) {
                             case 'a':
@@ -390,7 +390,7 @@ export default class Myspanel {
                                 t = t - 2
                                 break
                             case 'xe':
-                                xe = xe - 1
+                                xe = v.rank > 4 ? xe - 2 : xe - 1
                                 break
                         }
                     }
