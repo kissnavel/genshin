@@ -439,8 +439,17 @@ export default class ExportLog extends base {
       }
     }
 
-    /** 按id倒序 */
-    list.sort((a, b) => b.id - a.id)
+    /** 按id倒序，避免长整型id转成Number后精度丢失 */
+    list.sort((a, b) => {
+      const idA = a.id
+      const idB = b.id
+
+      if (idA.length !== idB.length) {
+        return idB.length - idA.length
+      }
+
+      return idA === idB ? 0 : idB > idA ? 1 : -1
+    })
 
     for (let v of list) {
       if (this.game === 'sr') v.uigf_gacha_type = v.gacha_type
