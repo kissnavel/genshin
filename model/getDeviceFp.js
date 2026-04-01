@@ -6,10 +6,10 @@ export default class getDeviceFp {
     let ltuid = ck.match(/ltuid=(\d+)/)
     ltuid = ltuid[1]
     let mysapi = new MysApi(uid, ck, { game }, '', biz)
-    let deviceFp = await redis.get(`genshin:device_fp:${ltuid}:fp`)
+    let deviceFp = await redis.get(`genshin:device_fp:${ltuid}:fp`) || await redis.get(`ZZZ:DEVICE_FP:${ltuid}:FP`)
     let data = {}
     if (!deviceFp) {
-      let bindInfo = await redis.get(`genshin:device_fp:${ltuid}:bind`)
+      let bindInfo = await redis.get(`genshin:device_fp:${ltuid}:bind`) || await redis.get(`ZZZ:DEVICE_FP:${ltuid}:BIND`)
       if (bindInfo) {
         data = {
           deviceFp
@@ -53,6 +53,9 @@ export default class getDeviceFp {
         return { deviceFp: null }
       }
       await redis.set(`genshin:device_fp:${ltuid}:fp`, deviceFp, {
+        EX: 86400 * 7
+      })
+      await redis.set(`ZZZ:DEVICE_FP:${ltuid}:FP`, deviceFp, {
         EX: 86400 * 7
       })
       if (['bh3_cn', 'bh2_cn'].includes(biz) || !(game == 'wd' ? /^(10|20)[0-9]{7}/i : /^(1[0-9]|[6-9])[0-9]{8}/i).test(uid)) {

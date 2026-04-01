@@ -86,9 +86,9 @@ export default class BBsSign extends base {
                 }
 
                 message += `\n**${forum.name}**\n`
-                let device_fp = await redis.get(`genshin:device_fp:${sk.stuid}:fp`)
+                let device_fp = await redis.get(`genshin:device_fp:${sk.stuid}:fp`) || await redis.get(`ZZZ:DEVICE_FP:${sk.stuid}:FP`)
                 if (!device_fp) {
-                    let bindInfo = await redis.get(`genshin:device_fp:${sk.stuid}:bind`)
+                    let bindInfo = await redis.get(`genshin:device_fp:${sk.stuid}:bind`) || await redis.get(`ZZZ:DEVICE_FP:${sk.stuid}:BIND`)
                     if (bindInfo) {
                         try {
                             bindInfo = JSON.parse(bindInfo)
@@ -109,6 +109,9 @@ export default class BBsSign extends base {
                     device_fp = device_fp?.data?.device_fp
                     if (device_fp) {
                         await redis.set(`genshin:device_fp:${sk.stuid}:fp`, device_fp, {
+                            EX: 86400 * 7
+                        })
+                        await redis.set(`ZZZ:DEVICE_FP:${sk.stuid}:FP`, device_fp, {
                             EX: 86400 * 7
                         })
                         const deviceLogin = mysApi.getUrl('deviceLogin', data)
@@ -133,6 +136,8 @@ export default class BBsSign extends base {
                                 logger.error(`[米游社][设备登录]${error.message}`)
                             }
                         }
+                    } else {
+                        device_fp = '38d805c20d53d'
                     }
                 }
                 this.device_fp = device_fp

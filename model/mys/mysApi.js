@@ -181,7 +181,7 @@ export default class MysApi {
       let ltuid = this.cookie.match(/ltuid=(\d+)/)
       ltuid = ltuid[1]
       if (ltuid) {
-        let bindInfo = await redis.get(`genshin:device_fp:${ltuid}:bind`)
+        let bindInfo = await redis.get(`genshin:device_fp:${ltuid}:bind`) || await redis.get(`ZZZ:DEVICE_FP:${ltuid}:BIND`)
         if (bindInfo) {
           try {
             bindInfo = JSON.parse(bindInfo)
@@ -204,7 +204,7 @@ export default class MysApi {
           ...data,
           deviceFp: deviceFp
         }
-        const device_id = await redis.get(`genshin:device_fp:${ltuid}:id`)
+        let device_id = await redis.get(`genshin:device_fp:${ltuid}:id`) || await redis.get(`ZZZ:DEVICE_FP:${ltuid}:ID`)
         if (device_id) data = {
           ...data,
           deviceId: device_id
