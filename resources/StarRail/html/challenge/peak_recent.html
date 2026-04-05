@@ -1,0 +1,630 @@
+{{extend defaultLayout}}
+
+{{block 'css'}}
+<link rel="stylesheet" href="{{ pluResPath }}html/challenge/peak_recent.css">
+{{/block}}
+
+{{block 'main'}}
+
+  <h2 class="head" style="margin-bottom: 20px;text-align: center;">UID: {{ uid }} 的全部异相仲裁数据 <span class="tag">最近三期</span></h2>
+
+  <div class="body">
+    <div class="left">
+      <div class="time-container">
+        <div class="count">统计周期: {{ present.beginTime }}-{{ present.endTime }}</div>
+      </div>
+      {{set record = present}}
+      <div class="summar">
+        <h2>异相仲裁挑战回顾</h2>
+        <div class="summar-content">
+          {{set record_brief = data.challenge_peak_best_record_brief}}
+          {{set total_battle_num = record_brief == null ? null : record_brief.total_battle_num}}
+          <div class="summar-info summar-medal-container">
+            {{ if record_brief == null}}
+              {{ if present.boss_record == null }}
+                <img class="rank-icon" src="{{ present.group.theme_pic_path }}" alt="">
+              {{ else }}
+                <img class="rank-icon" src="{{ present.boss_record.challenge_peak_rank_icon }}" alt="">
+              {{ /if }}
+            {{ else }}
+              <img class="rank-icon" src="{{ record_brief.challenge_peak_rank_icon }}" alt="">
+            {{ /if }}
+          </div>
+          <div class="summar-info summar-star-container">
+            <div>王棋关卡: {{ present.boss_stars }} 星</div>
+            <div style="margin-top: 8px;">骑士关卡: {{ present.mob_stars }} 星</div>
+          </div>
+          <div class="summar-info summar-medal-container">
+            <img class="rank-icon" src="{{ present.group.theme_pic_path }}" alt="">
+          </div>
+          <div class="summar-info summar-name-container">
+            <div>{{ present.group.game_version }} 版本: {{ present.group.name_mi18n }}</div>
+            <div style="margin-top: 8px;">战斗次数: {{ total_battle_num }}</div>
+          </div>
+        </div>
+        {{ if present.boss_record?.has_challenge_record && present.boss_record?.hard_mode }}
+          <div class="detail-hellitem">
+            <div class="boss-content">
+              <div class="boss-title">将杀王棋•绝境通关战绩</div>
+              <div class="boss-node">
+                {{set boss_info = present.boss_info}}
+                {{set boss_record = present.boss_record}}
+                <div class="boss-info">
+                  <div> {{ boss_info.name_mi18n }} </div>
+                  <div> 使用轮次 <span class="count"> {{boss_record.round_num}} </span>
+                  <span class="boss-star-container">
+                    <span class="detail-boss-defeated-text">已通关</span>
+                  </span>
+                  </div>
+                  <% for (var i = 0; i < boss_record.star_num; i++){ %>
+                    <img class="rogue-star-small" src="{{ pluResPath }}html/challenge/images/boss_star.ae0258cf.png" />
+                  <% } %>
+                </div>
+                <div class="boss-record">
+                  <div class="count boss-time">{{boss_record.challengeTime}}</div>
+                  <div class="detail-avatars">
+                    {{ each boss_record.avatars avatar }}
+                    <div class="detail-avatar rank{{ avatar.rarity }}">
+                      <div class="detail-avatar-border">
+                        <span class="life life{{ avatar.rank }}">{{ avatar.rank }}魂</span>
+                        <img class="element" src="{{ pluResPath }}html/challenge/images/{{ avatar.element.toLowerCase() }}.png" alt="">
+                        <img class="char" src="{{ avatar.icon }}" alt="">
+                        <div class="level">等级 {{ avatar.level }}</div>
+                      </div>
+                    </div>
+                    {{ /each }}
+                  </div>
+                  <div class="detail-buff">
+                    {{ if boss_record?.buff }}
+                      <div class="detail-buff-border">
+                        <div class="buff-col">
+                          <div class="buff-icon-container">
+                            <img class="buff-icon" src="{{ boss_record.buff.icon }}" alt="">
+                          </div>
+                        </div>
+                        <div class="description-col">
+                          <div class="buff-description">{{ boss_record.buff.name_mi18n }}：<span>{{ boss_record.buff.desc_mi18n }}</span></div>
+                        </div>
+                      </div>
+                    {{ /if }}
+                  </div>
+                </div>
+                <div class="boss-image">
+                  <img class="boss" src="{{ boss_info.icon }}" alt="">
+                </div>
+              </div>
+            </div>
+          </div>
+        {{ else }}
+          <div class="detail-normalitem">
+            <div class="boss-content">
+              <div class="boss-title">将杀王棋通关战绩</div>
+              <div class="boss-node">
+                {{set boss_info = present.boss_info}}
+                {{set boss_record = present.boss_record}}
+                <div class="boss-info">
+                  <div> {{ boss_info.name_mi18n }} </div>
+                  {{ if boss_record?.has_challenge_record }}
+                    <div> 使用轮次 <span class="count"> {{boss_record.round_num}} </span>
+                    <span class="boss-star-container">
+                      <span class="detail-boss-defeated-text">已通关</span>
+                    </span>
+                    </div>
+                    <% for (var i = 0; i < boss_record.star_num; i++){ %>
+                      <img class="rogue-star-small" src="{{ pluResPath }}html/challenge/images/boss_star.ae0258cf.png" />
+                    <% } %>
+                  {{ else }}
+                    <div class="detail-boss-not-defeated-text">未通关</div>
+                  {{ /if }}
+                </div>
+                {{ if boss_record?.has_challenge_record }}
+                  <div class="boss-record">
+                    <div class="count boss-time">{{boss_record.challengeTime}}</div>
+                    <div class="detail-avatars">
+                      {{ each boss_record.avatars avatar }}
+                      <div class="detail-avatar rank{{ avatar.rarity }}">
+                        <div class="detail-avatar-border">
+                          <span class="life life{{ avatar.rank }}">{{ avatar.rank }}魂</span>
+                          <img class="element" src="{{ pluResPath }}html/challenge/images/{{ avatar.element.toLowerCase() }}.png" alt="">
+                          <img class="char" src="{{ avatar.icon }}" alt="">
+                          <div class="level">等级 {{ avatar.level }}</div>
+                        </div>
+                      </div>
+                      {{ /each }}
+                    </div>
+                    <div class="detail-buff">
+                      {{ if boss_record?.buff }}
+                        <div class="detail-buff-border">
+                          <div class="buff-col">
+                            <div class="buff-icon-container">
+                              <img class="buff-icon" src="{{ boss_record.buff.icon }}" alt="">
+                            </div>
+                          </div>
+                          <div class="description-col">
+                            <div class="buff-description">{{ boss_record.buff.name_mi18n }}：<span>{{ boss_record.buff.desc_mi18n }}</span></div>
+                          </div>
+                        </div>
+                      {{ /if }}
+                    </div>
+                  </div>
+                {{ /if }}
+                <div class="boss-image">
+                  <img class="boss" src="{{ boss_info.icon }}" alt="">
+                </div>
+              </div>
+            </div>
+          </div>
+        {{ /if }}
+      </div>
+
+      <div class="summar">
+        <div class="boss-title">骑士关卡战绩</div>
+        <div class="detail-list">
+          {{ each present.mob_infos mob_info mob_index }}
+          <div class="detail-item">
+            <div class="boss-content">
+              <div class="boss-title"> {{ mob_info.name }}: {{ mob_info.monster_name }}</div>
+              <div class="boss-node">
+                {{set mob_record = present.mob_records?.[mob_index]}}
+                {{ if mob_record?.is_fast }}
+                  <div class="boss-info">
+                    <div class="detail-boss-defeated-text">快速通关</div>
+                  </div>
+                {{ else }}
+                  <div class="boss-info">
+                    {{ if mob_record?.has_challenge_record }}
+                      <div> 使用轮次 <span class="count"> {{mob_record.round_num}} </span>
+                        <span class="boss-star-container">
+                          <span class="detail-boss-defeated-text">已通关</span>
+                        </span>
+                      </div>
+                      <% for (var i = 0; i < mob_record.star_num; i++){ %>
+                        <img class="rogue-star-small" src="{{ pluResPath }}html/challenge/images/rogue-star.png" />
+                      <% } %>
+                    {{ else }}
+                      <div class="detail-boss-not-defeated-text">未通关</div>
+                    {{ /if }}
+                  </div>
+                  {{ if mob_record?.has_challenge_record }}
+                    <div class="boss-record">
+                      <div class="count boss-time">{{mob_record.challengeTime}}</div>
+                      <div class="detail-avatars">
+                        {{ each mob_record.avatars avatar }}
+                        <div class="detail-avatar rank{{ avatar.rarity }}">
+                          <div class="detail-avatar-border">
+                            <span class="life life{{ avatar.rank }}">{{ avatar.rank }}魂</span>
+                            <img class="element" src="{{ pluResPath }}html/challenge/images/{{ avatar.element.toLowerCase() }}.png" alt="">
+                            <img class="char" src="{{ avatar.icon }}" alt="">
+                            <div class="level">等级 {{ avatar.level }}</div>
+                          </div>
+                        </div>
+                        {{ /each }}
+                      </div>
+                    </div>
+                  {{ /if }}
+                {{ /if }}
+                <div class="boss-image">
+                  <img class="boss" src="{{ mob_info.monster_icon }}" alt="">
+                </div>
+              </div>
+            </div>
+          </div>
+          {{ /each }}
+        </div>
+      </div>
+    </div>
+    <div class="center">
+      <div class="time-container">
+        <div class="count">统计周期: {{ last.beginTime }}-{{ last.endTime }}</div>
+      </div>
+      {{set record = last}}
+      <div class="summar">
+        <h2>异相仲裁挑战回顾</h2>
+        <div class="summar-content">
+          {{set record_brief = data.challenge_peak_best_record_brief}}
+          {{set total_battle_num = record_brief == null ? null : record_brief.total_battle_num}}
+          <div class="summar-info summar-medal-container">
+            {{ if record_brief == null}}
+              {{ if last.boss_record == null }}
+                <img class="rank-icon" src="{{ last.group.theme_pic_path }}" alt="">
+              {{ else }}
+                <img class="rank-icon" src="{{ last.boss_record.challenge_peak_rank_icon }}" alt="">
+              {{ /if }}
+            {{ else }}
+              <img class="rank-icon" src="{{ record_brief.challenge_peak_rank_icon }}" alt="">
+            {{ /if }}
+          </div>
+          <div class="summar-info summar-star-container">
+            <div>王棋关卡: {{ last.boss_stars }} 星</div>
+            <div style="margin-top: 8px;">骑士关卡: {{ last.mob_stars }} 星</div>
+          </div>
+          <div class="summar-info summar-medal-container">
+            <img class="rank-icon" src="{{ last.group.theme_pic_path }}" alt="">
+          </div>
+          <div class="summar-info summar-name-container">
+            <div>{{ last.group.game_version }} 版本: {{ last.group.name_mi18n }}</div>
+            <div style="margin-top: 8px;">战斗次数: {{ total_battle_num }}</div>
+          </div>
+        </div>
+        {{ if last.boss_record?.has_challenge_record && last.boss_record?.hard_mode }}
+          <div class="detail-hellitem">
+            <div class="boss-content">
+              <div class="boss-title">将杀王棋•绝境通关战绩</div>
+              <div class="boss-node">
+                {{set boss_info = last.boss_info}}
+                {{set boss_record = last.boss_record}}
+                <div class="boss-info">
+                  <div> {{ boss_info.name_mi18n }} </div>
+                  <div> 使用轮次 <span class="count"> {{boss_record.round_num}} </span>
+                  <span class="boss-star-container">
+                    <span class="detail-boss-defeated-text">已通关</span>
+                  </span>
+                  </div>
+                  <% for (var i = 0; i < boss_record.star_num; i++){ %>
+                    <img class="rogue-star-small" src="{{ pluResPath }}html/challenge/images/boss_star.ae0258cf.png" />
+                  <% } %>
+                </div>
+                <div class="boss-record">
+                  <div class="count boss-time">{{boss_record.challengeTime}}</div>
+                  <div class="detail-avatars">
+                    {{ each boss_record.avatars avatar }}
+                    <div class="detail-avatar rank{{ avatar.rarity }}">
+                      <div class="detail-avatar-border">
+                        <span class="life life{{ avatar.rank }}">{{ avatar.rank }}魂</span>
+                        <img class="element" src="{{ pluResPath }}html/challenge/images/{{ avatar.element.toLowerCase() }}.png" alt="">
+                        <img class="char" src="{{ avatar.icon }}" alt="">
+                        <div class="level">等级 {{ avatar.level }}</div>
+                      </div>
+                    </div>
+                    {{ /each }}
+                  </div>
+                  <div class="detail-buff">
+                    {{ if boss_record?.buff }}
+                      <div class="detail-buff-border">
+                        <div class="buff-col">
+                          <div class="buff-icon-container">
+                            <img class="buff-icon" src="{{ boss_record.buff.icon }}" alt="">
+                          </div>
+                        </div>
+                        <div class="description-col">
+                          <div class="buff-description">{{ boss_record.buff.name_mi18n }}：<span>{{ boss_record.buff.desc_mi18n }}</span></div>
+                        </div>
+                      </div>
+                    {{ /if }}
+                  </div>
+                </div>
+                <div class="boss-image">
+                  <img class="boss" src="{{ boss_info.icon }}" alt="">
+                </div>
+              </div>
+            </div>
+          </div>
+        {{ else }}
+          <div class="detail-normalitem">
+            <div class="boss-content">
+              <div class="boss-title">将杀王棋通关战绩</div>
+              <div class="boss-node">
+                {{set boss_info = last.boss_info}}
+                {{set boss_record = last.boss_record}}
+                <div class="boss-info">
+                  <div> {{ boss_info.name_mi18n }} </div>
+                  {{ if boss_record?.has_challenge_record }}
+                    <div> 使用轮次 <span class="count"> {{boss_record.round_num}} </span>
+                    <span class="boss-star-container">
+                      <span class="detail-boss-defeated-text">已通关</span>
+                    </span>
+                    </div>
+                    <% for (var i = 0; i < boss_record.star_num; i++){ %>
+                      <img class="rogue-star-small" src="{{ pluResPath }}html/challenge/images/boss_star.ae0258cf.png" />
+                    <% } %>
+                  {{ else }}
+                    <div class="detail-boss-not-defeated-text">未通关</div>
+                  {{ /if }}
+                </div>
+                {{ if boss_record?.has_challenge_record }}
+                  <div class="boss-record">
+                    <div class="count boss-time">{{boss_record.challengeTime}}</div>
+                    <div class="detail-avatars">
+                      {{ each boss_record.avatars avatar }}
+                      <div class="detail-avatar rank{{ avatar.rarity }}">
+                        <div class="detail-avatar-border">
+                          <span class="life life{{ avatar.rank }}">{{ avatar.rank }}魂</span>
+                          <img class="element" src="{{ pluResPath }}html/challenge/images/{{ avatar.element.toLowerCase() }}.png" alt="">
+                          <img class="char" src="{{ avatar.icon }}" alt="">
+                          <div class="level">等级 {{ avatar.level }}</div>
+                        </div>
+                      </div>
+                      {{ /each }}
+                    </div>
+                    <div class="detail-buff">
+                      {{ if boss_record?.buff }}
+                        <div class="detail-buff-border">
+                          <div class="buff-col">
+                            <div class="buff-icon-container">
+                              <img class="buff-icon" src="{{ boss_record.buff.icon }}" alt="">
+                            </div>
+                          </div>
+                          <div class="description-col">
+                            <div class="buff-description">{{ boss_record.buff.name_mi18n }}：<span>{{ boss_record.buff.desc_mi18n }}</span></div>
+                          </div>
+                        </div>
+                      {{ /if }}
+                    </div>
+                  </div>
+                {{ /if }}
+                <div class="boss-image">
+                  <img class="boss" src="{{ boss_info.icon }}" alt="">
+                </div>
+              </div>
+            </div>
+          </div>
+        {{ /if }}
+      </div>
+
+      <div class="summar">
+        <div class="boss-title">骑士关卡战绩</div>
+        <div class="detail-list">
+          {{ each last.mob_infos mob_info mob_index }}
+          <div class="detail-item">
+            <div class="boss-content">
+              <div class="boss-title"> {{ mob_info.name }}: {{ mob_info.monster_name }}</div>
+              <div class="boss-node">
+                {{set mob_record = last.mob_records?.[mob_index]}}
+                {{ if mob_record?.is_fast }}
+                  <div class="boss-info">
+                    <div class="detail-boss-defeated-text">快速通关</div>
+                  </div>
+                {{ else }}
+                  <div class="boss-info">
+                    {{ if mob_record?.has_challenge_record }}
+                      <div> 使用轮次 <span class="count"> {{mob_record.round_num}} </span>
+                        <span class="boss-star-container">
+                          <span class="detail-boss-defeated-text">已通关</span>
+                        </span>
+                      </div>
+                      <% for (var i = 0; i < mob_record.star_num; i++){ %>
+                        <img class="rogue-star-small" src="{{ pluResPath }}html/challenge/images/rogue-star.png" />
+                      <% } %>
+                    {{ else }}
+                      <div class="detail-boss-not-defeated-text">未通关</div>
+                    {{ /if }}
+                  </div>
+                  {{ if mob_record?.has_challenge_record }}
+                    <div class="boss-record">
+                      <div class="count boss-time">{{mob_record.challengeTime}}</div>
+                      <div class="detail-avatars">
+                        {{ each mob_record.avatars avatar }}
+                        <div class="detail-avatar rank{{ avatar.rarity }}">
+                          <div class="detail-avatar-border">
+                            <span class="life life{{ avatar.rank }}">{{ avatar.rank }}魂</span>
+                            <img class="element" src="{{ pluResPath }}html/challenge/images/{{ avatar.element.toLowerCase() }}.png" alt="">
+                            <img class="char" src="{{ avatar.icon }}" alt="">
+                            <div class="level">等级 {{ avatar.level }}</div>
+                          </div>
+                        </div>
+                        {{ /each }}
+                      </div>
+                    </div>
+                  {{ /if }}
+                {{ /if }}
+                <div class="boss-image">
+                  <img class="boss" src="{{ mob_info.monster_icon }}" alt="">
+                </div>
+              </div>
+            </div>
+          </div>
+          {{ /each }}
+        </div>
+      </div>
+    </div>
+    <div class="right">
+      <div class="time-container">
+        <div class="count">统计周期: {{ early.beginTime }}-{{ early.endTime }}</div>
+      </div>
+      {{set record = early}}
+      <div class="summar">
+        <h2>异相仲裁挑战回顾</h2>
+        <div class="summar-content">
+          {{set record_brief = data.challenge_peak_best_record_brief}}
+          {{set total_battle_num = record_brief == null ? null : record_brief.total_battle_num}}
+          <div class="summar-info summar-medal-container">
+            {{ if record_brief == null}}
+              {{ if early.boss_record == null }}
+                <img class="rank-icon" src="{{ early.group.theme_pic_path }}" alt="">
+              {{ else }}
+                <img class="rank-icon" src="{{ early.boss_record.challenge_peak_rank_icon }}" alt="">
+              {{ /if }}
+            {{ else }}
+              <img class="rank-icon" src="{{ record_brief.challenge_peak_rank_icon }}" alt="">
+            {{ /if }}
+          </div>
+          <div class="summar-info summar-star-container">
+            <div>王棋关卡: {{ early.boss_stars }} 星</div>
+            <div style="margin-top: 8px;">骑士关卡: {{ early.mob_stars }} 星</div>
+          </div>
+          <div class="summar-info summar-medal-container">
+            <img class="rank-icon" src="{{ early.group.theme_pic_path }}" alt="">
+          </div>
+          <div class="summar-info summar-name-container">
+            <div>{{ early.group.game_version }} 版本: {{ early.group.name_mi18n }}</div>
+            <div style="margin-top: 8px;">战斗次数: {{ total_battle_num }}</div>
+          </div>
+        </div>
+        {{ if early.boss_record?.has_challenge_record && early.boss_record?.hard_mode }}
+          <div class="detail-hellitem">
+            <div class="boss-content">
+              <div class="boss-title">将杀王棋•绝境通关战绩</div>
+              <div class="boss-node">
+                {{set boss_info = early.boss_info}}
+                {{set boss_record = early.boss_record}}
+                <div class="boss-info">
+                  <div> {{ boss_info.name_mi18n }} </div>
+                  <div> 使用轮次 <span class="count"> {{boss_record.round_num}} </span>
+                  <span class="boss-star-container">
+                    <span class="detail-boss-defeated-text">已通关</span>
+                  </span>
+                  </div>
+                  <% for (var i = 0; i < boss_record.star_num; i++){ %>
+                    <img class="rogue-star-small" src="{{ pluResPath }}html/challenge/images/boss_star.ae0258cf.png" />
+                  <% } %>
+                </div>
+                <div class="boss-record">
+                  <div class="count boss-time">{{boss_record.challengeTime}}</div>
+                  <div class="detail-avatars">
+                    {{ each boss_record.avatars avatar }}
+                    <div class="detail-avatar rank{{ avatar.rarity }}">
+                      <div class="detail-avatar-border">
+                        <span class="life life{{ avatar.rank }}">{{ avatar.rank }}魂</span>
+                        <img class="element" src="{{ pluResPath }}html/challenge/images/{{ avatar.element.toLowerCase() }}.png" alt="">
+                        <img class="char" src="{{ avatar.icon }}" alt="">
+                        <div class="level">等级 {{ avatar.level }}</div>
+                      </div>
+                    </div>
+                    {{ /each }}
+                  </div>
+                  <div class="detail-buff">
+                    {{ if boss_record?.buff }}
+                      <div class="detail-buff-border">
+                        <div class="buff-col">
+                          <div class="buff-icon-container">
+                            <img class="buff-icon" src="{{ boss_record.buff.icon }}" alt="">
+                          </div>
+                        </div>
+                        <div class="description-col">
+                          <div class="buff-description">{{ boss_record.buff.name_mi18n }}：<span>{{ boss_record.buff.desc_mi18n }}</span></div>
+                        </div>
+                      </div>
+                    {{ /if }}
+                  </div>
+                </div>
+                <div class="boss-image">
+                  <img class="boss" src="{{ boss_info.icon }}" alt="">
+                </div>
+              </div>
+            </div>
+          </div>
+        {{ else }}
+          <div class="detail-normalitem">
+            <div class="boss-content">
+              <div class="boss-title">将杀王棋通关战绩</div>
+              <div class="boss-node">
+                {{set boss_info = early.boss_info}}
+                {{set boss_record = early.boss_record}}
+                <div class="boss-info">
+                  <div> {{ boss_info.name_mi18n }} </div>
+                  {{ if boss_record?.has_challenge_record }}
+                    <div> 使用轮次 <span class="count"> {{boss_record.round_num}} </span>
+                    <span class="boss-star-container">
+                      <span class="detail-boss-defeated-text">已通关</span>
+                    </span>
+                    </div>
+                    <% for (var i = 0; i < boss_record.star_num; i++){ %>
+                      <img class="rogue-star-small" src="{{ pluResPath }}html/challenge/images/boss_star.ae0258cf.png" />
+                    <% } %>
+                  {{ else }}
+                    <div class="detail-boss-not-defeated-text">未通关</div>
+                  {{ /if }}
+                </div>
+                {{ if boss_record?.has_challenge_record }}
+                  <div class="boss-record">
+                    <div class="count boss-time">{{boss_record.challengeTime}}</div>
+                    <div class="detail-avatars">
+                      {{ each boss_record.avatars avatar }}
+                      <div class="detail-avatar rank{{ avatar.rarity }}">
+                        <div class="detail-avatar-border">
+                          <span class="life life{{ avatar.rank }}">{{ avatar.rank }}魂</span>
+                          <img class="element" src="{{ pluResPath }}html/challenge/images/{{ avatar.element.toLowerCase() }}.png" alt="">
+                          <img class="char" src="{{ avatar.icon }}" alt="">
+                          <div class="level">等级 {{ avatar.level }}</div>
+                        </div>
+                      </div>
+                      {{ /each }}
+                    </div>
+                    <div class="detail-buff">
+                      {{ if boss_record?.buff }}
+                        <div class="detail-buff-border">
+                          <div class="buff-col">
+                            <div class="buff-icon-container">
+                              <img class="buff-icon" src="{{ boss_record.buff.icon }}" alt="">
+                            </div>
+                          </div>
+                          <div class="description-col">
+                            <div class="buff-description">{{ boss_record.buff.name_mi18n }}：<span>{{ boss_record.buff.desc_mi18n }}</span></div>
+                          </div>
+                        </div>
+                      {{ /if }}
+                    </div>
+                  </div>
+                {{ /if }}
+                <div class="boss-image">
+                  <img class="boss" src="{{ boss_info.icon }}" alt="">
+                </div>
+              </div>
+            </div>
+          </div>
+        {{ /if }}
+      </div>
+
+      <div class="summar">
+        <div class="boss-title">骑士关卡战绩</div>
+        <div class="detail-list">
+          {{ each early.mob_infos mob_info mob_index }}
+          <div class="detail-item">
+            <div class="boss-content">
+              <div class="boss-title"> {{ mob_info.name }}: {{ mob_info.monster_name }}</div>
+              <div class="boss-node">
+                {{set mob_record = early.mob_records?.[mob_index]}}
+                {{ if mob_record?.is_fast }}
+                  <div class="boss-info">
+                    <div class="detail-boss-defeated-text">快速通关</div>
+                  </div>
+                {{ else }}
+                  <div class="boss-info">
+                    {{ if mob_record?.has_challenge_record }}
+                      <div> 使用轮次 <span class="count"> {{mob_record.round_num}} </span>
+                        <span class="boss-star-container">
+                          <span class="detail-boss-defeated-text">已通关</span>
+                        </span>
+                      </div>
+                      <% for (var i = 0; i < mob_record.star_num; i++){ %>
+                        <img class="rogue-star-small" src="{{ pluResPath }}html/challenge/images/rogue-star.png" />
+                      <% } %>
+                    {{ else }}
+                      <div class="detail-boss-not-defeated-text">未通关</div>
+                    {{ /if }}
+                  </div>
+                  {{ if mob_record?.has_challenge_record }}
+                    <div class="boss-record">
+                      <div class="count boss-time">{{mob_record.challengeTime}}</div>
+                      <div class="detail-avatars">
+                        {{ each mob_record.avatars avatar }}
+                        <div class="detail-avatar rank{{ avatar.rarity }}">
+                          <div class="detail-avatar-border">
+                            <span class="life life{{ avatar.rank }}">{{ avatar.rank }}魂</span>
+                            <img class="element" src="{{ pluResPath }}html/challenge/images/{{ avatar.element.toLowerCase() }}.png" alt="">
+                            <img class="char" src="{{ avatar.icon }}" alt="">
+                            <div class="level">等级 {{ avatar.level }}</div>
+                          </div>
+                        </div>
+                        {{ /each }}
+                      </div>
+                    </div>
+                  {{ /if }}
+                {{ /if }}
+                <div class="boss-image">
+                  <img class="boss" src="{{ mob_info.monster_icon }}" alt="">
+                </div>
+              </div>
+            </div>
+          </div>
+          {{ /each }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="logo">
+    Created By genshin & StarRail-plugin
+  </div>
+
+{{/block}}

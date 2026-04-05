@@ -36,7 +36,7 @@ export class Challenge extends plugin {
           fnc: 'challengeBoss'
         },
         {
-          reg: '^#*星铁?(上期|本期)?(简易)?(异乡|异相|异向|仲裁|异相仲裁)',
+          reg: '^#*星铁?(往期|上期|本期)?(简易)?(异乡|异相|异向|仲裁|异相仲裁)',
           fnc: 'challengePeak'
         }
       ]
