@@ -48,17 +48,17 @@
                     class="{{if current_train_score < max_train_score}}yellow{{/if}}">{{current_train_score}}</span>/{{max_train_score}}
             </div>
             <div class="center_item">
-                模拟宇宙：<span
-                    class="{{if current_rogue_score < max_rogue_score}}yellow{{/if}}">{{current_rogue_score}}</span>/{{max_rogue_score}}
+                历战余响：<span
+                    class="{{if weekly_cocoon_cnt > 0}}yellow{{/if}}">{{3 - weekly_cocoon_cnt}}</span>/{{weekly_cocoon_limit}}
             </div>
         </div>
         <div class="center">
             <div class="center_item" , style="padding-left: 60px;">
-                历战余响：<span
-                    class="{{if weekly_cocoon_cnt > 0}}yellow{{/if}}">{{3 - weekly_cocoon_cnt}}</span>/{{weekly_cocoon_limit}}
+                周期演算：<span
+                    class="{{if rogue_tourn_weekly_cur < rogue_tourn_weekly_max}}yellow{{/if}}">{{rogue_tourn_weekly_cur}}</span>/{{rogue_tourn_weekly_max}}
             </div>
             <div class="center_item">
-                货币战争：<span
+                周期积分：<span
                     class="{{if grid_fight_weekly_cur < grid_fight_weekly_max}}yellow{{/if}}">{{grid_fight_weekly_cur}}</span>/{{grid_fight_weekly_max}}
             </div>
         </div>
