@@ -81,9 +81,7 @@ export class exchange extends plugin {
 
     for (let val of code.data.code_list) {
       if (val.code) {
-        codes.push([val.code, segment.button([
-          { text: '兑换', callback: `#兑换码使用${val.code}` },
-        ])])
+        codes.push(val.code)
       }
     }
 

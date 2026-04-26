@@ -1,6 +1,6 @@
 import plugin from '../../../lib/plugins/plugin.js'
-import common from '../../../lib/common/common.js'
 import fetch from 'node-fetch'
+import { segment } from 'oicq'
 import MysInfo from '../model/mys/mysInfo.js'
 import Cfg from '../model/Cfg.js'
 
@@ -39,16 +39,17 @@ export class hoyocode extends plugin {
 
     let codes = await this.getCode()
     if (codes.length == 0) return this.e.reply('未获取到兑换码')
-    let msgData = []
+    let msgData = []; let button = []
     msgData.push('当前可用兑换码如下：')
     codes.forEach(val => {
       msgData.push(val)
+      button.push([{ text: `${gametype}兑换码使用${val}`, callback: `${gametype}兑换码使用${val}` }])
     })
     msgData.push(`兑换码使用网站：${url}`)
     msgData.push(`可使用命令 ${gametype}兑换码使用+(空格)+兑换码 进行兑换。若兑换失败，请尝试刷新cookie或重新绑定cookie`)
 
-    let fwdMsg = await common.makeForwardMsg(this.e, msgData)
-    return this.e.reply(fwdMsg)
+    let msg = msgData.join('\n')
+    return this.e.reply([msg, segment.button(...button)])
   }
 
   async getCode() {

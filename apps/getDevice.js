@@ -142,7 +142,7 @@ export class getDevice extends plugin {
         '6. 提示绑定成功',
         '--------------------------------',
         '[解绑设备]',
-        '发送 (#/*)解绑设备 即可'
+        '发送"(#/*)解绑设备"即可'
       ],
       msg = msgs.join('\n')
     await this.reply(await common.makeForwardMsg(e, msg, '绑定设备帮助'))
