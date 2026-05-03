@@ -34,7 +34,7 @@ export class myspanel extends plugin {
         }
         let uid = e.msg.match(/\d+/)?.[0] || await MysInfo.getUid(e, false)
         if (!uid) {
-            await e.reply('找不到uid，请：#刷新ck 或者：#扫码登录', true)
+            await e.reply('找不到uid，请：#刷新ck 或者：#扫码登录')
             return false
         }
         let game = e.game
@@ -52,11 +52,11 @@ export class myspanel extends plugin {
             let time_ = await redis.get(`bujidao:myspanelCD:${e.user_id}:${uid}`);
             if (time_) {
                 let seconds = moment(now).diff(moment(time_), 'seconds')
-                return e.reply(`UID：${uid}\n米游社更新面板cd中\n还需等待：${CD - seconds}秒`, true)
+                return e.reply(`UID：${uid}\n米游社更新面板cd中\n还需等待：${CD - seconds}秒`)
             }
         }
 
-        await e.reply(`开始查询uid:${uid}的米游社面板数据，可能会需要一定时间~`, true)
+        await e.reply(`开始查询uid:${uid}的米游社面板数据，可能会需要一定时间~`)
         let mysApi = new MysApi(uid, ck, {}, '', '', game)
         let device_fp = await mysApi.getData('getFp')
         if (device_fp?.retcode !== 0) return false

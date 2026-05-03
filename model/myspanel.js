@@ -5,7 +5,7 @@ import fs from 'node:fs'
 export default class Myspanel {
 
     /*原神*/
-    static async gs_mys(data, uid) {
+    static gs_mys(data, uid) {
         let avatars = {}
         this.property_map = data.data.property_map
 
@@ -287,7 +287,7 @@ export default class Myspanel {
     }
 
     /*星铁*/
-    static async sr_mys(data, uid) {
+    static sr_mys(data, uid) {
         let avatars = {}
         this.property_info = data.data.property_info
         let path = `./data/PlayerData/sr/${uid}.json`

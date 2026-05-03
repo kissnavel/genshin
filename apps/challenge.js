@@ -48,7 +48,9 @@ export class Challenge extends plugin {
     let res = await srChallenge.getIndex(e)
     if (!res) return false
     let img = await puppeteer.screenshot(`${res.gstempFile}roleIndex`, res)
-    if (img) return await e.reply(img)
+
+    let button = this.button(true)
+    if (img) return await e.reply([img, segment.button(...button)])
   }
 
   async challengeForgottenHall (e) {
@@ -56,7 +58,9 @@ export class Challenge extends plugin {
     let res = await srChallenge.get(e, 2)
     if (!res) return false
     let img = await puppeteer.screenshot(`${res.srtempFile}challenge`, res)
-    if (img) return await e.reply(img)
+
+    let button = this.button(false)
+    if (img) return await e.reply([img, segment.button(...button)])
   }
 
   async challengeStory (e) {
@@ -64,7 +68,9 @@ export class Challenge extends plugin {
     let res = await srChallenge.get(e, 1)
     if (!res) return false
     let img = await puppeteer.screenshot(`${res.srtempFile}challenge`, res)
-    if (img) return await e.reply(img)
+
+    let button = this.button(false)
+    if (img) return await e.reply([img, segment.button(...button)])
   }
 
   async challengeBoss (e) {
@@ -72,7 +78,9 @@ export class Challenge extends plugin {
     let res = await srChallenge.get(e, 0)
     if (!res) return false
     let img = await puppeteer.screenshot(`${res.srtempFile}challenge`, res)
-    if (img) return await e.reply(img)
+
+    let button = this.button(false)
+    if (img) return await e.reply([img, segment.button(...button)])
   }
 
   async challengePeak (e) {
@@ -80,7 +88,9 @@ export class Challenge extends plugin {
     let res = await srChallenge.get(e, 3)
     if (!res) return false
     let img = await puppeteer.screenshot(`${res.srtempFile}challenge`, res)
-    if (img) return await e.reply(img)
+
+    let button = this.button(false)
+    if (img) return await e.reply([img, segment.button(...button)])
   }
 
   async challenge (e) {
@@ -88,7 +98,9 @@ export class Challenge extends plugin {
     let res = await srChallenge.get(e, '', true)
     if (!res) return false
     let img = await puppeteer.screenshot(`${res.srtempFile}challenge`, res)
-    if (img) return await e.reply(img)
+
+    let button = this.button(false)
+    if (img) return await e.reply([img, segment.button(...button)])
   }
 
   async challengeCurrent (e) {
@@ -96,7 +108,9 @@ export class Challenge extends plugin {
     let res = await srChallenge.get(e, this.getCurrentChallengeType())
     if (!res) return false
     let img = await puppeteer.screenshot(`${res.srtempFile}challenge`, res)
-    if (img) return await e.reply(img)
+
+    let button = this.button(false)
+    if (img) return await e.reply([img, segment.button(...button)])
   }
 
   getCurrentChallengeType () {
@@ -117,5 +131,30 @@ export class Challenge extends plugin {
     // 1: 虚构
     // 2: 混沌
     return periodNum % 3
+  }
+
+  button (role) {
+    let button = []
+    if (role = true) {
+      button.push([
+        { text: '#练度统计', callback: '#练度统计' },
+        { text: '#圣遗物列表', callback: '#圣遗物列表' }
+      ], [
+        { text: '*练度统计', callback: '*练度统计' },
+        { text: '*遗器列表', callback: '*遗器列表' }
+      ])
+    } else {
+      button.push([
+        { text: '*忘却', callback: '*忘却' },
+        { text: '*虚构', callback: '*虚构' },
+        { text: '*末日', callback: '*末日' }
+      ], [
+        { text: '*深渊', callback: '*深渊' },
+        { text: '*异相', callback: '*异相' },
+        { text: '*往期异相', callback: '*往期异相' }
+      ])
+    }
+
+    return button
   }
 }

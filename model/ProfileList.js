@@ -91,7 +91,7 @@ const ProfileList = {
 
     player.save()
     // 渲染图像
-    return e.reply(await Common.render('character/profile-list', {
+    let img = await Common.render('character/profile-list', {
       save_id: uid,
       uid,
       chars,
@@ -103,7 +103,38 @@ const ProfileList = {
       allowRank: rank && rank.allowRank,
       rankCfg,
       elem: player.isGs ? 'hydro' : 'sr'
-    }, { e, scale: 1.6, retType: 'base64' }))
+    }, { e, scale: 1.6, retType: 'base64' })
+
+    if (chars.length > 15) {
+      let gametype = e?.game == 'sr' ? '*' : '#'
+      let button = []
+
+      button.push([
+        { text: `${chars[0]?.abbr}`, callback: `${gametype}${chars[0]?.abbr}面板` },
+        { text: `${chars[1]?.abbr}`, callback: `${gametype}${chars[1]?.abbr}面板` },
+        { text: `${chars[2]?.abbr}`, callback: `${gametype}${chars[2]?.abbr}面板` }
+      ], [
+        { text: `${chars[3]?.abbr}`, callback: `${gametype}${chars[3]?.abbr}面板` },
+        { text: `${chars[4]?.abbr}`, callback: `${gametype}${chars[4]?.abbr}面板` },
+        { text: `${chars[5]?.abbr}`, callback: `${gametype}${chars[5]?.abbr}面板` }
+      ], [
+        { text: `${chars[6]?.abbr}`, callback: `${gametype}${chars[6]?.abbr}面板` },
+        { text: `${chars[7]?.abbr}`, callback: `${gametype}${chars[7]?.abbr}面板` },
+        { text: `${chars[8]?.abbr}`, callback: `${gametype}${chars[8]?.abbr}面板` }
+      ], [
+        { text: `${chars[9]?.abbr}`, callback: `${gametype}${chars[9]?.abbr}面板` },
+        { text: `${chars[10]?.abbr}`, callback: `${gametype}${chars[10]?.abbr}面板` },
+        { text: `${chars[11]?.abbr}`, callback: `${gametype}${chars[11]?.abbr}面板` }
+      ], [
+        { text: `${chars[12]?.abbr}`, callback: `${gametype}${chars[12]?.abbr}面板` },
+        { text: `${chars[13]?.abbr}`, callback: `${gametype}${chars[13]?.abbr}面板` },
+        { text: `${chars[14]?.abbr}`, callback: `${gametype}${chars[14]?.abbr}面板` }
+      ])
+
+      return e.reply([img, segment.button(...button)])
+    } else {
+      return e.reply(img)
+    }
   },
 
   async reload (e) {
