@@ -48,7 +48,17 @@ export default class MysInfo {
 
     this.gtest = false
     this.mysButton = segment.button([
-      { text: '米游社', link: 'https://miyoushe.com' }
+      { text: '米游社', link: 'https://miyoushe.com' },
+      { text: '#ck帮助', callback: '#Cookie帮助' }
+    ],[
+      { text: '#扫码登陆', callback: '#扫码登陆' },
+      { text: '#刷新ck', callback: '#刷新ck' }
+    ])
+    this.hoyoButton = segment.button([
+      { text: 'HoYoLAB', link: 'https://hoyolab.com' },
+      { text: '#ck帮助', callback: '#Cookie帮助' }
+    ],[
+      { text: '#刷新ck', callback: '#刷新ck' }
     ])
   }
 
@@ -115,7 +125,7 @@ export default class MysInfo {
       if (uid) return String(uid)
       if (e.noTips !== true) {
         e.reply([`请先${gametype}绑定uid`, segment.button([
-          { text: '绑定UID', input: `${gametype}绑定uid` }
+          { text: `${gametype}绑定uid`, callback: `${gametype}绑定uid` }
         ])], false, { at })
       }
       return false
@@ -148,7 +158,7 @@ export default class MysInfo {
 
     if (e.noTips !== true) {
       e.reply([`请先${gametype}绑定uid`, segment.button([
-        { text: '绑定UID', input: `${gametype}绑定uid` }
+        { text: `${gametype}绑定uid`, callback: `${gametype}绑定uid` }
       ])], false, { at: at || true })
     }
 
@@ -170,7 +180,7 @@ export default class MysInfo {
     if (!selfUser.hasCk) {
       if (e.noTips !== true) {
         e.reply(['尚未绑定Cookie', segment.button([
-          { text: 'Cookie帮助', callback: '#Cookie帮助' }
+          { text: '#Cookie帮助', callback: '#Cookie帮助' }
         ])], false, { at: selfUser.qq })
       }
       return false
@@ -351,13 +361,13 @@ export default class MysInfo {
 
     if (!this.uid) {
       this.e.reply([`请先${gametype}绑定uid`, segment.button([
-        { text: '绑定UID', input: `${gametype}绑定uid` }
+        { text: `${gametype}绑定uid`, callback: `${gametype}绑定uid` }
       ])], false, { at: true })
     }
 
     if (!this.ckInfo.ck) {
       this.e.reply(['暂无可用CK，请绑定更多用户或设置公共ck..', segment.button([
-        { text: 'Cookie帮助', callback: '#Cookie帮助' }
+        { text: '#Cookie帮助', callback: '#Cookie帮助' }
       ])])
     }
 
@@ -391,8 +401,9 @@ export default class MysInfo {
   }
 
   async checkCode (res, type, mysApi = {}, data = {}, isTask = false) {
+    let button = /^(1[0-9]|[6-9])[0-9]{8}/i.test(this.uid) ? this.hoyoButton : this.mysButton
     if (!res) {
-      if (!isTask) this.e.reply([`UID:${this.uid}，米游社接口请求失败，暂时无法查询`, this.mysButton])
+      if (!isTask) this.e.reply([`UID:${this.uid}，米游社接口请求失败，暂时无法查询`, button])
       return false
     }
 
@@ -409,30 +420,30 @@ export default class MysInfo {
         if (/(登录|login)/i.test(res.message)) {
           if (this.ckInfo.uid) {
             logger.mark(`[ck失效][uid:${this.uid}][qq:${this.userId}]`)
-            if (!isTask) this.e.reply([`UID:${this.ckInfo.uid}，米游社Cookie已失效`, this.mysButton])
+            if (!isTask) this.e.reply([`UID:${this.ckInfo.uid}，米游社Cookie已失效`, button])
           } else {
             logger.mark(`[公共ck失效][ltuid:${this.ckInfo.ltuid}]`)
-            if (!isTask) this.e.reply([`UID:${this.uid}，米游社查询失败，请稍后再试`, this.mysButton])
+            if (!isTask) this.e.reply([`UID:${this.uid}，米游社查询失败，请稍后再试`, button])
           }
           if (!isTask) await this.delCk()
         } else {
-          if (!isTask) this.e.reply([`UID:${this.uid}，米游社接口报错，暂时无法查询：${res.message}`, this.mysButton])
+          if (!isTask) this.e.reply([`UID:${this.uid}，米游社接口报错，暂时无法查询：${res.message}`, button])
         }
         break
       case 1008:
-        if (!isTask) this.e.reply([`UID:${this.uid}，请先去米游社绑定角色`, this.mysButton], false, { at: this.userId })
+        if (!isTask) this.e.reply([`UID:${this.uid}，请先去米游社绑定角色`, button], false, { at: this.userId })
         break
       case 10101:
         if (!isTask) {
           await this.disableToday()
-          this.e.reply([`UID:${this.uid}，查询已达今日上限`, this.mysButton])
+          this.e.reply([`UID:${this.uid}，查询已达今日上限`, button])
         }
         break
       case 10102:
         if (res.message === 'Data is not public for the user') {
-          if (!isTask) this.e.reply([`UID:${this.uid}，米游社数据未公开`, this.mysButton], false, { at: this.userId })
+          if (!isTask) this.e.reply([`UID:${this.uid}，米游社数据未公开`, button], false, { at: this.userId })
         } else {
-          if (!isTask) this.e.reply([`UID:${this.uid}，请先去米游社绑定角色`, this.mysButton])
+          if (!isTask) this.e.reply([`UID:${this.uid}，请先去米游社绑定角色`, button])
         }
         break
       // 伙伴不存在~
@@ -460,17 +471,19 @@ export default class MysInfo {
           }
           if (!res || [1034, 10035].includes(res?.retcode)) {
             logger.mark(`[米游社查询失败][uid:${this.uid}][qq:${this.userId}] 遇到验证码`)
-            if (!isTask) this.e.reply([`UID:${this.uid}，米游社查询遇到验证码，请稍后再试`, this.mysButton])
+            if (!isTask) this.e.reply([`UID:${this.uid}，米游社查询遇到验证码，请稍后再试`, button])
           } else if (!res || [5003, 10041].includes(res?.retcode)) {
-            if (!isTask) this.e.reply([`UID:${this.uid}，米游社账号异常，暂时无法查询，发送“#绑定设备帮助”查看如何绑定设备`, this.mysButton])
+            if (!isTask) this.e.reply([`UID:${this.uid}，米游社账号异常，暂时无法查询，发送“#绑定设备帮助”查看如何绑定设备`, segment.button([
+              { text: '#绑定设备帮助', callback: '#绑定设备帮助' }
+            ])])
           }
         }
         break
       case 10307:
-        if (!isTask) this.e.reply([`UID:${this.uid}，版本更新期间，数据维护中`, this.mysButton])
+        if (!isTask) this.e.reply([`UID:${this.uid}，版本更新期间，数据维护中`, button])
         break
       default:
-        if (!isTask) this.e.reply([`UID:${this.uid}，米游社接口报错，暂时无法查询：${res.message || 'error'}`, this.mysButton])
+        if (!isTask) this.e.reply([`UID:${this.uid}，米游社接口报错，暂时无法查询：${res.message || 'error'}`, button])
         break
     }
     if (res.retcode !== 0) {
