@@ -21,8 +21,12 @@ export default class MysSign extends base {
 
         let { cks, uids } = await Cfg.getcks(false, e.user_id)
 
-        if (_.every(cks, _.isEmpty))
-            return e.reply('无法签到，请发送【#cookie帮助】查看配置教程\n或尝试【#刷新ck】', false, { at: true })
+        if (_.every(cks, _.isEmpty)) return e.reply(['无法签到，请发送【#cookie帮助】查看配置教程\n或尝试【#刷新ck】', segment.button([
+            { text: '#ck帮助', callback: '#Cookie帮助' }
+        ],[
+            { text: '#扫码登陆', callback: '#扫码登陆' },
+            { text: '#刷新ck', callback: '#刷新ck' }
+        ])], false, { at: true })
 
         if (signing) return e.reply(`\n当前签到剩余【${Nosign}】个\n预计【${finishTime}】完成`, false, { at: true, recallMsg: mysSign.set.recall })
 

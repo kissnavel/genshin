@@ -16,6 +16,12 @@ export default class BBsSign extends base {
         super(e)
         this.model = 'BBsSign'
         this.ForumData = Data.readJSON(`${Cfg.file}`, "mys")
+        this.button = segment.button([
+            { text: '#ck帮助', callback: '#Cookie帮助' }
+        ],[
+            { text: '#扫码登陆', callback: '#扫码登陆' },
+            { text: '#刷新ck', callback: '#刷新ck' }
+        ])
     }
 
     static async bbsSign(e, name) {
@@ -23,7 +29,7 @@ export default class BBsSign extends base {
 
         let sks = await Cfg.getsks(false, e.user_id)
         if (_.isEmpty(sks)) {
-            e.reply('\n请【#扫码登录】后签到米币', false, { at: true })
+            e.reply(['\n请【#扫码登录】后签到米币', BbsSign.button], false, { at: true })
             return false
         }
 

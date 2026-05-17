@@ -3,11 +3,13 @@
 ## 说明
 1、本仓库miao崽与trss崽均可使用，自行替换即可。
 
-2、本仓库已整合：“<a href="https://github.com/kissnavel/bujidaoRUN">bujidaoRUN</a>”仓库的体力、签到、米游社面板等功能。
+2、本仓库需配合：“<a href="https://github.com/yoimiya-kokomi/miao-plugin">miao-plugin</a>”、“<a href="https://github.com/ctrlcvs/xiaoyao-cvs-plugin">xiaoyao-cvs-plugin</a>”等插件使用。
 
-3、本仓库已整合：“<a href="https://github.com/kissnavel/loveMys">loveMys</a>”仓库的全部功能。
+3、本仓库已整合：“<a href="https://github.com/kissnavel/bujidaoRUN">bujidaoRUN</a>”仓库的体力、签到、米游社面板等功能。
 
-4、本仓库已整合：“<a href="https://github.com/kissnavel/SR-plugin">SR-plugin</a>”仓库的深渊功能。
+4、本仓库已整合：“<a href="https://github.com/kissnavel/loveMys">loveMys</a>”仓库的全部功能。
+
+5、本仓库已整合：“<a href="https://github.com/TsukinaKasumi/StarRail-plugin">StarRail-plugin</a>”仓库的深渊功能。
 
 ## 较原仓库新增的部分功能
 1、本仓库支持绑定原神、星铁、绝区零、崩三、崩二、未定，支持国际服与国服，已完善查询逻辑，崩三、崩二、未定可基于本仓库自行开发查询功能。

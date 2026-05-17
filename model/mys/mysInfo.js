@@ -402,6 +402,7 @@ export default class MysInfo {
 
   async checkCode (res, type, mysApi = {}, data = {}, isTask = false) {
     let button = /^(1[0-9]|[6-9])[0-9]{8}/i.test(this.uid) ? this.hoyoButton : this.mysButton
+    let gametype = this.e.game == 'sr' ? '*' : '#'
     if (!res) {
       if (!isTask) this.e.reply([`UID:${this.uid}，米游社接口请求失败，暂时无法查询`, button])
       return false
@@ -473,8 +474,8 @@ export default class MysInfo {
             logger.mark(`[米游社查询失败][uid:${this.uid}][qq:${this.userId}] 遇到验证码`)
             if (!isTask) this.e.reply([`UID:${this.uid}，米游社查询遇到验证码，请稍后再试`, button])
           } else if (!res || [5003, 10041].includes(res?.retcode)) {
-            if (!isTask) this.e.reply([`UID:${this.uid}，米游社账号异常，暂时无法查询，发送“#绑定设备帮助”查看如何绑定设备`, segment.button([
-              { text: '#绑定设备帮助', callback: '#绑定设备帮助' }
+            if (!isTask) this.e.reply([`UID:${this.uid}，米游社账号异常，暂时无法查询，发送“${gametype}}绑定设备帮助”查看如何绑定设备`, segment.button([
+              { text: `${gametype}绑定设备帮助`, callback: `${gametype}绑定设备帮助` }
             ])])
           }
         }

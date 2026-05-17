@@ -20,6 +20,13 @@ export class myspanel extends plugin {
                 fnc: 'mys'
             }]
         })
+
+        this.button = segment.button([
+            { text: '#ck帮助', callback: '#Cookie帮助' }
+        ],[
+            { text: '#扫码登陆', callback: '#扫码登陆' },
+            { text: '#刷新ck', callback: '#刷新ck' }
+        ])
     }
 
     async mys(e) {
@@ -34,14 +41,14 @@ export class myspanel extends plugin {
         }
         let uid = e.msg.match(/\d+/)?.[0] || await MysInfo.getUid(e, false)
         if (!uid) {
-            await e.reply('找不到uid，请：#刷新ck 或者：#扫码登录')
+            await e.reply(['找不到uid，请：#刷新ck 或者：#扫码登录', this.button])
             return false
         }
         let game = e.game
         let ck = await MysInfo.checkUidBing(uid, game)
         ck = ck.ck
         if (!ck) {
-            await e.reply(`uid:${uid}当前尚未绑定Cookie`)
+            await e.reply([`uid:${uid}当前尚未绑定Cookie`, this.button])
             return false
         }
 

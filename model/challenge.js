@@ -336,7 +336,12 @@ export default class srChallenge extends base {
     let ck = await MysInfo.checkUidBing(uid, game)
     ck = ck.ck
     if (!ck) {
-      await e.reply(`uid:${uid}当前尚未绑定Cookie`)
+      await e.reply([`uid:${uid}当前尚未绑定Cookie`, segment.button([
+        { text: '#ck帮助', callback: '#Cookie帮助' }
+      ],[
+        { text: '#扫码登陆', callback: '#扫码登陆' },
+        { text: '#刷新ck', callback: '#刷新ck' }
+      ])])
       return false
     }
 
