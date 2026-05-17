@@ -122,7 +122,7 @@ export class getDevice extends plugin {
   async bindDeviceHelp(e) {
     let gametype = e.game == 'sr' ? '*' : '#'
     const msgs = [
-      '[绑定设备]',
+      '[绑定设备帮助]',
       '方法一：',
       '1. 使用抓包软件抓取米游社APP的请求',
       '2. 在请求头内找到【x-rpc-device_id】和【x-rpc-device_fp】',
@@ -132,7 +132,6 @@ export class getDevice extends plugin {
       '5. 机器人会提示发送设备信息',
       '6. 粘贴自行构造的设备信息，并发送',
       '7. 提示绑定成功', 
-      '--------------------------------',
       '方法二（仅适用于安卓设备）：',
       '1. 使用常用米游社手机下载下面链接的APK文件，并安装',
       'https://ghproxy.mihomo.me/https://raw.githubusercontent.com/forchannot/get_device_info/main/app/build/outputs/apk/debug/app-debug.apk',
@@ -141,12 +140,12 @@ export class getDevice extends plugin {
       '4. 机器人会提示发送设备信息',
       '5. 粘贴已复制的设备信息，并发送',
       '6. 提示绑定成功',
-      '--------------------------------',
       '[解绑设备]',
-      '发送"(#/*)解绑设备"即可'
+      '1. 发送"(#/*)解绑设备"即可',
+      '[绑定设备帮助]'
     ],
     msg = msgs.join('\n')
-    await this.reply([await common.makeForwardMsg(e, msg, '绑定设备帮助'), segment.button([
+    await this.reply([await common.makeForwardMsg(e, msg), segment.button([
       { text: `${gametype}绑定设备`, callback: `${gametype}绑定设备` },
       { text: `${gametype}解绑设备`, callback: `${gametype}解绑设备` }
     ])])
