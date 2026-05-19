@@ -514,6 +514,7 @@ export default class Myspanel {
                     //attrIds
                     let attrIds = []
                     for (let v_ of yq.properties) {
+                        if (v_.is_preview) return
                         //去% ％
                         if (v_.value.includes('%', '％')) {
                             v_.value = Number(v_.value.replace(/%|％/g, '').trim())
