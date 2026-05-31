@@ -154,7 +154,7 @@ class Cfg {
             }
             cks[key] = Object.assign({}, cks[key], ck)
           }
-          if (!note) cks = await this.otherck(row, cks)
+          if (!note && ['bh3', 'bh2'].includes(key)) cks = await this.otherck(key, row, cks)
         }
       }
       for (let game of this.Game)
@@ -169,39 +169,66 @@ class Cfg {
     }
   }
 
-  async otherck(row, cks) {
+  async otherck(game, row, cks) {
     let ck = this.setCk(row.ck, row.device)
-    for (let game of this.Game) {
-      if (['gs', 'sr', 'zzz', 'wd'].includes(game)) continue
-      let mysApi = new MysApi('', ck, { log: false }, '', '', game)
-      let res
-      if (game == 'bh2') {
-        res = await mysApi.getData('bh2_cn')
-        if (res?.retcode !== 0) return cks
-        if (res?.data?.list.length == 0) continue
-      } else {
-        res = await mysApi.getData('bh3_cn')
-        if (res?.retcode !== 0) res = await mysApi.getData('bh3_global')
-        if (res?.retcode !== 0) return cks
-        if (res?.data?.list.length == 0) continue
-      }
-
-      for (let data of res?.data?.list) {
-        if (this.banUid[game]?.includes(Number(data.game_uid))) continue
-        let uid = String(data.game_uid)
+    const Data = JSON.parse(row.uids)
+    for (let i in Data[game]) {
+      if (this.banUid[game]?.includes(Number(Data[game][i]))) continue
+      let uid = String(Data[game][i])
+      let usergame = JSON.parse(await redis.get(`genshin:usergame:${uid}:role`))
+      if (usergame) {
         let CK = {
           [uid]: {
             qq: row.qq,
             uid: uid,
             ck: ck,
             skid: `${row.ltuid}_${row.qq}`,
-            game_biz: data.game_biz,
-            region: data.region,
+            game_biz: usergame.game_biz,
+            region: usergame.region,
             device_id: row.device,
             ltuid: row.ltuid
           }
         }
         cks[game] = Object.assign({}, cks[game], CK)
+      } else {
+        let mysApi = new MysApi('', ck, { log: false }, '', '', game)
+        let res, game_biz, region
+        if (game == 'bh2') {
+          res = await mysApi.getData('bh2_cn')
+          if (res?.retcode !== 0) return cks
+          if (res?.data?.list.length == 0) continue
+        } else {
+          res = await mysApi.getData('bh3_cn')
+          if (res?.retcode !== 0) res = await mysApi.getData('bh3_global')
+          if (res?.retcode !== 0) return cks
+          if (res?.data?.list.length == 0) continue
+        }
+
+        let data = res?.data?.list.find(item => item.game_uid === uid)
+        if (data) {
+          game_biz = data.game_biz,
+          region = data.region
+        } else {
+          continue
+        }
+        let CK = {
+          [uid]: {
+            qq: row.qq,
+            uid: uid,
+            ck: ck,
+            skid: `${row.ltuid}_${row.qq}`,
+            game_biz: game_biz,
+            region: region,
+            device_id: row.device,
+            ltuid: row.ltuid
+          }
+        }
+        cks[game] = Object.assign({}, cks[game], CK)
+        let usergame = {
+          game_biz: game_biz,
+          region: region
+        }
+        await redis.set(`genshin:usergame:${uid}:role`, JSON.stringify(usergame))
       }
     }
     await common.sleep(_.random(500, 1000))

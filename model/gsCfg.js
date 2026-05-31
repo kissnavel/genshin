@@ -139,29 +139,40 @@ class GsCfg {
     let ck = mys.ck
     let game = e.game
     let res, game_biz, region
-    let mysApi = new MysApi('', ck, { game })
-    if (game == 'bh2') {
-      res = await mysApi.getData('bh2_cn')
-      if (!res || res?.retcode !== 0) {
-        await e.reply('用户数据获取失败')
-        return false
-      }
+    let usergame = JSON.parse(await redis.get(`genshin:usergame:${uid}:role`))
+    if (usergame) {
+      game_biz = usergame.game_biz,
+      region = usergame.region
     } else {
-      res = await mysApi.getData('bh3_cn')
-      if (!res || res?.retcode !== 0) res = await mysApi.getData('bh3_global')
-      if (!res || res?.retcode !== 0) {
-        await e.reply('用户数据获取失败')
-        return false
+      let mysApi = new MysApi('', ck, { game })
+      if (game == 'bh2') {
+        res = await mysApi.getData('bh2_cn')
+        if (!res || res?.retcode !== 0) {
+          await e.reply('用户数据获取失败')
+          return false
+        }
+      } else {
+        res = await mysApi.getData('bh3_cn')
+        if (!res || res?.retcode !== 0) res = await mysApi.getData('bh3_global')
+        if (!res || res?.retcode !== 0) {
+          await e.reply('用户数据获取失败')
+          return false
+        }
       }
-    }
 
-    let data = res.data.list.find(item => item.game_uid === uid)
-    if (data) {
-      game_biz = data.game_biz,
-      region = data.region
-    } else {
-      game_biz = '',
-      region = ''
+      let data = res.data.list.find(item => item.game_uid === uid)
+      if (data) {
+        game_biz = data.game_biz,
+        region = data.region
+      } else {
+        await e.reply('用户数据获取失败')
+        return false
+      }
+      let usergame = {
+        game_biz: game_biz,
+        region: region
+      }
+      await redis.set(`genshin:usergame:${uid}:role`, JSON.stringify(usergame))
     }
     return { uid, ck, game_biz, region }
   }
