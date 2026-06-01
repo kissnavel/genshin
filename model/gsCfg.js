@@ -139,7 +139,7 @@ class GsCfg {
     let ck = mys.ck
     let game = e.game
     let res, game_biz, region
-    let usergame = JSON.parse(await redis.get(`genshin:usergame:${uid}:role`))
+    let usergame = JSON.parse(await redis.get(`genshin:usergame:${uid}:${game}_role`))
     if (usergame) {
       game_biz = usergame.game_biz,
       region = usergame.region
@@ -172,7 +172,7 @@ class GsCfg {
         game_biz: game_biz,
         region: region
       }
-      await redis.set(`genshin:usergame:${uid}:role`, JSON.stringify(usergame))
+      await redis.set(`genshin:usergame:${uid}:${game}_role`, JSON.stringify(usergame))
     }
     return { uid, ck, game_biz, region }
   }

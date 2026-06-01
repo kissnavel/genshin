@@ -175,7 +175,7 @@ class Cfg {
     for (let i in Data[game]) {
       if (this.banUid[game]?.includes(Number(Data[game][i]))) continue
       let uid = String(Data[game][i])
-      let usergame = JSON.parse(await redis.get(`genshin:usergame:${uid}:role`))
+      let usergame = JSON.parse(await redis.get(`genshin:usergame:${uid}:${game}_role`))
       if (usergame) {
         let CK = {
           [uid]: {
@@ -228,7 +228,7 @@ class Cfg {
           game_biz: game_biz,
           region: region
         }
-        await redis.set(`genshin:usergame:${uid}:role`, JSON.stringify(usergame))
+        await redis.set(`genshin:usergame:${uid}:${game}_role`, JSON.stringify(usergame))
       }
     }
     await common.sleep(_.random(500, 1000))
