@@ -77,16 +77,17 @@ export class exchange extends plugin {
       logger.info('[兑换码] 未获取到兑换码')
       return true
     }
-    let codes = []
+    let msgs = []
+    msgs.push(`${title}-直播兑换码`)
+    msgs.push(`兑换码过期时间: \n${time}`)
 
     for (let val of code.data.code_list) {
       if (val.code) {
-        codes.push(val.code)
+        msgs.push(val.code)
       }
     }
 
-    let msg = [`兑换码过期时间: \n${time}`, ...codes]
-    msg = await common.makeForwardMsg(this.e, msg, `${title}-直播兑换码`)
+    let msg = msgs.join('\n')
     await this.reply(msg)
   }
 
