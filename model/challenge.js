@@ -342,12 +342,6 @@ export default class srChallenge extends base {
   }
 
   async userUid (e) {
-    let user = e.user_id
-    let ats = e.message.filter(m => m.type === 'at')
-    if (ats.length > 0 && !e.atBot) {
-      user = ats[0].qq
-      e.user_id = user
-    }
     let uid = e.msg.match(/\d+/)?.[0] || await MysInfo.getUid(e, false)
     if (!uid) {
       await e.reply('找不到uid，请：#刷新ck 或者：#扫码登录', true)
