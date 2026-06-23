@@ -208,18 +208,6 @@ img.boss {
   transform: translate(10px, -10px);
 }
 
-.detail-bar-node3 {
-  background: url('./images/memory_node3_time_bg.ccb847b8.png') no-repeat;
-  background-size: cover;
-}
-
-img.node3-crown {
-  width: 28px;
-  height: 28px;
-  margin-right: 4px;
-  vertical-align: middle;
-}
-
 .detail-list {
   color: #f0eaca;
 }
@@ -417,6 +405,16 @@ img.buff-icon {
   margin: 10px;
 }
 
+.logo {
+  clear: both;
+  font-size: 60px;
+  font-family: 'tttgbnumber';
+  /* color: #f0eaca; */
+  text-align: center;
+  margin-top: 30px;
+  padding-bottom: 30px;
+}
+
 .detail-boss-defeated-text {
   color: rgb(205, 181, 136);
   text-align: center;
@@ -431,12 +429,14 @@ img.buff-icon {
   margin: 10px;
 }
 
-.logo {
-  clear: both;
-  font-size: 60px;
-  font-family: 'tttgbnumber';
-  /* color: #f0eaca; */
-  text-align: center;
-  margin-top: 30px;
-  padding-bottom: 30px;
+.detail-bar-node3 {
+  background: url('./images/memory_node3_time_bg.ccb847b8.png') no-repeat;
+  background-size: cover;
+}
+
+img.node3-crown {
+  width: 28px;
+  height: 28px;
+  margin-right: 4px;
+  vertical-align: middle;
 }
