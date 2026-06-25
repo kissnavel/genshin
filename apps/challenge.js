@@ -54,6 +54,8 @@ export class Challenge extends plugin {
   }
 
   async challengeForgottenHall (e) {
+    let challenge = Cfg.getConfig('config').challenge
+    if (!challenge) return false
     await e.reply('正在获取忘却之庭数据，请稍后……')
     let res = await srChallenge.get(e, 2)
     if (!res) return false
@@ -64,6 +66,8 @@ export class Challenge extends plugin {
   }
 
   async challengeStory (e) {
+    let challenge = Cfg.getConfig('config').challenge
+    if (!challenge) return false
     await e.reply('正在获取虚构叙事数据，请稍后……')
     let res = await srChallenge.get(e, 1)
     if (!res) return false
@@ -74,6 +78,8 @@ export class Challenge extends plugin {
   }
 
   async challengeBoss (e) {
+    let challenge = Cfg.getConfig('config').challenge
+    if (!challenge) return false
     await e.reply('正在获取末日幻影数据，请稍后……')
     let res = await srChallenge.get(e, 0)
     if (!res) return false
@@ -84,6 +90,8 @@ export class Challenge extends plugin {
   }
 
   async challengePeak (e) {
+    let challenge = Cfg.getConfig('config').challenge
+    if (!challenge) return false
     await e.reply('正在获取异相仲裁数据，请稍后……')
     let res = await srChallenge.get(e, 3)
     if (!res) return false
@@ -94,6 +102,8 @@ export class Challenge extends plugin {
   }
 
   async challenge (e) {
+    let challenge = Cfg.getConfig('config').challenge
+    if (!challenge) return false
     await e.reply('正在获取全部深渊数据，请稍后……')
     let res = await srChallenge.get(e, '', true)
     if (!res) return false
@@ -104,6 +114,8 @@ export class Challenge extends plugin {
   }
 
   async challengeCurrent (e) {
+    let challenge = Cfg.getConfig('config').challenge
+    if (!challenge) return false
     await e.reply('正在获取最新深渊数据，请稍后……')
     let res = await srChallenge.get(e, this.getCurrentChallengeType())
     if (!res) return false

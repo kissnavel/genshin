@@ -65,3 +65,6 @@ Autodelsk: false
 myspanel: false
 #米游社更新面板CD，单位秒，建议不低于120秒
 myspanelCD: 120
+
+#是否开启星铁深渊
+challenge: false

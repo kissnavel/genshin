@@ -83,6 +83,12 @@ export function supportGuoba() {
           },
         },
         {
+          field: 'config.challenge',
+          label: '星铁深渊',
+          bottomHelpMessage: '是否开启星铁深渊',
+          component: 'Switch',
+        },
+        {
           component: 'SOFT_GROUP_BEGIN',
           label: 'api设置'
         },
