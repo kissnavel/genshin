@@ -221,17 +221,17 @@ export default class srChallenge extends base {
           ...floor,
           node_1: {
             ...floor.node_1,
-            ...(floor.node_1.challenge_time && {
+            ...(/challenge_time/.test(floor.node_1) && {
               challengeTime: this.timeFormat(floor.node_1.challenge_time, 'YYYY.MM.DD HH:mm')
             }) // 快速通关就没有 challenge_time 这个属性
           },
           node_2: {
             ...floor.node_2,
-            ...(floor.node_2.challenge_time && {
+            ...(/challenge_time/.test(floor.node_2) && {
               challengeTime: this.timeFormat(floor.node_2.challenge_time, 'YYYY.MM.DD HH:mm')
             })
           },
-          ...(floor.node_3 && {
+          ...(/challenge_time/.test(floor.node_3) && {
             node_3: {
               ...floor.node_3,
               ...(floor.node_3.challenge_time && {
@@ -254,7 +254,7 @@ export default class srChallenge extends base {
         _.map(data.peak_records.mob_records, (record) => {
           return {
             ...record,
-            ...(record.challenge_time && {
+            ...(/challenge_time/.test(record) && {
               challengeTime: this.timeFormat(record.challenge_time, 'YYYY.MM.DD HH:mm')
             })
           }
@@ -264,7 +264,10 @@ export default class srChallenge extends base {
     if ([0, 1].includes(challengeType)) {
       data.all_floor_detail = _.map(data.all_floor_detail, (floor) => {
         if (floor.node_1.score != null) {
-          let totalScore = parseInt(floor.node_1.score) + parseInt(floor.node_2.score)
+          let totalScore = parseInt(floor.node_1.score)
+          if (floor.node_2.score != null) {
+            totalScore += parseInt(floor.node_2.score)
+          }
           if (floor.node_3 && floor.is_tierce) {
             totalScore += parseInt(floor.node_3.score)
           }
@@ -301,7 +304,7 @@ export default class srChallenge extends base {
       _.map(data.mob_records, (record) => {
         return {
           ...record,
-          ...(record.challenge_time && {
+          ...(/challenge_time/.test(record) && {
             challengeTime: this.timeFormat(record.challenge_time, 'YYYY.MM.DD HH:mm')
           })
         }
