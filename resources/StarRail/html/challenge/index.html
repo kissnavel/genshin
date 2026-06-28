@@ -117,9 +117,18 @@
               </div>
             {{ else }}
               <div class="detail-star">
-                <% for (var i = 0; i < floor.star_num; i++){ %>
-                  <img class="rogue-star" src="{{ pluResPath }}html/challenge/images/rogue-star.png" />
-                <% } %>
+                {{ if floor.is_tierce }}
+                  <% for (var i = 0; i < (floor.star_num - floor.extra_star_num); i++){ %>
+                    <img class="rogue-star" src="{{ pluResPath }}html/challenge/images/rogue-star.png" />
+                  <% } %>
+                  {{ if floor.extra_star_num == 1 }}
+                    <img class="rogue-star" src="{{ pluResPath }}html/challenge/images/abyss_star.f89de036.png" />
+                  {{ /if }}
+                {{ else }}
+                  <% for (var i = 0; i < floor.star_num; i++){ %>
+                    <img class="rogue-star" src="{{ pluResPath }}html/challenge/images/rogue-star.png" />
+                  <% } %>
+                {{ /if }}
               </div>
             {{ /if }}
           </div>
