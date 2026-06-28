@@ -9,6 +9,13 @@ export default class srChallenge extends base {
     super(e)
     this.e.isSr = true
     this.model = 'roleIndex'
+
+    this.Button = segment.button([
+      { text: '#ck帮助', callback: '#Cookie帮助' }
+    ],[
+      { text: '#扫码登陆', callback: '#扫码登陆' },
+      { text: '#刷新ck', callback: '#刷新ck' }
+    ])
   }
 
   static async getIndex (e) {
@@ -347,7 +354,7 @@ export default class srChallenge extends base {
   async userUid (e) {
     let uid = e.msg.match(/\d+/)?.[0] || await MysInfo.getUid(e, false)
     if (!uid) {
-      await e.reply('找不到uid，请：#刷新ck 或者：#扫码登录', true)
+      await e.reply(['找不到uid，请：#刷新ck 或者：#扫码登录', this.Button])
       return false
     }
 
@@ -359,12 +366,7 @@ export default class srChallenge extends base {
     let ck = await MysInfo.checkUidBing(uid, game)
     ck = ck.ck
     if (!ck) {
-      await e.reply([`uid:${uid}当前尚未绑定Cookie`, segment.button([
-        { text: '#ck帮助', callback: '#Cookie帮助' }
-      ],[
-        { text: '#扫码登陆', callback: '#扫码登陆' },
-        { text: '#刷新ck', callback: '#刷新ck' }
-      ])])
+      await e.reply([`uid:${uid}当前尚未绑定Cookie`, this.Button])
       return false
     }
 
