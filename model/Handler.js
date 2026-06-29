@@ -55,7 +55,7 @@ export default class Handler {
       let headers = { 'x-rpc-device_fp': deviceFp, 'x-rpc-challenge_game': challenge_game }
       let app_key = game == 'zzz' ? 'game_record_zzz' : game == 'sr' ? 'hkrpg_game_record' : ''
 
-      res = await vali.getData([5003, 10041].includes(retcode) ? 'bbsGetCaptcha' : retcode === 10035 ? 'createGeetest' : 'createVerification', { headers, app_key })
+      res = await vali.getData(retcode === 10035 ? 'createGeetest' : 'createVerification', { headers, app_key })
       if (!res || res?.retcode !== 0) {
         return { data: null, message: '未知错误，可能为cookie失效', retcode: 10103 }
       }
@@ -96,17 +96,17 @@ export default class Handler {
         }
       }
       if (res?.data?.validate || res?.request?.geetest_validate) {
-        res = await vali.getData([5003, 10041].includes(retcode) ? 'bbsCaptchaVerify' : retcode === 10035 ? 'verifyGeetest' : 'verifyVerification', {
+        res = await vali.getData(retcode === 10035 ? 'verifyGeetest' : 'verifyVerification', {
           ...res?.data ? res.data : res.request,
           headers,
           app_key
         })
       } else {
         if ([2, 0].includes(this.apiCfg.GtestType)) {
-          if (this.apiCfg.GtestType == 2) res = await vali.getData([5003, 10041].includes(retcode) ? 'bbsGetCaptcha' : retcode === 10035 ? 'createGeetest' : 'createVerification', { headers, app_key })
+          if (this.apiCfg.GtestType == 2) res = await vali.getData(retcode === 10035 ? 'createGeetest' : 'createVerification', { headers, app_key })
           res = await this.Manual_geetest(e, res?.data)
           if (res?.data?.validate || res?.data?.geetest_validate) {
-            res = await vali.getData([5003, 10041].includes(retcode) ? 'bbsCaptchaVerify' : retcode === 10035 ? 'verifyGeetest' : 'verifyVerification', {
+            res = await vali.getData(retcode === 10035 ? 'verifyGeetest' : 'verifyVerification', {
               ...res.data,
               headers,
               app_key
