@@ -456,6 +456,7 @@ export default class MysInfo {
         if (!isTask) this.e.reply([`UID:${this.uid}，米游社账号异常，暂时无法查询，发送“${gametype}}绑定设备帮助”查看如何绑定设备`, segment.button([
           { text: `${gametype}绑定设备帮助`, callback: `${gametype}绑定设备帮助` }
         ])])
+        break
       case 1034:
       case 10035:
         let retry = 0
