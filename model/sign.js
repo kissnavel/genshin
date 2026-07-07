@@ -386,7 +386,7 @@ export default class MysSign extends base {
 
         let time = 0
         for (let i = 0; i < noSignNum; i++)
-            time += (Math.floor(Math.random() * 6000)) / 1000 + 4
+            time += (Math.floor(Math.random() * 6000)) / 1000 + 3
 
         if (this.white['QQ'].length > 0 || this.white.Group.length > 0)
             tips.push(`\n已开启白名单签到，仅签到白名单`)
