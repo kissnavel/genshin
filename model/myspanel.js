@@ -318,7 +318,7 @@ export default class Myspanel {
             else if (v.equip.level > 20) gzpro = 1
             else if (v.equip.level > 0) gzpro = 0
             }
-            //处理三月七，开拓者，丹恒，托帕，阮梅
+            //处理三月七，开拓者，丹恒，托帕，阮梅，姬子
             if (v.id == 1001) v.name = '三月七'
             if (v.id == 1224) v.name = '三月七·巡猎'
             if (v.id == 8001) v.name = '穹·毁灭'
@@ -335,6 +335,7 @@ export default class Myspanel {
             if (v.id == 1414) v.name = '丹恒•腾荒'
             if (v.id == 1112) v.name = '托帕&账账'
             if (v.id == 1303) v.name = '阮•梅'
+            if (v.id == 1510) v.name = '姬子•启行'
 
             //星魂影响
             let ava
