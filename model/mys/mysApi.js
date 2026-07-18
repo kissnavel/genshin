@@ -201,7 +201,7 @@ export default class MysApi {
             bindInfo = null
           }
         }
-        const { deviceFp } = await getDeviceFp.Fp(this.uid, this.cookie, this.game, this.biz)
+        const { deviceFp } = await getDeviceFp.Fp(this.uid, this.cookie, this.game, this.biz, this.server)
         if (deviceFp) data = {
           ...data,
           deviceFp: deviceFp

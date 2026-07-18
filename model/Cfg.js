@@ -321,8 +321,10 @@ class Cfg {
             userId: sks[i].userId,
             ltoken: sks[i].ltoken,
             stuid: sks[i].stuid,
+            uid: sks[i].uid,
+            region: sks[i].region,
             id: id,
-            sk: `stuid=${sks[i].stuid};stoken=${sks[i].stoken};${sks[i].mid ? `mid=${sks[i].mid}` : `ltoken=${sks[i].ltoken}`};`
+            sk: `stuid=${sks[i].stuid};stoken=${sks[i].stoken};mid=${sks[i].mid};ltoken=${sks[i].ltoken}`
           }
         }
         list = Object.assign({}, list, sk)
