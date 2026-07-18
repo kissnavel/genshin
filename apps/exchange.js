@@ -2,24 +2,35 @@ import plugin from '../../../lib/plugins/plugin.js'
 import common from '../../../lib/common/common.js'
 import fetch from 'node-fetch'
 import Cfg from '../model/Cfg.js'
+import MysInfo from '../model/mys/mysInfo.js'
+import MysApi from '../model/mys/mysApi.js'
 
 export class exchange extends plugin {
   constructor() {
     super({
       name: 'genshin·兑换码',
-      dsc: '国服前瞻直播兑换码',
+      dsc: '前瞻直播兑换码',
       event: 'message',
       priority: Cfg.getConfig('config').priority,
       rule: [
         {
-          reg: /^(#|\*)?(原神|星铁|崩铁|崩三|崩坏三|崩坏3|绝区零)?(国服)?(直播|前瞻)?兑换码$/,
+          reg: /^(#|\*)?(原神|星铁|崩铁|崩三|崩坏三|崩坏3|绝区零)?(国服|国际服)?(直播|前瞻)?兑换码$/,
           fnc: 'getCode'
         }
       ]
     })
+
+    this.button = segment.button([
+      { text: '#ck帮助', callback: '#Cookie帮助' }
+    ],[
+      { text: '#扫码登录', callback: '#扫码登录' },
+      { text: '#刷新ck', callback: '#刷新ck' }
+    ])
   }
 
   async getCode() {
+    let hoyo = this.e.msg.match('国际服')
+    if (hoyo) return this.getHoyoCode()
     let reg = this.e.msg.match(/^(#|\*)?(原神|星铁|崩铁|崩三|崩坏三|崩坏3|绝区零)?(国服)?(直播|前瞻)?兑换码$/)
     this.uid = '75276539'
     this.gid = '2'
@@ -181,5 +192,43 @@ export class exchange extends plugin {
     const t = this.gid === '2' ? '12:00:00' : '23:59:59'
     const time = `${y}-${m}-${d} ${t}`
     return time
+  }
+
+  async getHoyoCode() {
+    let url; let gametype; let name; let game_id
+    if (this.e.game == 'gs') {
+      url = 'https://genshin.hoyoverse.com/zh-tw/gift'
+      gametype = '#'
+      name = '原神'
+      game_id = '2'
+    } else if (this.e.game == 'sr') {
+      url = 'https://hsr.hoyoverse.com/gift'
+      gametype = '*'
+      name = '崩坏星穹铁道'
+      game_id = '6'
+    } else if (this.e.game == 'zzz') {
+      url = 'https://zenless.hoyoverse.com/redemption'
+      gametype = '%'
+      name = '绝区零'
+      game_id = '8'
+    }
+
+    let mysApi = new MysApi('', '', { game: 'bbs' })
+    let res = await mysApi.getData('material', { game_id })
+    res = res?.data?.modules[0]?.exchange_group?.bonuses
+    if (!res) return this.e.reply(`暂无《${name}》国际服前瞻直播兑换码`)
+
+    let msgData = []; let button = []
+    msgData.push(`《${name}》国际服前瞻直播兑换码：`)
+    for (let i = 0; i < res.length; i++) {
+      msgData.push(res[i].exchange_code)
+      button.push([{ text: `${gametype}兑换码使用${res[i].exchange_code}`, callback: `${gametype}兑换码使用${res[i].exchange_code}` }])
+    }
+    msgData.push(`兑换码使用网站：${url}`)
+    msgData.push(`可使用命令"${gametype}兑换码使用+(空格)+兑换码"进行兑换`)
+    msgData.push('若兑换失败，请尝试刷新cookie或重新绑定cookie')
+
+    let msg = msgData.join('\n')
+    return this.e.reply([msg, segment.button(...button)])
   }
 }

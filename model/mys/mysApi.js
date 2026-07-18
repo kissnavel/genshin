@@ -42,15 +42,7 @@ export default class MysApi {
       'results',
       'in',
       'res',
-      'bbsisSign',
-      'querySignInStatus',
-      'bbsSign',
-      'bbsGetCaptcha',
-      'bbsCaptchaVerify',
-      'bbsPostList',
-      'bbsPostFull',
-      'bbsShareConf',
-      'bbsVotePost'
+      'material'
     ]
 
     this.gttypes = [
@@ -128,6 +120,11 @@ export default class MysApi {
       }
     }
 
+    if (type == 'material') {
+      headers['x-rpc-client_type'] = '4'
+      headers['Referer'] = 'https://bbs-api-os.hoyolab.com/'
+    }
+
     return { url, headers, body, config }
   }
 
@@ -177,9 +174,14 @@ export default class MysApi {
   }
 
   async getData(type, data = {}, cached = false) {
-    if (!['bbs', 'all'].includes(this.game)) {
-      let ltuid = this.cookie.match(/ltuid=(\d+)/)
-      ltuid = ltuid[1]
+    if (!this.types.includes(type)) {
+      let ltuid
+      if (this.game == 'bbs') {
+        ltuid = this.uid
+      } else {
+        ltuid = this.cookie.match(/ltuid=(\d+)|stuid=(\d+)/)
+        ltuid = ltuid[1]
+      }
       if (ltuid) {
         let bindInfo = await redis.get(`genshin:device_fp:${ltuid}:bind`) || await redis.get(`ZZZ:DEVICE_FP:${ltuid}:BIND`)
         if (bindInfo) {
@@ -368,6 +370,10 @@ export default class MysApi {
         return {
           ...header_bbs,
           DS: (sign ? this.bbsDs(query, body) : this.SignDs("WGtruoQrwczmsjLOPXzJLnaAYycsLavx"))
+        }
+      case 'hoyocode':
+        return {
+          ...header_os
         }
       case 'noheader':
         return {}

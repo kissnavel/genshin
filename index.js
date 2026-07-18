@@ -12,9 +12,11 @@ if (!fs.existsSync(Cfg.file))
   fs.mkdirSync(Cfg.file)
 
 let file = fs.readdirSync(`${Cfg.defile}`).filter(file => file.endsWith('.yaml'))
-for (let item of [...file, 'mys.json'])
+for (let item of [...file])
   if (!fs.existsSync(`${Cfg.file}/${item}`))
     fs.copyFileSync(`${Cfg.defile}/${item}`, `${Cfg.file}/${item}`)
+
+fs.cpSync(`${Cfg.defile}/mys.json`, `${Cfg.file}/mys.json`, { overwrite: true })
 
 try {
   for (let type of ['white', 'banuid', 'api', 'equip', 'command', 'lable', 'config']) {

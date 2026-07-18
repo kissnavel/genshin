@@ -2,10 +2,15 @@ import fetch from 'node-fetch'
 import MysApi from './mys/mysApi.js'
 
 export default class getDeviceFp {
-  static async Fp(uid, ck, game, biz) {
-    let ltuid = ck.match(/ltuid=(\d+)/)
-    ltuid = ltuid[1]
-    let mysapi = new MysApi(uid, ck, { game }, '', biz)
+  static async Fp(uid, ck, game, biz, server) {
+    let ltuid
+    if (game == 'bbs') {
+      ltuid = uid
+    } else {
+      ltuid = ck.match(/ltuid=(\d+)/)
+      ltuid = ltuid[1]
+    }
+    let mysapi = new MysApi(uid, ck, { game }, server, biz)
     let deviceFp = await redis.get(`genshin:device_fp:${ltuid}:fp`) || await redis.get(`ZZZ:DEVICE_FP:${ltuid}:FP`)
     let data = {}
     if (!deviceFp) {
@@ -39,7 +44,7 @@ export default class getDeviceFp {
         })
       } catch (error) {
         logger.error(error.toString())
-        if (['bh3_cn', 'bh2_cn'].includes(biz) || !(game == 'wd' ? /^(10|20)[0-9]{7}/i : /^(1[0-9]|[6-9])[0-9]{8}/i).test(uid)) {
+        if (!(game == 'wd' ? /^(10|20)[0-9]{7}/i : /^(1[0-9]|[6-9])[0-9]{8}/i).test(uid) || ['bh3_cn', 'bh2_cn'].includes(biz) || (game == 'bbs' && /cn_|_cn/.test(server))) {
           deviceFp = '38d805c20d53d'
         } else {
           deviceFp = '38d7f4c72b736'

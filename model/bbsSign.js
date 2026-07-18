@@ -27,7 +27,7 @@ export default class BBsSign extends base {
     static async bbsSign(e, name) {
         let BbsSign = new BBsSign(e)
 
-        let sks = await Cfg.getsks(false, e.user_id)
+        let sks = await Cfg.getsks(false, e.user_id, true)
         if (_.isEmpty(sks)) {
             e.reply(['\n请【#扫码登录】后签到米币', BbsSign.button], false, { at: true })
             return false
@@ -69,7 +69,7 @@ export default class BBsSign extends base {
 
     async getbbsSign(sk, forumData, time = 5) {
         let message = '', challenge = '', retcode = 0, res
-        let mysApi = new MysApi(sk.stuid, sk.sk, {}, '', '', 'bbs')
+        let mysApi = new MysApi(sk.stuid, sk.sk, {}, sk.region, '', 'bbs')
         let key = `Bbs:Sign:${sk.id}`
         message += `**通行证ID: ${sk.stuid}**\n`
 
@@ -84,6 +84,10 @@ export default class BBsSign extends base {
                 return { message: res.message, retcode: 100 }
             }
 
+            let device_fp = await mysApi.getData('getFp')
+            device_fp = device_fp?.data?.device_fp
+            this.device_fp = device_fp
+
             for (let forum of forumData) {
                 let trueDetail = 0; let Vote = 0; let trueShare = 0; let Share = 3; let detal = 3; let data = {}
                 if (forumData.length >= 3) {
@@ -92,63 +96,7 @@ export default class BBsSign extends base {
                 }
 
                 message += `\n**${forum.name}**\n`
-                let device_fp = await redis.get(`genshin:device_fp:${sk.stuid}:fp`) || await redis.get(`ZZZ:DEVICE_FP:${sk.stuid}:FP`)
-                if (!device_fp) {
-                    let bindInfo = await redis.get(`genshin:device_fp:${sk.stuid}:bind`) || await redis.get(`ZZZ:DEVICE_FP:${sk.stuid}:BIND`)
-                    if (bindInfo) {
-                        try {
-                            bindInfo = JSON.parse(bindInfo)
-                            data = {
-                                productName: bindInfo?.deviceProduct,
-                                deviceType: bindInfo?.deviceName,
-                                modelName: bindInfo?.deviceModel,
-                                oaid: bindInfo?.oaid,
-                                osVersion: bindInfo?.androidVersion,
-                                deviceInfo: bindInfo?.deviceFingerprint,
-                                board: bindInfo?.deviceBoard
-                            }
-                        } catch (error) {
-                            bindInfo = null
-                        }
-                    }
-                    device_fp = await mysApi.getData('getFp', data)
-                    device_fp = device_fp?.data?.device_fp
-                    if (device_fp) {
-                        await redis.set(`genshin:device_fp:${sk.stuid}:fp`, device_fp, {
-                            EX: 86400 * 7
-                        })
-                        await redis.set(`ZZZ:DEVICE_FP:${sk.stuid}:FP`, device_fp, {
-                            EX: 86400 * 7
-                        })
-                        const deviceLogin = mysApi.getUrl('deviceLogin', data)
-                        const saveDevice = mysApi.getUrl('saveDevice', data)
-                        if (!!deviceLogin && !!saveDevice) {
-                            logger.debug(`[米游社][设备登录]保存设备信息`)
-                            try {
-                                logger.debug(`[米游社][设备登录]${JSON.stringify(deviceLogin)}`)
-                                const login = await fetch(deviceLogin.url, {
-                                    headers: deviceLogin.headers,
-                                    method: 'POST',
-                                    body: deviceLogin.body
-                                })
-                                const save = await fetch(saveDevice.url, {
-                                    headers: saveDevice.headers,
-                                    method: 'POST',
-                                    body: saveDevice.body
-                                })
-                                const result = await Promise.all([login.json(), save.json()])
-                                logger.debug(`[米游社][设备登录]${JSON.stringify(result)}`)
-                            } catch (error) {
-                                logger.error(`[米游社][设备登录]${error.message}`)
-                            }
-                        }
-                    } else {
-                        device_fp = '38d805c20d53d'
-                    }
-                }
-                this.device_fp = device_fp
                 forum = {
-                    ...data,
                     ...forum,
                     headers: { 'x-rpc-device_fp': device_fp }
                 }
@@ -170,7 +118,6 @@ export default class BBsSign extends base {
                         }
                         if (challenge) {
                             forum = {
-                                ...data,
                                 ...forum,
                                 headers: {
                                     'x-rpc-device_fp': device_fp,
@@ -207,7 +154,6 @@ export default class BBsSign extends base {
                     post = post.post
                     postId = post['post_id']
                     data = {
-                        ...data,
                         postId: postId,
                         headers: { 'x-rpc-device_fp': device_fp }
                     }

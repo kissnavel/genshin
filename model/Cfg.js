@@ -285,7 +285,7 @@ class Cfg {
     }
   }
 
-  async getsks(all, qq) {
+  async getsks(all, qq, sign) {
     let list = {}
     try {
       let sks = []
@@ -311,7 +311,9 @@ class Cfg {
 
       for (let i in sks) {
         if (!sks[i].stoken || !sks[i].stuid || !sks[i].ltoken) continue
-        if (!/cn_|_cn/.test(sks[i].region)) continue
+        if (sign) {
+          if (!/cn_|_cn/.test(sks[i].region)) continue
+        }
         let id = `${sks[i].stuid}_${sks[i].userId}`
         if (list[id]) continue
         let sk = {
