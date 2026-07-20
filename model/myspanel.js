@@ -318,24 +318,11 @@ export default class Myspanel {
             else if (v.equip.level > 20) gzpro = 1
             else if (v.equip.level > 0) gzpro = 0
             }
-            //处理三月七，开拓者，丹恒，托帕，阮梅，姬子
-            if (v.id == 1001) v.name = '三月七'
-            if (v.id == 1224) v.name = '三月七·巡猎'
-            if (v.id == 8001) v.name = '穹·毁灭'
-            if (v.id == 8003) v.name = '穹·存护'
-            if (v.id == 8005) v.name = '穹·同谐'
-            if (v.id == 8007) v.name = '穹·记忆'
-            if (v.id == 8009) v.name = '穹·欢愉'
-            if (v.id == 8002) v.name = '星·毁灭'
-            if (v.id == 8004) v.name = '星·存护'
-            if (v.id == 8006) v.name = '星·同谐'
-            if (v.id == 8008) v.name = '星·记忆'
-            if (v.id == 8010) v.name = '星·欢愉'
-            if (v.id == 1213) v.name = '丹恒•饮月'
-            if (v.id == 1414) v.name = '丹恒•腾荒'
-            if (v.id == 1112) v.name = '托帕&账账'
-            if (v.id == 1303) v.name = '阮•梅'
-            if (v.id == 1510) v.name = '姬子•启行'
+            //处理强化角色
+            if (v.cur_enhanced_id == 1) {
+                v.id = `2${String(v.id).slice(-3)}`
+                v.name = `${v.name}Pro`
+            }
 
             //星魂影响
             let ava
