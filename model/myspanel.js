@@ -319,9 +319,10 @@ export default class Myspanel {
             else if (v.equip.level > 0) gzpro = 0
             }
             //处理强化角色
+            let cur_id, cur_name
             if (v.cur_enhanced_id == 1) {
-                v.id = `2${String(v.id).slice(-3)}`
-                v.name = `${v.name}Pro`
+                cur_id = `2${String(v.id).slice(-3)}`
+                cur_name = `${v.name}Pro`
             }
 
             //星魂影响
@@ -537,6 +538,40 @@ export default class Myspanel {
             }
 
             //我们合体！！！
+            if (v.cur_enhanced_id == 1) {
+                avatars[cur_id] = {
+                    'name': cur_name,
+                    'id': cur_id,
+                    'elem': elem,
+                    'level': v.level,
+                    'promote': pro,
+                    'cons': v.rank,
+                    'talent': {
+                        'a': a,
+                        'e': e,
+                        'q': q,
+                        't': t,
+                        'me': me,
+                        'mt': mt,
+                        'xe': xe
+                    },
+                    'trees': trees,
+                    'weapon': v.equip ? {
+                        'id': v.equip.id,
+                        'level': v.equip.level,
+                        'promote': gzpro,
+                        'affix': v.equip.rank
+                    } : null,
+                    'artis': artis,
+                    '_source': 'mysPanelHSR',
+                    '_time': new Date().getTime(),
+                    '_update': new Date().getTime(),
+                    '_talent': new Date().getTime()
+                }
+                mb.avatars = avatars
+                mb._profile = new Date().getTime()
+                fs.writeFileSync(path, JSON.stringify(mb), 'utf-8')
+            }
             avatars[v.id] = {
                 'name': v.name,
                 'id': v.id,
