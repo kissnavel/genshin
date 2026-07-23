@@ -9,7 +9,7 @@ const wdReg = /^#?(&|未定事件簿|未定)+/
 /** 崩坏三命令前缀 */
 const bh3Reg = /^#?(！|!|崩坏三|崩三)+/
 /** 崩坏二命令前缀 */
-const bh2Reg = /^#?(￥|崩坏学园2|崩坏二|崩二)+/
+const bh2Reg = /^#?(￥|¥|崩坏学园2|崩坏二|崩二)+/
 
 export class dealEvent extends plugin {
   constructor() {
