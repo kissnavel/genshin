@@ -13,7 +13,7 @@ export class hoyocode extends plugin {
       priority: Cfg.getConfig('config').priority,
       rule: [
         {
-          reg: /^(#|\*)?(原神|星铁|绝区零)?国际服兑换码$/,
+          reg: /^(#|\*)?(原神|星铁|绝区零)?国际服可用兑换码$/,
           fnc: 'hoyocode'
         },
         {

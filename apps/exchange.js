@@ -2,7 +2,6 @@ import plugin from '../../../lib/plugins/plugin.js'
 import common from '../../../lib/common/common.js'
 import fetch from 'node-fetch'
 import Cfg from '../model/Cfg.js'
-import MysInfo from '../model/mys/mysInfo.js'
 import MysApi from '../model/mys/mysApi.js'
 
 export class exchange extends plugin {
@@ -19,13 +18,6 @@ export class exchange extends plugin {
         }
       ]
     })
-
-    this.button = segment.button([
-      { text: '#ck帮助', callback: '#Cookie帮助' }
-    ],[
-      { text: '#扫码登录', callback: '#扫码登录' },
-      { text: '#刷新ck', callback: '#刷新ck' }
-    ])
   }
 
   async getCode() {
@@ -195,7 +187,7 @@ export class exchange extends plugin {
   }
 
   async getHoyoCode() {
-    let url; let gametype; let name; let game_id
+    let url, gametype, name, game_id
     if (this.e.game == 'gs') {
       url = 'https://genshin.hoyoverse.com/zh-tw/gift'
       gametype = '#'
@@ -218,7 +210,7 @@ export class exchange extends plugin {
     res = res?.data?.modules[0]?.exchange_group?.bonuses
     if (!res) return this.e.reply(`暂无《${name}》国际服前瞻直播兑换码`)
 
-    let msgData = []; let button = []
+    let msgData = [], button = []
     msgData.push(`《${name}》国际服前瞻直播兑换码：`)
     for (let i = 0; i < res.length; i++) {
       msgData.push(res[i].exchange_code)
@@ -227,8 +219,8 @@ export class exchange extends plugin {
     msgData.push(`兑换码使用网站：${url}`)
     msgData.push(`可使用命令"${gametype}兑换码使用+(空格)+兑换码"进行兑换`)
     msgData.push('若兑换失败，请尝试刷新cookie或重新绑定cookie')
+    msgData.join('\n')
 
-    let msg = msgData.join('\n')
-    return this.e.reply([msg, segment.button(...button)])
+    return this.e.reply([msgData, segment.button(...button)])
   }
 }
