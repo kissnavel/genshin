@@ -208,19 +208,20 @@ export class exchange extends plugin {
     let mysApi = new MysApi('', '', { game: 'bbs' })
     let res = await mysApi.getData('material', { game_id })
     res = res?.data?.modules[0]?.exchange_group?.bonuses
-    if (!res) return this.e.reply(`暂无《${name}》国际服前瞻直播兑换码`)
+    if (!res || res.length == 0) return this.e.reply(`暂无《${name}》国际服前瞻直播兑换码`)
 
     let msgData = [], button = []
     msgData.push(`《${name}》国际服前瞻直播兑换码：`)
     for (let i = 0; i < res.length; i++) {
+      if (!res[i].exchange_code) break
       msgData.push(res[i].exchange_code)
       button.push([{ text: `${gametype}兑换码使用${res[i].exchange_code}`, callback: `${gametype}兑换码使用${res[i].exchange_code}` }])
     }
     msgData.push(`兑换码使用网站：${url}`)
     msgData.push(`可使用命令"${gametype}兑换码使用+(空格)+兑换码"进行兑换`)
     msgData.push('若兑换失败，请尝试刷新cookie或重新绑定cookie')
-    msgData.join('\n')
 
-    return this.e.reply([msgData, segment.button(...button)])
+    let msg = msgData.join('\n')
+    return this.e.reply([msg, segment.button(...button)])
   }
 }
