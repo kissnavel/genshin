@@ -318,6 +318,19 @@ export default class Myspanel {
             else if (v.equip.level > 20) gzpro = 1
             else if (v.equip.level > 0) gzpro = 0
             }
+            //处理三月七，开拓者
+            if (v.id == 1001) v.name = '三月七'
+            if (v.id == 1224) v.name = '三月七·巡猎'
+            if (v.id == 8001) v.name = '穹·毁灭'
+            if (v.id == 8003) v.name = '穹·存护'
+            if (v.id == 8005) v.name = '穹·同谐'
+            if (v.id == 8007) v.name = '穹·记忆'
+            if (v.id == 8009) v.name = '穹·欢愉'
+            if (v.id == 8002) v.name = '星·毁灭'
+            if (v.id == 8004) v.name = '星·存护'
+            if (v.id == 8006) v.name = '星·同谐'
+            if (v.id == 8008) v.name = '星·记忆'
+            if (v.id == 8010) v.name = '星·欢愉'
             //处理强化角色
             let cur_id, cur_name
             if (v.cur_enhanced_id == 1) {
