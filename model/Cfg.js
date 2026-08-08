@@ -20,7 +20,7 @@ class Cfg {
     this.file = `${_path}/plugins/genshin/config`
     this.defile = `${_path}/plugins/genshin/defSet`
     this.resfile = `${_path}/plugins/genshin/resources/`
-    this.dir = `${_path}/plugins/xiaoyao-cvs-plugin/data/yaml/`
+    this.dir = `${_path}/plugins/genshin/yaml`
   }
 
   get api(){ return this.getConfig('api') }
@@ -47,6 +47,33 @@ class Cfg {
 
   setCk(ck, device_id) {
     return _.trim(ck, ';') + `; _MHYUUID=${device_id}; `
+  }
+
+  saveSk(userId, data) {
+    let file = `${this.dir}/${userId}.yaml`
+		if (_.isEmpty(data)) {
+			fs.existsSync(file) && fs.unlinkSync(file)
+		} else {
+			fs.exists(file, (exists) => {
+				if (!exists) {
+					fs.writeFileSync(file, '', 'utf8')
+				}
+				let ck = fs.readFileSync(file, 'utf-8')
+				let YAML = yaml.stringify(data)
+				ck = yaml.parse(ck)
+				if (ck?.uid || !ck) {
+					fs.writeFileSync(file, YAML, 'utf8')
+				} else {
+					if (!ck[Object.keys(data)[0]]) {
+						ck = yaml.stringify(ck)
+						fs.writeFileSync(file, YAML + ck, 'utf8')
+					} else {
+						ck[Object.keys(data)[0]] = data[Object.keys(data)[0]]
+						fs.writeFileSync(file, yaml.stringify(ck), 'utf8')
+					}
+				}
+			})
+		}
   }
 
   async signCk() {
@@ -290,13 +317,13 @@ class Cfg {
     try {
       let sks = []
       if (all) {
-        let files = fs.readdirSync(this.dir).filter(file => file.endsWith('.yaml'))
+        let files = fs.readdirSync(`${this.dir}/`).filter(file => file.endsWith('.yaml'))
 
         const readFile = promisify(fs.readFile)
 
         let promises = []
 
-        files.forEach((v) => promises.push(readFile(`${this.dir}${v}`, 'utf8')))
+        files.forEach((v) => promises.push(readFile(`${this.dir}/${v}`, 'utf8')))
         const res = await Promise.all(promises)
         res.forEach((v, index) => {
           let tmp = yaml.parse(v)
@@ -304,15 +331,15 @@ class Cfg {
         })
         sks = Object.assign({}, ...sks)
       } else {
-        if (!fs.existsSync(`${this.dir}${String(qq)}.yaml`))
+        if (!fs.existsSync(`${this.dir}/${String(qq)}.yaml`))
           return list
-        sks = yaml.parse(fs.readFileSync(`${this.dir}${String(qq)}.yaml`, 'utf-8'))
+        sks = yaml.parse(fs.readFileSync(`${this.dir}/${String(qq)}.yaml`, 'utf-8'))
       }
 
       for (let i in sks) {
         if (!sks[i].stoken || !sks[i].stuid || !sks[i].ltoken) continue
         if (sign) {
-          if (!/cn_|_cn/.test(sks[i].region)) continue
+          if (sks[i].type == 'hoyolab' || !/cn_|_cn/.test(sks[i].region)) continue
         }
         let id = `${sks[i].stuid}_${sks[i].userId}`
         if (list[id]) continue
@@ -323,6 +350,7 @@ class Cfg {
             stuid: sks[i].stuid,
             uid: sks[i].uid,
             region: sks[i].region,
+            type: sks[i].type || /cn_|_cn/.test(sks[i].region) ? 'mys' : 'hoyolab',
             id: id,
             sk: `stuid=${sks[i].stuid};stoken=${sks[i].stoken};mid=${sks[i].mid};ltoken=${sks[i].ltoken}`
           }
@@ -358,14 +386,14 @@ class Cfg {
 
   async delsk(qq, stuid) {
     if (!stuid) return
-    let sks = yaml.parse(fs.readFileSync(`${this.dir}${String(qq)}.yaml`, 'utf-8'))
+    let sks = yaml.parse(fs.readFileSync(`${this.dir}/${String(qq)}.yaml`, 'utf-8'))
     for (let i in sks)
       if (sks[i].stuid == stuid) delete sks[i]
     logger.mark(`[qq:${qq}][stuid:${stuid}]删除失效sk`)
-    fs.writeFileSync(`${this.dir}${String(qq)}.yaml`, yaml.stringify(sks), 'utf8')
+    fs.writeFileSync(`${this.dir}/${String(qq)}.yaml`, yaml.stringify(sks), 'utf8')
 
     if (_.isEmpty(sks))
-      fs.unlinkSync(`${this.dir}${String(qq)}.yaml`)
+      fs.unlinkSync(`${this.dir}/${String(qq)}.yaml`)
     return
   }
 

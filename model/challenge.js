@@ -11,10 +11,11 @@ export default class srChallenge extends base {
     this.model = 'roleIndex'
 
     this.Button = segment.button([
-      { text: '#ck帮助', callback: '#Cookie帮助' }
+      { text: '#ck帮助', callback: '#ck帮助' },
+      { text: '*sk帮助', callback: '*sk帮助' }
     ],[
-      { text: '#扫码登陆', callback: '#扫码登陆' },
-      { text: '#刷新ck', callback: '#刷新ck' }
+      { text: '*扫码登录', callback: '*扫码登录' },
+      { text: '*刷新ck', callback: '*刷新ck' }
     ])
   }
 
@@ -356,7 +357,7 @@ export default class srChallenge extends base {
   async userUid (e) {
     let uid = e.msg.match(/\d+/)?.[0] || await MysInfo.getUid(e, false)
     if (!uid) {
-      await e.reply(['找不到uid，请：#刷新ck 或者：#扫码登录', this.Button])
+      await e.reply(['找不到uid，请：*刷新ck 或者：*扫码登录', this.Button])
       return false
     }
 

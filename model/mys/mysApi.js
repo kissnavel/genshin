@@ -32,16 +32,15 @@ export default class MysApi {
     }
 
     this.types = [
-      'createGeetest',
-      'verifyGeetest',
-      'createVerification',
-      'verifyVerification',
       'test_nine',
       'recognize',
       'signrecognize',
       'results',
       'in',
       'res',
+      'qrCodeLogin',
+      'qrCodeQuery',
+      'exchange',
       'material'
     ]
 
@@ -259,6 +258,8 @@ export default class MysApi {
     if (body) {
       param.method = 'post'
       param.body = body
+    } else if (type == 'bbsGetCookie' && !/cn_|_cn/.test(this.server)) {
+      param.method = 'post'
     } else {
       param.method = 'get'
     }
@@ -308,7 +309,7 @@ export default class MysApi {
       'x-rpc-client_type': '5',
       'x-rpc-device_id': this._device,
       'User-Agent': 'Mozilla/5.0 (Linux; Android 13; XQ-BC52 Build/61.2.A.0.472A; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/111.0.5563.116 Mobile Safari/537.36 miHoYoBBS/2.73.1',
-      Referer: 'https://webstatic.mihoyo.com/'
+      Referer: 'https://act.mihoyo.com/'
     }
 
     const header_os = {
@@ -332,7 +333,7 @@ export default class MysApi {
     }
 
     let client
-    if (['bh3_cn', 'bh2_cn'].includes(this.biz) || /cn_|_cn/.test(this.server)) {
+    if (/_cn/.test(this.biz) || /cn_|_cn/.test(this.server)) {
       client = header
     } else {
       client = header_os
@@ -350,7 +351,7 @@ export default class MysApi {
     switch (types) {
       // 细分签到
       case 'sign':
-        if (['bh3_cn', 'bh2_cn'].includes(this.biz) || /cn_|_cn/.test(this.server))
+        if (/_cn/.test(this.biz) || /cn_|_cn/.test(this.server))
           return {
             ...header,
             ...x_rpc,
@@ -371,9 +372,32 @@ export default class MysApi {
           ...header_bbs,
           DS: (sign ? this.bbsDs(query, body) : this.SignDs("WGtruoQrwczmsjLOPXzJLnaAYycsLavx"))
         }
+      case 'qrcode':
+        return {
+          'Host': 'passport-api.miyoushe.com',
+          'x-rpc-device_os': 'Windows 10 64-bit',
+          'x-rpc-lifecycle_id': 'ad09f4ea50',
+          'x-rpc-app_id': 'bll8iq97cem8',
+          'x-rpc-device_id': this._device,
+          'x-rpc-device_name': 'Chrome',
+          "x-rpc-device_fp": '38d805974f6af',
+          'x-rpc-client_type': '4',
+          'x-rpc-game_biz': 'bbs_cn',
+          'x-rpc-sdk_version': '2.54.0',
+          'x-rpc-device_model': 'Chrome 149.0.0.0',
+          'Content-Type': 'application/json',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36',
+          'Connection': 'Keep-Alive',
+          'Accept-Encoding': 'gzip, deflate, br'
+        }
       case 'hoyocode':
         return {
           ...header_os
+        }
+      case 'authkey':
+        return {
+          ...header_bbs,
+          DS: this.getDs2()
         }
       case 'noheader':
         return {}
@@ -386,7 +410,7 @@ export default class MysApi {
 
   getDs(q = '', b = '') {
     let n = ''
-    if (['bh3_cn', 'bh2_cn'].includes(this.biz) || /cn_|_cn/.test(this.server)) {
+    if (/_cn/.test(this.biz) || /cn_|_cn/.test(this.server)) {
       n = 'xV8v4Qu54lUKrEYFZkJhB8cuOh9Asafs'
     } else {
       n = 'okr4obncj8bw5a65hbnn5oo6ixjc3l9w'
@@ -448,7 +472,7 @@ export default class MysApi {
     if (!proxyAddress) return null
     if (proxyAddress === 'http://0.0.0.0:0') return null
 
-    if (['bh3_cn', 'bh2_cn'].includes(this.biz) || /cn_|_cn/.test(this.server)) return null
+    if (/_cn/.test(this.biz) || /cn_|_cn/.test(this.server)) return null
 
     if (HttpsProxyAgent === '') {
       HttpsProxyAgent = await import('https-proxy-agent').catch((err) => {

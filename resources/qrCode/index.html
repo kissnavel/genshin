@@ -1,0 +1,41 @@
+{{extend defaultLayout}}
+{{block 'css'}}
+<style>
+    .container {
+        width: 600px !important;
+        font-size: 1.125rem;
+        /* 全局字体大小 */
+        background-color: rgb(243, 242, 241);
+        padding: 20px 0 10px 0 !important;
+    }
+    .topTitle table{
+        margin: 0 auto;
+    }
+    .txt{
+        text-align: center;
+        color: red;
+        margin-top: 10px;
+        padding: 0 10px;
+    }
+</style>
+{{/block}}
+{{block 'main'}}
+<div class="topTitle" style="margin: 0 auth;">
+   
+</div>
+<div class="txt">
+    免责声明：您将通过扫码完成获取米游社sk以及ck。<br/>我方仅提供米游社查询及相关游戏内容服务。<br/>若您的账号封禁、被盗等处罚与我方无关。<br/>如果恶意抢码导致账号出问题的请自行承担后果。<br/>请扫码登录完成绑定。
+</div>
+<script src="{{pluResPath}}qrCode/js/jquery-1.10.2.min.js"></script>
+<script src="{{pluResPath}}qrCode/js/jquery.qrcode.min.js"></script>
+<script>
+var config = {
+    width:500,//值是number类型, 表示的单位是px 必须传递
+    height:500,//值是number类型, 表示的单位是px 必须传递
+    text:"{{url}}".replace(/#38;/g,''),//text就表示二维码中存储的数据 必须传递
+    correctLevel:2,//取值为0|1|2|3 表示二维码的纠错级别0:L/1:M/2:Q/3:H ,默认0 可选参数
+    render:"table"//取值:table/canvas , 默认table 可选参数
+};
+$(".topTitle").qrcode(config);
+</script>
+{{/block}}

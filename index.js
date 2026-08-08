@@ -11,13 +11,15 @@ logger.info('仓库地址 https://github.com/kissnavel/genshin')
 if (!fs.existsSync(Cfg.file))
   fs.mkdirSync(Cfg.file)
 
+if (!fs.existsSync(Cfg.dir))
+  fs.mkdirSync(Cfg.dir)
+
 let file = fs.readdirSync(`${Cfg.defile}`).filter(file => file.endsWith('.yaml'))
 for (let item of [...file])
   if (!fs.existsSync(`${Cfg.file}/${item}`))
     fs.copyFileSync(`${Cfg.defile}/${item}`, `${Cfg.file}/${item}`)
 
 fs.cpSync(`${Cfg.defile}/mys.json`, `${Cfg.file}/mys.json`, { overwrite: true })
-
 try {
   for (let type of ['white', 'banuid', 'api', 'equip', 'command', 'lable', 'config']) {
     let isNew = true

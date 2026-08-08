@@ -44,7 +44,7 @@ export default class getDeviceFp {
         })
       } catch (error) {
         logger.error(error.toString())
-        if (!(game == 'wd' ? /^(10|20)[0-9]{7}/i : /^(1[0-9]|[6-9])[0-9]{8}/i).test(uid) || ['bh3_cn', 'bh2_cn'].includes(biz) || (game == 'bbs' && /cn_|_cn/.test(server))) {
+        if (!(game == 'wd' ? /^(10|20)[0-9]{7}/i : /^(1[0-9]|[6-9])[0-9]{8}/i).test(uid) || /_cn/.test(biz) || (game == 'bbs' && /cn_|_cn/.test(server))) {
           deviceFp = '38d805c20d53d'
         } else {
           deviceFp = '38d7f4c72b736'

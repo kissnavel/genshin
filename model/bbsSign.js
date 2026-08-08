@@ -17,10 +17,7 @@ export default class BBsSign extends base {
         this.model = 'BBsSign'
         this.ForumData = Data.readJSON(`${Cfg.file}`, "mys")
         this.button = segment.button([
-            { text: '#ck帮助', callback: '#Cookie帮助' }
-        ],[
-            { text: '#扫码登陆', callback: '#扫码登陆' },
-            { text: '#刷新ck', callback: '#刷新ck' }
+            { text: '#扫码登录', callback: '#扫码登录' }
         ])
     }
 

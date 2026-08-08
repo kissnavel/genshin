@@ -47,19 +47,6 @@ export default class MysInfo {
     ]
 
     this.gtest = false
-    this.mysButton = segment.button([
-      { text: '米游社', link: 'https://miyoushe.com' },
-      { text: '#ck帮助', callback: '#Cookie帮助' }
-    ],[
-      { text: '#扫码登陆', callback: '#扫码登陆' },
-      { text: '#刷新ck', callback: '#刷新ck' }
-    ])
-    this.hoyoButton = segment.button([
-      { text: 'HoYoLAB', link: 'https://hoyolab.com' },
-      { text: '#ck帮助', callback: '#Cookie帮助' }
-    ],[
-      { text: '#刷新ck', callback: '#刷新ck' }
-    ])
   }
 
   static async init (e, api) {
@@ -401,8 +388,22 @@ export default class MysInfo {
   }
 
   async checkCode (res, type, mysApi = {}, data = {}, isTask = false) {
+    let gametype = this.e.game == 'zzz' ? '%' : this.e.game == 'sr' ? '*' : '#'
+    this.mysButton = segment.button([
+      { text: '米游社', link: 'https://miyoushe.com' },
+      { text: '#ck帮助', callback: '#ck帮助' }
+    ],[
+      { text: `${gametype}扫码登录`, callback: `${gametype}扫码登录` },
+      { text: `${gametype}刷新ck`, callback: `${gametype}刷新ck` }
+    ])
+    this.hoyoButton = segment.button([
+      { text: 'HoYoLAB', link: 'https://hoyolab.com' },
+      { text: '#ck帮助', callback: '#ck帮助' }
+    ],[
+      { text: `${gametype}sk帮助`, callback: `${gametype}sk帮助` },
+      { text: `${gametype}刷新ck`, callback: `${gametype}刷新ck` }
+    ])
     let button = /^(1[0-9]|[6-9])[0-9]{8}/i.test(this.uid) ? this.hoyoButton : this.mysButton
-    let gametype = this.e.game == 'sr' ? '*' : '#'
     if (!res) {
       if (!isTask) this.e.reply([`UID:${this.uid}，米游社接口请求失败，暂时无法查询`, button])
       return false

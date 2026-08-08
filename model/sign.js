@@ -21,10 +21,11 @@ export default class MysSign extends base {
 
         let { cks, uids } = await Cfg.getcks(false, e.user_id)
 
-        if (_.every(cks, _.isEmpty)) return e.reply(['无法签到，请发送【#cookie帮助】查看配置教程\n或尝试【#刷新ck】', segment.button([
-            { text: '#ck帮助', callback: '#Cookie帮助' }
+        if (_.every(cks, _.isEmpty)) return e.reply(['无法签到，请发送【#ck帮助】查看配置教程\n或尝试【#刷新ck】', segment.button([
+            { text: '#ck帮助', callback: '#ck帮助' },
+            { text: '#sk帮助', callback: '#sk帮助' }
         ],[
-            { text: '#扫码登陆', callback: '#扫码登陆' },
+            { text: '#扫码登录', callback: '#扫码登录' },
             { text: '#刷新ck', callback: '#刷新ck' }
         ])], false, { at: true })
 

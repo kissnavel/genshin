@@ -64,6 +64,7 @@ export class note extends plugin {
     }
 
     async noteconfig(e) {
+        let gametype = e.game == 'zzz' ? '%' : e.game == 'sr' ? '*' : '#'
         let Note = Cfg.getConfig('config').Note
         if (!Note) return false
         if (!e.isGroup) return
@@ -75,16 +76,16 @@ export class note extends plugin {
 
         let { cks, uids } = await Cfg.getcks(false, e.user_id, true)
         let sks = await Cfg.getsks(false, e.user_id)
-        if (_.isEmpty(sks) || _.isEmpty(cks[g])) return e.reply('\n请【#扫码登录】后使用体力推送', false, { at: true })
+        if (_.isEmpty(sks) || _.isEmpty(cks[g])) return e.reply(`\n请【${gametype}扫码登录】后使用体力推送`, false, { at: true })
 
         if (uid) {
             if (!cks[g][uid]) return e.reply(`\n只能开启自己已绑ck及sk且未禁用的uid的体力提醒`, false, { at: true })
-            if (!sks[cks[g][uid].skid]) return e.reply(`\n${game}UID:${uid} 请【#扫码登录】后使用体力推送`, false, { at: true })
+            if (!sks[cks[g][uid].skid]) return e.reply(`\n${game}UID:${uid} 请【${gametype}扫码登录】后使用体力推送`, false, { at: true })
             return await this.config(e, uid, g, game)
         } else {
             for (let uid of uids[g]) {
                 if (!sks[cks[g][uid].skid]) {
-                    e.reply(`\n${game}UID:${uid} 请【#扫码登录】后使用体力推送`, false, { at: true })
+                    e.reply(`\n${game}UID:${uid} 请【${gametype}扫码登录】后使用体力推送`, false, { at: true })
                     continue
                 }
                 await this.config(e, uid, g, game)

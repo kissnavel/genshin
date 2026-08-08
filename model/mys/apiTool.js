@@ -33,8 +33,9 @@ export default class apiTool {
     const deviceDisplay = deviceInfo.split('/')[3]
     let bbs_api = 'https://bbs-api.miyoushe.com/'
     let bbs_api_os = 'https://bbs-api-os.hoyolab.com/'
+    let pass_api = 'https://passport-api.miyoushe.com/'
     let host, host_hk4e, host_nap, hostRecord, hostPublicData
-    if (['bh3_cn', 'bh2_cn'].includes(this.biz) || /cn_|_cn/.test(this.server)) {
+    if (/_cn/.test(this.biz) || /cn_|_cn/.test(this.server)) {
       host = 'https://api-takumi.mihoyo.com/'
       host_nap = 'https://act-nap-api.mihoyo.com/'
       hostRecord = 'https://api-takumi-record.mihoyo.com/'
@@ -175,6 +176,38 @@ export default class apiTool {
             registration_id: this.generateSeed(19)
           }
         },
+        UserGame: {
+          url: `${host}binding/api/getUserGameRolesByCookie`,
+          query: `game_biz=${this.biz}`
+        },
+        bbsGetCookie: {
+          url: `${host}auth/api/getCookieAccountInfoBySToken`,
+          query: `game_biz=${this.biz}`
+        },
+        qrCodeLogin: {
+          url: `${pass_api}account/ma-cn-passport/app/createQRLogin`,
+          body: {},
+          types: 'qrcode'
+        },
+        qrCodeQuery: {
+          url: `${pass_api}account/ma-cn-passport/app/queryQRLoginStatus`,
+          body: {
+            ticket: data.ticket
+          },
+          types: 'qrcode'
+        },
+        exchange: {
+          url: `${pass_api}account/ma-cn-session/app/exchange`,
+          body: {
+            src_token: {
+              token: data.token,
+              token_type: 1
+            },
+            mid: data.mid,
+            dst_token_type: 4
+          },
+          types: 'qrcode'
+        },
         material: {
           url: `${bbs_api_os}community/painter/wapi/circle/channel/guide/material`,
           query: `game_id=${data.game_id}`,
@@ -231,6 +264,10 @@ export default class apiTool {
             query: 'lang=zh-cn&act_id=e202311201442471',
             types: 'sign'
           },
+          bbsGetCookie: {
+            url: `${host}auth/api/getCookieAccountInfoBySToken`,
+            query: 'game_biz=hk4e_cn',
+          },
           getFp: {
             url: `${hostPublicData}device-fp/api/getFp`,
             body: {
@@ -263,6 +300,10 @@ export default class apiTool {
             url: `${host_hk4e}event/sol/home`,
             query: 'lang=zh-cn&act_id=e202102251931481',
             types: 'sign'
+          },
+          bbsGetCookie: {
+            url: `${host}auth/api/getCookieAccountInfoBySToken`,
+            query: 'game_biz=hk4e_global',
           },
           getFp: {
             url: `${hostPublicData}device-fp/api/getFp`,
@@ -398,6 +439,16 @@ export default class apiTool {
             platform: 'Android',
             registration_id: this.generateSeed(19)
           }
+        },
+        AuthKey: {
+          url: `${host}binding/api/genAuthKey`,
+          body: {
+            auth_appid: 'webview_gacha',
+            game_biz: 'hk4e_cn',
+            game_uid: this.uid,
+            region: this.server
+          },
+          types: 'authkey'
         }
       },
       sr: {
@@ -420,6 +471,10 @@ export default class apiTool {
             url: `${host}event/luna/home`,
             query: 'lang=zh-cn&act_id=e202304121516551',
             types: 'sign'
+          },
+          bbsGetCookie: {
+            url: `${host}auth/api/getCookieAccountInfoBySToken`,
+            query: 'game_biz=hkrpg_cn',
           },
           getFp: {
             url: `${hostPublicData}device-fp/api/getFp`,
@@ -453,6 +508,10 @@ export default class apiTool {
             url: `${host}event/luna/os/home`,
             query: 'lang=zh-cn&act_id=e202303301540311',
             types: 'sign'
+          },
+          bbsGetCookie: {
+            url: `${host}auth/api/getCookieAccountInfoBySToken`,
+            query: 'game_biz=hkrpg_global',
           },
           getFp: {
             url: `${hostPublicData}device-fp/api/getFp`,
@@ -598,6 +657,10 @@ export default class apiTool {
             query: 'lang=zh-cn&act_id=e202406242138391',
             types: 'sign'
           },
+          bbsGetCookie: {
+            url: `${host}auth/api/getCookieAccountInfoBySToken`,
+            query: 'game_biz=nap_cn',
+          },
           getFp: {
             url: `${hostPublicData}device-fp/api/getFp`,
             body: {
@@ -630,6 +693,10 @@ export default class apiTool {
             url: `${host_nap}event/luna/zzz/os/home`,
             query: 'lang=zh-cn&act_id=e202406031448091',
             types: 'sign'
+          },
+          bbsGetCookie: {
+            url: `${host}auth/api/getCookieAccountInfoBySToken`,
+            query: 'game_biz=nap_global',
           },
           getFp: {
             url: `${hostPublicData}device-fp/api/getFp`,
