@@ -3,7 +3,7 @@
 ## 说明
 1、本仓库miao崽与trss崽均可使用，自行替换即可。
 
-2、本仓库需配合：“<a href="https://github.com/yoimiya-kokomi/miao-plugin">miao-plugin</a>”、“<a href="https://github.com/ctrlcvs/xiaoyao-cvs-plugin">xiaoyao-cvs-plugin</a>”等插件使用。
+2、本仓库需配合：“<a href="https://github.com/yoimiya-kokomi/miao-plugin">miao-plugin</a>”等插件使用。
 
 3、本仓库已整合：“<a href="https://github.com/kissnavel/bujidaoRUN">bujidaoRUN</a>”仓库的体力、签到、米游社面板等功能。
 
