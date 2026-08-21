@@ -400,6 +400,8 @@ export default class RoleIndex extends base {
     }
 
     explor2 = explor2.concat([
+      { lable: "冰神瞳", num: stats.iceculus_number },
+      { lable: "月神瞳", num: stats.moonoculus_number },
       { lable: '火神瞳', num: stats.pyroculus_number },
       { lable: '水神瞳', num: stats.hydroculus_number },
       { lable: '草神瞳', num: stats.dendroculus_number },
@@ -542,7 +544,7 @@ export default class RoleIndex extends base {
         { lable: '水神瞳', num: stats.hydroculus_number, extra: this.lable.hydroculus },
         { lable: '火神瞳', num: stats.pyroculus_number, extra: this.lable.pyroculus },
         { lable: '月神瞳', num: stats.moonoculus_number, extra: this.lable.moonoculus },
-        { lable: '冰神瞳', num: `${dsz}`, extra: 0 }
+        { lable: '冰神瞳', num: stats.iceculus_number, extra: this.lable.iceculus }
       ],
     ]
     // 尘歌壶
