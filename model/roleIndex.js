@@ -36,7 +36,8 @@ export default class RoleIndex extends base {
       远古圣山: 16,
       挪德卡莱: 17,
       风息山: 18,
-      空之神殿: 19
+      空之神殿: 19,
+      至冬: 20
     }
 
     this.all_chest = 0
