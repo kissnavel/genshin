@@ -175,7 +175,9 @@ export default class MysSign extends base {
             }
         }
 
-        if (signInfo.first_bind) {
+        this.signInfo = signInfo.data
+
+        if (this.signInfo.first_bind || this.signInfo.send_first) {
             logger.error(`[${name}签到失败]${this.log} 首次请先手动签到`)
             return {
                 retcode: 100,
@@ -183,9 +185,8 @@ export default class MysSign extends base {
             }
         }
 
-        this.signInfo = signInfo.data
-
         if (this.signInfo.is_sign) {
+            logger.mark(`[${name}今日已签]${this.log} 第${this.ckNum}个`)
             let reward = await this.getReward(this.signInfo.total_sign_day, game)
             this.setCache(this.signInfo.total_sign_day)
             return {
