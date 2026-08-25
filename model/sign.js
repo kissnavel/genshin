@@ -156,7 +156,7 @@ export default class MysSign extends base {
 
         if (!signInfo) return false
 
-        if ((signInfo.retcode == -100 && signInfo.message == '尚未登录') || (signInfo.retcode !== 0 && signInfo.message?.includes('请登录后重试'))) {
+        if (signInfo.retcode !== 0 && signInfo.message?.includes('未登录')) {
             logger.error(`[${name}签到失败]${this.log} 绑定cookie已失效`)
             if (this.set.Autodelck)
                 await Cfg.delck(ck.ltuid, ck.qq)
@@ -168,6 +168,7 @@ export default class MysSign extends base {
         }
 
         if (signInfo.retcode !== 0) {
+            logger.error(`[${name}签到失败]${this.log} ${signInfo.message || '未知错误'}`)
             return {
                 retcode: signInfo.retcode,
                 msg: `\n签到失败：${signInfo.message || '未知错误'}`
@@ -175,6 +176,7 @@ export default class MysSign extends base {
         }
 
         if (signInfo.first_bind) {
+            logger.error(`[${name}签到失败]${this.log} 首次请先手动签到`)
             return {
                 retcode: 100,
                 msg: '\n签到失败：首次请先手动签到'

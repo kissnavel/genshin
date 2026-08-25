@@ -163,6 +163,7 @@ export class qrCode extends plugin {
 
     async upCookie(e, qrCode) {
         let { sks, ltuids } = await new qrcode(e).getStoken(e, qrCode)
+        if (!sks || !ltuids) return false
 
         for (let i of ltuids) {
             let game_biz = ''
