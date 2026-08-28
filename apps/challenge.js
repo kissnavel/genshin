@@ -44,6 +44,7 @@ export class Challenge extends plugin {
   }
 
   async roleIndex (e) {
+    if (/记录|统计/.test(e.msg)) return false
     await e.reply('角色数据获取中，请稍后……')
     let res = await srChallenge.getIndex(e)
     if (!res) return false
