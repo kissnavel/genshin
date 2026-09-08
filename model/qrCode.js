@@ -1,7 +1,6 @@
 import common from '../../../lib/common/common.js'
 import puppeteer from '../../../lib/puppeteer/puppeteer.js'
 import Cfg from './Cfg.js'
-import MysApi from './mys/mysApi.js'
 import _ from 'lodash'
 import moment from 'moment'
 import base from './base.js'
@@ -48,7 +47,7 @@ export default class qrCode extends base {
         return res
     }
 
-    async bindStoken(e, list, info) {
+    bindStoken(e, list, info) {
         let datalist = {}
         datalist[info.stuid] = {
             stuid: info.stuid,
@@ -61,7 +60,7 @@ export default class qrCode extends base {
             region_name: list[0].region_name,
             region: list[0].region
         }
-        await Cfg.saveSk(e.user_id, datalist)
+        Cfg.saveSk(e.user_id, datalist)
         let msg = 'stoken绑定成功您可通过下列指令进行操作:'
         msg += '\n【#米币查询】查询米游币余额'
         msg += '\n【#mys原神签到】获取米游币'

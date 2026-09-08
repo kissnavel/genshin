@@ -155,14 +155,14 @@ export class qrCode extends plugin {
             mid: Mid
         }
 
-        let msg = await new qrcode(e).bindStoken(e, list, info)
+        let msg = new qrcode(e).bindStoken(e, list, info)
         await e.reply(msg)
 
         await new User(e).bing()
     }
 
-    async upCookie(e, qrCode) {
-        let { sks, ltuids } = await new qrcode(e).getStoken(e, qrCode)
+    async upCookie(e) {
+        let { sks, ltuids } = await new qrcode(e).getStoken(e)
         if (!sks || !ltuids) return false
 
         for (let i of ltuids) {
@@ -251,7 +251,7 @@ export class qrCode extends plugin {
             this.finish('toBindStoken')
             return false
         }
-        let msg = await new qrcode(this.e).bindStoken(this.e, list, info)
+        let msg = new qrcode(this.e).bindStoken(this.e, list, info)
         await this.e.reply(msg)
 
         await new User(this.e).bing()
