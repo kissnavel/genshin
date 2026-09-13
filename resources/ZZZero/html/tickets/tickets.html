@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8"/>
+  <link rel="shortcut icon" href="#"/>
+  <link rel="stylesheet" type="text/css" href="{{_res_path}}ZZZero/html/tickets/tickets.css"/>
+</head>
+
+<body>
+<div class="container" id="container">
+  <div class="main_box">
+    <div class="base_info">
+      <div class="uid">ID: {{uid}}</div>
+    
+    </div>
+    <div class="item_box">
+      {{each tickets type}}
+      <div class="item">
+        <div class="role_box">
+          <img class="role_img" src="{{pluResPath}}ZZZero/img/tickets/{{type.ticket_type}}.png" onerror="whenError(this)"/>
+          <div class="desc">{{type.ticket_cnt}}</div>
+        </div>
+        <div class="role_name">{{type.ticket_type}}</div>
+      </div>
+      {{/each}}
+    </div>
+    <div class="tips">*由于数据传输存在延迟，您的道具数量请以游戏内为准</div>
+  </div>
+</div>
+</body>
+<script type="text/javascript">
+</script>
+
+</html>

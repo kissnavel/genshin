@@ -729,6 +729,10 @@ export default class apiTool {
           url: `${hostRecord}event/game_record_zzz/api/zzz/buddy/info`,
           query: `lang=zh-cn&role_id=${this.uid}&server=${this.server}`
         },
+        tickets: {
+          url: `${hostRecord}event/game_record_zzz/api/zzz/cur_gacha_detail`,
+          query: `uid=${this.uid}&region=${this.server}`
+        },
         /**使用兑换码 目前仅限国际服,来自于国服的uid请求已在mysInfo.js的init方法提前拦截 */
         useCdk: {
           url: 'https://public-operation-nap.hoyolab.com/common/apicdkey/api/webExchangeCdkeyHyl',
