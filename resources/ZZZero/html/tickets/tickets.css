@@ -12,7 +12,7 @@
 }
 body {
   font-size: 12px;
-  color: #1e1f20;
+  color: #d3bc8d;
   max-width: 580px;
   font-family: PingFangSC-Medium, PingFang SC, sans-serif;
   transform: scale(1.5);
@@ -24,13 +24,12 @@ body {
   padding-right: 15px;
   /*border: 1px solid #333;*/
   padding: 10px;
-  background-color: #ececec;
+  background-image: url(../../img/tickets/bg.png);
+  background-size: 100% 100%;
 }
 .main_box {
   border-radius: 15px;
   padding: 10px 10px 6px 0;
-  background: #fff;
-  box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.15);
 }
 .base_info {
   /*width:  200px;*/
@@ -52,24 +51,6 @@ body {
   top: -1px;
   background: #d3bc8d;
 }
-.lab {
-  display: flex;
-  margin-top: 12px;
-  flex-wrap: wrap;
-}
-.lab-item {
-  font-size: 14px;
-  font-family: tttgbnumber;
-  margin-right: 6px;
-  margin-bottom: 8px;
-  background: #F6F7F8;
-  /* color: #61666D; */
-  padding: 0px 10px 2px 6px;
-  border-radius: 12px;
-  border: solid 1px #939393;
-  display: flex;
-  align-items: center;
-}
 .item_box {
   display: flex;
   flex-wrap: wrap;
@@ -85,8 +66,6 @@ body {
   border-radius: 5px;
   position: relative;
   /*border: 2px solid #d3bc8d;*/
-  background: #e9e5dc;
-  box-shadow: 0 2px 6px 0 rgba(132, 93, 90, 0.3);
 }
 .role_box .role_img {
   width: 100%;
@@ -103,7 +82,6 @@ body {
   line-height: 18px;
   position: absolute;
   bottom: 0;
-  background: #e9e5dc;
   width: 100%;
   height: 18px;
   font-size: 14px;
@@ -131,7 +109,7 @@ body {
   border: 1px solid #fff;
   width: 24px;
   height: 24px;
-  background-color: #4e5362;
+  background-color: #d3bc8d;
   background-size: auto 100%;
 }
 .user_img {
