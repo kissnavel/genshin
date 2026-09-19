@@ -6,6 +6,8 @@ import base from './base.js'
 import moment from 'moment'
 import Cfg from './Cfg.js'
 import _ from 'lodash'
+import User from './user.js'
+import MysInfo from './mys/mysInfo.js'
 
 let signing = false
 let finishTime
@@ -156,14 +158,26 @@ export default class MysSign extends base {
 
         if (!signInfo) return false
 
-        if (signInfo.retcode !== 0 && signInfo.message?.includes('未登录')) {
-            logger.error(`[${name}签到失败]${this.log} 绑定cookie已失效`)
-            if (this.set.Autodelck)
-                await Cfg.delck(ck.ltuid, ck.qq)
-            return {
-                retcode: -100,
-                msg: `\n签到失败，绑定cookie已失效\n可【#刷新ck】`,
-                is_invalid: true
+        if (signInfo.retcode !== 0 && signInfo.message?.includes('登录')) {
+            this.e.AutoupCookie = true
+            await this.upCookie(ck.qq)
+            if (!this.e.EmptyStoken) {
+                let cookie = await MysInfo.checkUidBing(uid, game)
+                cookie = cookie.ck
+
+                this.mysApi = new MysApi(uid, cookie, { device: ck.device_id }, ck.region, ck.game_biz, game)
+                signInfo = await this.mysApi.getData('sign_info')
+            }
+
+            if (signInfo.retcode !== 0 && signInfo.message?.includes('登录')) {
+                logger.error(`[${name}签到失败]${this.log} 绑定cookie已失效`)
+                if (this.set.Autodelck)
+                    await Cfg.delck(ck.ltuid, ck.qq)
+                return {
+                    retcode: -100,
+                    msg: `\n签到失败，绑定cookie已失效\n可【#刷新ck】`,
+                    is_invalid: true
+                }
             }
         }
 
@@ -521,5 +535,56 @@ export default class MysSign extends base {
         noSignNum = noSignNum > 0 ? noSignNum : 0
 
         return { noSignNum, signNum }
+    }
+
+    async upCookie(qq) {
+        let { sks, ltuids } = await this.getStoken(qq)
+        if (!sks || !ltuids) return false
+
+        for (let i of ltuids) {
+            let game_biz = ''
+            if (sks[i].type == 'hoyolab') {
+                if (/os_/.test(sks[i].region)) {
+                    game_biz = 'hk4e_global'
+                } else if (/official/.test(sks[i].region)) {
+                    game_biz = 'hkrpg_global'
+                } else if (/_us|_eu|_jp|_sg/.test(sks[i].region)) {
+                    game_biz = 'nap_global'
+                }
+            } else {
+                if (/cn_/.test(sks[i].region)) {
+                    game_biz = 'hk4e_cn'
+                } else if (/_cn/.test(sks[i].region)) {
+                    if (sks[i].uid.length < 10) {
+                        game_biz = 'nap_cn'
+                    } else {
+                        game_biz = 'hkrpg_cn'
+                    }
+                }
+            }
+            let mysApi = new MysApi(sks[i].stuid, sks[i].sk, { game: 'bbs' }, sks[i].region, game_biz)
+
+            let res = await mysApi.getData('bbsGetCookie')
+            if (!res?.data) {
+                logger.error(`stuid:${sks[i].stuid},请求异常：${res.message}`)
+                continue
+            } else {
+                this.e.user_id = qq
+                this.e.ck = `ltoken=${sks[i].ltoken};ltuid=${sks[i].stuid};cookie_token=${res.data.cookie_token};account_id=${sks[i].stuid}`
+                await new User(this.e).bing()
+            }
+        }
+    }
+
+    async getStoken(qq) {
+        let sks = await Cfg.getsks(false, qq, false)
+        if (_.isEmpty(sks)) {
+            this.e.EmptyStoken = true
+            return false
+        }
+
+        let ltuids = _.map(sks, 'id')
+
+        return { sks, ltuids }
     }
 }

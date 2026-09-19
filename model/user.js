@@ -46,7 +46,7 @@ export default class User extends base {
       this.e.ck = this.ck
     }
     if (!this.e.ck) {
-      await this.e.reply(`请【私聊】发送米游社Cookie，获取教程：\n${set.cookieDoc}`)
+      if (!this.e.AutoupCookie) await this.e.reply(`请【私聊】发送米游社Cookie，获取教程：\n${set.cookieDoc}`)
       return
     }
 
@@ -59,14 +59,14 @@ export default class User extends base {
     })
 
     if (!param.cookie_token && !param.cookie_token_v2) {
-      await this.e.reply('发送Cookie不完整\n请退出米游社【重新登录】，刷新完整Cookie')
+      if (!this.e.AutoupCookie) await this.e.reply('发送Cookie不完整\n请退出米游社【重新登录】，刷新完整Cookie')
       return
     }
 
     // TODO：独立的mys数据，不走缓存ltuid
     let mys = await MysUser.create(param.ltuid || param.ltuid_v2 || param.account_id_v2 || param.ltmid_v2)
     if (!mys) {
-      await this.e.reply('发送Cookie不完整或数据错误')
+      if (!this.e.AutoupCookie) await this.e.reply('发送Cookie不完整或数据错误')
       return
     }
     let data = {}
@@ -95,7 +95,8 @@ export default class User extends base {
       logger.mark(`绑定Cookie错误1：${this.checkMsg || 'Cookie错误'}`)
       // 清除mys数据
       mys._delCache()
-      return await this.e.reply(`绑定Cookie失败：${this.checkMsg || 'Cookie错误'}`)
+      if (!this.e.AutoupCookie) await this.e.reply(`绑定Cookie失败：${this.checkMsg || 'Cookie错误'}`)
+      return
     }
 
     // 判断data.ltuid是否是数字
@@ -108,7 +109,8 @@ export default class User extends base {
         this.ck = `${this.ck}ltuid=${this.ltuid};`
       } else {
         logger.mark(`绑定Cookie错误2：${userFullInfo.message || 'Cookie错误'}`)
-        return await this.e.reply(`绑定Cookie失败：${userFullInfo.message || 'Cookie错误'}`)
+        if (!this.e.AutoupCookie) await this.e.reply(`绑定Cookie失败：${userFullInfo.message || 'Cookie错误'}`)
+        return
       }
     }
 
@@ -122,7 +124,7 @@ export default class User extends base {
 
     let uidMsg = ['绑定Cookie成功', mys.getUidInfo()]
     uidMsg.push('发送【#帮助】查看使用帮助')
-    await this.e.reply([uidMsg.join('\n'), segment.button([
+    if (!this.e.AutoupCookie) await this.e.reply([uidMsg.join('\n'), segment.button([
       { text: '#帮助', callback: '#帮助' }
     ])])
   }
