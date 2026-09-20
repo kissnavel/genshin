@@ -581,6 +581,8 @@ export default class MysSign extends base {
         if (_.isEmpty(sks)) {
             this.e.EmptyStoken = true
             return false
+        } else {
+            this.e.EmptyStoken = false
         }
 
         let ltuids = _.map(sks, 'id')
