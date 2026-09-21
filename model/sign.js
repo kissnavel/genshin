@@ -7,7 +7,6 @@ import moment from 'moment'
 import Cfg from './Cfg.js'
 import _ from 'lodash'
 import User from './user.js'
-import MysInfo from './mys/mysInfo.js'
 
 let signing = false
 let finishTime
@@ -159,14 +158,16 @@ export default class MysSign extends base {
         if (!signInfo) return false
 
         if (signInfo.retcode !== 0 && signInfo.message?.includes('登录')) {
-            this.e.AutoupCookie = true
-            await this.upCookie(ck.qq)
-            if (!this.e.EmptyStoken) {
-                let cookie = await MysInfo.checkUidBing(uid, game)
-                cookie = cookie.ck
-
-                this.mysApi = new MysApi(uid, cookie, { device: ck.device_id }, ck.region, ck.game_biz, game)
+            if (this.e.user_id == ck.qq && this.e.ck) {
+                this.mysApi = new MysApi(uid, this.e.ck, { device: ck.device_id }, ck.region, ck.game_biz, game)
                 signInfo = await this.mysApi.getData('sign_info')
+            } else {
+                this.e.AutoupCookie = true
+                await this.upCookie(ck.qq)
+                if (!this.e.EmptyStoken) {
+                    this.mysApi = new MysApi(uid, this.e.ck, { device: ck.device_id }, ck.region, ck.game_biz, game)
+                    signInfo = await this.mysApi.getData('sign_info')
+                }
             }
 
             if (signInfo.retcode !== 0 && signInfo.message?.includes('登录')) {
@@ -182,10 +183,16 @@ export default class MysSign extends base {
         }
 
         if (signInfo.retcode !== 0) {
-            logger.error(`[${name}签到失败]${this.log} ${signInfo.message || '未知错误'}`)
-            return {
-                retcode: signInfo.retcode,
-                msg: `\n签到失败：${signInfo.message || '未知错误'}`
+            if (this.e.user_id == ck.qq && this.e.ck) {
+                this.mysApi = new MysApi(uid, this.e.ck, { device: ck.device_id }, ck.region, ck.game_biz, game)
+                signInfo = await this.mysApi.getData('sign_info')
+            }
+            if (signInfo.retcode !== 0) {
+                logger.error(`[${name}签到失败]${this.log} ${signInfo.message || '未知错误'}`)
+                return {
+                    retcode: signInfo.retcode,
+                    msg: `\n签到失败：${signInfo.message || '未知错误'}`
+                }
             }
         }
 
