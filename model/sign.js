@@ -163,8 +163,8 @@ export default class MysSign extends base {
                 signInfo = await this.mysApi.getData('sign_info')
             } else {
                 this.e.AutoupCookie = true
-                await this.upCookie(ck.qq)
-                if (!this.e.EmptyStoken) {
+                await this.upCookie(ck.qq, ck.skid)
+                if (!this.e.EmptyStoken && this.e.user_id == ck.qq && this.e.ck) {
                     this.mysApi = new MysApi(uid, this.e.ck, { device: ck.device_id }, ck.region, ck.game_biz, game)
                     signInfo = await this.mysApi.getData('sign_info')
                 }
@@ -544,41 +544,44 @@ export default class MysSign extends base {
         return { noSignNum, signNum }
     }
 
-    async upCookie(qq) {
+    async upCookie(qq, skid) {
         let { sks, ltuids } = await this.getStoken(qq)
         if (!sks || !ltuids) return false
 
         for (let i of ltuids) {
-            let game_biz = ''
-            if (sks[i].type == 'hoyolab') {
-                if (/os_/.test(sks[i].region)) {
-                    game_biz = 'hk4e_global'
-                } else if (/official/.test(sks[i].region)) {
-                    game_biz = 'hkrpg_global'
-                } else if (/_us|_eu|_jp|_sg/.test(sks[i].region)) {
-                    game_biz = 'nap_global'
-                }
-            } else {
-                if (/cn_/.test(sks[i].region)) {
-                    game_biz = 'hk4e_cn'
-                } else if (/_cn/.test(sks[i].region)) {
-                    if (sks[i].uid.length < 10) {
-                        game_biz = 'nap_cn'
-                    } else {
-                        game_biz = 'hkrpg_cn'
+            if (skid == `${sks[i].stuid}_${qq}`) {
+                let game_biz = ''
+                if (sks[i].type == 'hoyolab') {
+                    if (/os_/.test(sks[i].region)) {
+                        game_biz = 'hk4e_global'
+                    } else if (/official/.test(sks[i].region)) {
+                        game_biz = 'hkrpg_global'
+                    } else if (/_us|_eu|_jp|_sg/.test(sks[i].region)) {
+                        game_biz = 'nap_global'
+                    }
+                } else {
+                    if (/cn_/.test(sks[i].region)) {
+                        game_biz = 'hk4e_cn'
+                    } else if (/_cn/.test(sks[i].region)) {
+                        if (sks[i].uid.length < 10) {
+                            game_biz = 'nap_cn'
+                        } else {
+                            game_biz = 'hkrpg_cn'
+                        }
                     }
                 }
-            }
-            let mysApi = new MysApi(sks[i].stuid, sks[i].sk, { game: 'bbs' }, sks[i].region, game_biz)
+                let mysApi = new MysApi(sks[i].stuid, sks[i].sk, { game: 'bbs' }, sks[i].region, game_biz)
 
-            let res = await mysApi.getData('bbsGetCookie')
-            if (!res?.data) {
-                logger.error(`stuid:${sks[i].stuid},请求异常：${res.message}`)
-                continue
-            } else {
-                this.e.user_id = qq
-                this.e.ck = `ltoken=${sks[i].ltoken};ltuid=${sks[i].stuid};cookie_token=${res.data.cookie_token};account_id=${sks[i].stuid}`
-                await new User(this.e).bing()
+                let res = await mysApi.getData('bbsGetCookie')
+                if (!res?.data) {
+                    logger.error(`stuid:${sks[i].stuid},请求异常：${res.message}`)
+                    this.e.EmptyStoken = true
+                    continue
+                } else {
+                    this.e.user_id = qq
+                    this.e.ck = `ltoken=${sks[i].ltoken};ltuid=${sks[i].stuid};cookie_token=${res.data.cookie_token};account_id=${sks[i].stuid}`
+                    await new User(this.e).bing()
+                }
             }
         }
     }
