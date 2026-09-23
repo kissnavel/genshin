@@ -18,6 +18,7 @@ export default class qrCode extends base {
         if (!res?.data) return e.reply(`二维码生成失败，异常：${res?.message}\n请稍后再试`)
         let screenData = this.screenData
         screenData.tplFile = `${this._path}/plugins/genshin/resources/qrCode/index.html`
+        screenData.pluResPath = `${this._path}/plugins/genshin/resources/`
         let data = {
             ...screenData,
             url: res?.data?.url
