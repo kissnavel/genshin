@@ -163,7 +163,7 @@ export default class MysSign extends base {
                 signInfo = await this.mysApi.getData('sign_info')
             } else {
                 this.e.AutoupCookie = true
-                if (!this.e.EmptyStoken && this.e.user_id == ck.qq) await this.upCookie(ck.qq, ck.skid)
+                if (this.e.user_id !== ck.qq) await this.upCookie(ck.qq, ck.skid)
                 if (!this.e.EmptyStoken && this.e.user_id == ck.qq && this.e.ck) {
                     this.mysApi = new MysApi(uid, this.e.ck, { device: ck.device_id }, ck.region, ck.game_biz, game)
                     signInfo = await this.mysApi.getData('sign_info')
@@ -576,6 +576,7 @@ export default class MysSign extends base {
                 if (!res?.data) {
                     logger.error(`stuid:${sks[i].stuid},请求异常：${res.message}`)
                     this.e.EmptyStoken = true
+                    this.e.user_id = qq
                     continue
                 } else {
                     this.e.user_id = qq
