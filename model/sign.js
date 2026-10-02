@@ -163,7 +163,7 @@ export default class MysSign extends base {
                 signInfo = await this.mysApi.getData('sign_info')
             } else {
                 this.e.AutoupCookie = true
-                await this.upCookie(ck.qq, ck.skid)
+                if (!this.e.EmptyStoken && this.e.user_id == ck.qq) await this.upCookie(ck.qq, ck.skid)
                 if (!this.e.EmptyStoken && this.e.user_id == ck.qq && this.e.ck) {
                     this.mysApi = new MysApi(uid, this.e.ck, { device: ck.device_id }, ck.region, ck.game_biz, game)
                     signInfo = await this.mysApi.getData('sign_info')
