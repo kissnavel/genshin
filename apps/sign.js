@@ -75,7 +75,8 @@ export class sign extends plugin {
 
         let list = await BBsSign.bbsSign(e, msg)
         if (!list) return
-        
+        if (await new BBsSign(e).replyWithImage(list, Cfg.countTime(moment().unix() - START))) return
+
         for (let res of list)
             send.push(res.message)
 

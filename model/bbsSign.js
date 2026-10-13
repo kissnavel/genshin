@@ -6,7 +6,7 @@ import Data from "./Data.js"
 import Cfg from './Cfg.js'
 import moment from 'moment'
 import _ from 'lodash'
-import fetch from 'node-fetch'
+import puppeteer from '../../../lib/puppeteer/puppeteer.js'
 
 let signing = false
 let finishTime
@@ -45,9 +45,39 @@ export default class BBsSign extends base {
         let data = BbsSign.getDataList(BbsSign.white.exQQ?.includes(id) ? '全部' : name)
         for (let i of ltuids) {
             let res = await BbsSign.getbbsSign(sks[i], data, time)
-            list.push(res)
+            list.push({ ...res, stuid: sks[i].stuid })
         }
         return list
+    }
+
+    async replyWithImage(list, duration) {
+        const accounts = list.map((res, index) => ({
+            ...res,
+            index: index + 1,
+            status: res.retcode === 0 ? 'success' : res.retcode === 100 ? 'already' : 'failed',
+            statusText: res.retcode === 0 ? '任务完成' : res.retcode === 100 ? '今日已完成' : res.retcode === -100 ? '登录失效' : '任务未完成',
+            message: res.message.replace(/\*\*/g, '')
+        }))
+        try {
+            const img = await puppeteer.screenshot('MysSign/bbsSign', {
+                ...this.screenData,
+                tplFile: `${this._path}/plugins/genshin/resources/MysSign/html/sign/bbsSign.html`,
+                pluResPath: `${this._path}/plugins/genshin/resources/MysSign/`,
+                saveId: this.e.user_id,
+                quality: 100,
+                accounts,
+                totalSignCount: accounts.filter(account => account.retcode === 0 || account.retcode === 100).length,
+                duration,
+                mode: this.white.exQQ?.includes(Number(this.e.user_id) || String(this.e.user_id)) ? '米币+经验' : '米币'
+            })
+            if (img) {
+                await this.e.reply(img, false, { at: true })
+                return true
+            }
+        } catch (error) {
+            logger.error(`社区签到图片生成失败：${error}`)
+        }
+        return false
     }
 
     async bbsSeachSign(mysApi, userId) {
@@ -61,11 +91,13 @@ export default class BBsSign extends base {
             message = `当前米游币数量为：${res.data.total_points},今日剩余可获取：${res.data.can_get_points}`
             points = res.data.can_get_points
         }
-        return { message, retcode: res.retcode, points }
+        return { message, retcode: res?.retcode, points, totalPoints: res?.data?.total_points }
     }
 
     async getbbsSign(sk, forumData, time = 5) {
         let message = '', challenge = '', retcode = 0, res
+        const forums = []
+        const result = () => ({ message, retcode, forums, totalPoints: res?.totalPoints, remainingPoints: res?.points })
         let mysApi = new MysApi(sk.stuid, sk.sk, {}, sk.region, '', 'bbs')
         let key = `Bbs:Sign:${sk.id}`
         message += `**通行证ID: ${sk.stuid}**\n`
@@ -74,11 +106,15 @@ export default class BBsSign extends base {
             await common.sleep(1000)
             res = await this.bbsSeachSign(mysApi, sk.userId)
             if (res.retcode == -100) {
-                return { message: res.message, retcode: -100 }
+                message += res.message
+                retcode = -100
+                return result()
             }
             if (res.points == 0) {
                 await this.setCache(key)
-                return { message: res.message, retcode: 100 }
+                message += res.message
+                retcode = 100
+                return result()
             }
 
             let device_fp = await mysApi.getData('getFp')
@@ -93,6 +129,8 @@ export default class BBsSign extends base {
                 }
 
                 message += `\n**${forum.name}**\n`
+                const row = { name: forum.name, status: 'failed', statusText: '签到失败', detail: 0, vote: 0, share: 0, detailTarget: detal, voteTarget: time, shareTarget: Share }
+                forums.push(row)
                 forum = {
                     ...forum,
                     headers: { 'x-rpc-device_fp': device_fp }
@@ -100,9 +138,13 @@ export default class BBsSign extends base {
                 await common.sleep(1000)
                 res = await mysApi.getData("querySignInStatus", forum)
                 if (res?.data?.is_signed == true) {
+                    row.status = 'already'
+                    row.statusText = '今日已签'
                     message += `社区签到: 今日已签到\n`
                 } else if (res?.retcode == -100) {
-                    return { message: '登录失效，请【#扫码登录】', retcode: -100 }
+                    message += '登录失效，请【#扫码登录】'
+                    retcode = -100
+                    return result()
                 } else {
                     await common.sleep(1000)
                     res = await mysApi.getData("bbsSign", forum)
@@ -129,6 +171,10 @@ export default class BBsSign extends base {
                     } else {
                         message += `社区签到: ${res.message}\n`
                     }
+                }
+                if (row.status !== 'already') {
+                    row.status = res?.retcode === 0 ? 'success' : 'failed'
+                    row.statusText = res?.retcode === 0 ? '签到成功' : res?.message || '签到失败'
                 }
                 logger.mark(`${sk.id}:${forum.name} 社区签到结果: [${res?.data?.is_signed == true ? '今日已签到' : `${res.message}`}]`)
 
@@ -183,9 +229,11 @@ export default class BBsSign extends base {
                 }
 
                 message += `浏览：${trueDetail}|点赞：${Vote}|分享：${trueShare}\n`
+                Object.assign(row, { detail: trueDetail, vote: Vote, share: trueShare })
             }
 
             res = await this.bbsSeachSign(mysApi, sk.userId)
+            message += `\n${res.message}`
             if (res.points == 0) {
                 retcode = 0
                 await this.setCache(key)
@@ -197,7 +245,7 @@ export default class BBsSign extends base {
             message += `${sk.id}获取米游币异常`
             retcode = 1034
         }
-        return { message, retcode }
+        return result()
     }
 
     async bbsTask(manual) {
