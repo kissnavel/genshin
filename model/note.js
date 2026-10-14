@@ -25,7 +25,7 @@ export default class Note extends base {
 
   static async get(e) {
     let note = new Note(e)
-
+  
     let { cks } = await Cfg.getcks(false, e.user_id, true)
     if (_.every(cks, _.isEmpty)) return e.reply(['请【#扫码登录】绑定ck\n或尝试【#刷新ck】', segment.button([
       { text: '#ck帮助', callback: '#ck帮助' },
@@ -34,27 +34,46 @@ export default class Note extends base {
       { text: '#扫码登录', callback: '#扫码登录' },
       { text: '#刷新ck', callback: '#刷新ck' }
     ])], false, { at: true })
-
+  
     e.reply('查询中请稍等...', false, { at: true, recallMsg: 30 })
-
+  
     let sendMsg = []
     e._reply = e.reply
     e.reply = ((msg) => {
       sendMsg.push(msg)
     })
-
+  
+    // 是否开启多体力查询，默认开启（未配置时也视为开启）
+    let isMultiGame = note.set.noteMultiGame !== false
+  
+    let games
+    if (isMultiGame) {
+      // 多体力：三家全查
+      games = ['gs', 'sr', 'zzz']
+    } else {
+      // 分开查：按 dealEvent.js 设置好的 e.game 区分
+      if (e.isSr || e.game === 'sr') {
+        games = ['sr']
+      } else if (e.isZzz || e.game === 'zzz') {
+        games = ['zzz']
+      } else {
+        // 没前缀或 #体力，默认只查原神
+        games = ['gs']
+      }
+    }
+  
     let promises = []
-    for (let g of ['gs', 'sr', 'zzz'])
+    for (let g of games)
       if (!_.isEmpty(cks[g]))
         promises.push(note.ddos(cks[g], g))
-
+  
     await Promise.all(promises)
-
+  
     if (sendMsg.length > note.set.forward)
       await e._reply(await common.makeForwardMsg(e, sendMsg))
     else
       await e._reply(sendMsg, false, { at: false })
-
+  
     return
   }
 
