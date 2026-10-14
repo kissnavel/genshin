@@ -165,12 +165,45 @@ export default class Note extends base {
 
   async getData(ck, game) {
     let res = await this.noteData(ck, game)
-    if (res?.Data?.retcode !== 0 || _.isEmpty(res?.Sign)) return false
-
+  
+    // 查询失败：根据错误码/信息，给出解决方法
+    if (res?.Data?.retcode !== 0 || _.isEmpty(res?.Sign)) {
+      let gameName = game === 'gs' ? '原神' : game === 'sr' ? '星铁' : game === 'zzz' ? '绝区零' : game
+      let retcode = res?.Data?.retcode ?? res?.retcode
+      let message = (res?.Data?.message || res?.message || '').toLowerCase()
+  
+      let tip = ''
+  
+      // 1. 验证码
+      if (retcode === 1034 || retcode === 10035 || /验证码|captcha|geetest|challenge/i.test(message)) {
+        tip = '遇到米游社验证码，请等待几分钟后再试。\n若频繁出现，可发送【#米游社验证】进行手动验证。'
+      }
+      // 2. CK 失效 / 未登录
+      else if (retcode === 10101 || retcode === 100 || /登录|login|未登录|not logged/i.test(message)) {
+        tip = 'Cookie 已失效，请发送【#扫码登录】或【#刷新ck】重新绑定。'
+      }
+      // 3. 账号异常 / 风控（5003 等）
+      else if (retcode === 5003 || /异常|风控|abnormal|risk/i.test(message)) {
+        tip = '账号暂时异常或请求过于频繁，请等待 5～10 分钟后再试。\n若持续失败，可尝试【#刷新ck】。'
+      }
+      // 4. 未绑定 / 无数据
+      else if (retcode === 10102 || /未公开|not public/i.test(message)) {
+        tip = '米游社数据未公开，请前往米游社检查角色是否对外展示。'
+      }
+      // 5. 其他未知情况
+      else {
+        tip = '体力查询失败，请稍后再试。\n若持续失败，可尝试【#刷新ck】或【#扫码登录】。'
+      }
+  
+      await this.e.reply(`【${gameName}】UID:${ck.uid} ${tip}`)
+      return false
+    }
+  
+    // 查询成功，继续渲染
     this.e.isSr = game == 'sr' ? true : false
     this.e.isZzz = game == 'zzz' ? true : false
     let data = this.e.isZzz ? await this.noteZzz(res.Data, ck.uid) : this.e.isSr ? await this.noteSr(res.Data, ck.uid) : await this.notegs(res.Data, ck.uid)
-
+  
     data = {
       quality: 80,
       ...this.screenNote,
@@ -183,21 +216,33 @@ export default class Note extends base {
 
   async noteData(ck, game) {
     let mysApi = new MysApi(ck.uid, ck.ck, {}, '', '', game)
-
+  
     let device_fp = await mysApi.getData('getFp')
-    if (device_fp?.retcode !== 0) return false
+    if (device_fp?.retcode !== 0) {
+      return {
+        Data: { retcode: device_fp?.retcode ?? -1, message: device_fp?.message || '设备指纹获取失败' },
+        Sign: null
+      }
+    }
     let headers = { 'x-rpc-device_fp': device_fp?.data?.device_fp }
-
+  
+    // 保留 checkCode：自动过码仍然生效
     let Data = await mysApi.getData('dailyNote', { headers })
     Data = await new MysInfo(this.e).checkCode(Data, 'dailyNote', mysApi, {}, true)
-    if (Data?.retcode !== 0) return false
+  
+    // 关键：不再 return false，而是把错误对象返回
+    if (!Data || Data?.retcode !== 0) {
+      return { Data: Data || { retcode: -1, message: '接口无返回' }, Sign: null }
+    }
     await common.sleep(200)
-
+  
     let signInfo = await mysApi.getData('sign_info')
     signInfo = await new MysInfo(this.e).checkCode(signInfo, 'sign_info', mysApi, {}, true)
-    if (signInfo?.retcode !== 0) return false
+    if (!signInfo || signInfo?.retcode !== 0) {
+      return { Data, Sign: null }
+    }
     await common.sleep(200)
-
+  
     return { Data, Sign: signInfo?.data || {} }
   }
 
