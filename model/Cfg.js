@@ -270,7 +270,7 @@ class Cfg {
       if (config.whiteGroup)
         if (white.Group?.length > 0) {
           logger.mark('[社区自动签到]查询群白名单sk')
-          let sks = await this.getsks(true)
+          let sks = await this.getsks(true, '', true)
           sks: for (let i in sks)
             for (let group of white.Group) {
               if (signSks[sks[i].id]) continue sks
@@ -293,7 +293,7 @@ class Cfg {
       if (white.bbsQQ?.length > 0) {
         logger.mark('[社区自动签到]查询QQ白名单sk')
         for (let i of white.bbsQQ) {
-          let sks = await this.getsks(false, i)
+          let sks = await this.getsks(false, i, true)
           if (_.isEmpty(sks)) {
             logger.mark(`[社区签到]QQ:${i}：无stoken`)
             continue
@@ -307,7 +307,7 @@ class Cfg {
       return { sks: signSks, ltuids: _.map(signSks, 'id') }
     } else {
       logger.mark('[社区自动签到]查询全部sk')
-      let sks = await this.getsks(true)
+      let sks = await this.getsks(true, '', true)
       return { sks, ltuids: _.map(sks, 'id') }
     }
   }

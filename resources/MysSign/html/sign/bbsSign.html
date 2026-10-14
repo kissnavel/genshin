@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="{{pluResPath}}html/sign/sign.css" />
+  <style>
+    .summary { margin-top: 8px; font-size: 14px; }
+    .account-info { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; }
+    .community-table th:first-child { width: 22%; }
+    .community-table th:nth-child(2) { width: 30%; }
+    .community-table th:nth-child(n+3) { width: 16%; }
+    .community-table .status-icon { margin-right: 5px; }
+    .result-message { white-space: pre-wrap; overflow-wrap: anywhere; background: #aed6f1; padding: 16px; border-radius: 8px; line-height: 1.7; }
+  </style>
+</head>
+<body>
+  <div class="container" id="container">
+    <div class="page">
+      <div class="header">
+        <div class="header-content">
+          <strong>米游社全部签到</strong>
+          <div class="sign-count">完成账号：<span class="count-num">{{totalSignCount}}</span> / {{accounts.length}} 个</div>
+          <div class="summary">签到模式：{{mode}} · 总用时：{{duration}}</div>
+        </div>
+      </div>
+      {{each accounts account}}
+      <div class="game-section">
+        <div class="game-name">通行证 {{account.stuid}} · {{account.statusText}}</div>
+        <div class="account-info">
+          <span>当前米游币：{{if account.totalPoints !== undefined}}{{account.totalPoints}}{{else}}--{{/if}}</span>
+          <span>今日剩余可获取：{{if account.remainingPoints !== undefined}}{{account.remainingPoints}}{{else}}--{{/if}}</span>
+        </div>
+        {{if account.forums && account.forums.length}}
+        <div class="table-container">
+          <table class="sign-table community-table">
+            <thead><tr><th>社区</th><th>签到结果</th><th>浏览</th><th>点赞</th><th>分享</th></tr></thead>
+            <tbody>
+              {{each account.forums forum}}
+              <tr>
+                <td>{{forum.name}}</td>
+                <td><div class="status-icon status-{{forum.status}}">{{if forum.status === 'failed'}}<div class="error-icon">✗</div>{{else}}<div class="check-icon">✓</div>{{/if}}</div>{{forum.statusText}}</td>
+                <td>{{forum.detail}} / {{forum.detailTarget}}</td>
+                <td>{{forum.vote}} / {{forum.voteTarget}}</td>
+                <td>{{forum.share}} / {{forum.shareTarget}}</td>
+              </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+        {{/if}}
+        {{if account.status === 'failed' || !account.forums || !account.forums.length}}
+        <div class="result-message">{{account.message}}</div>
+        {{/if}}
+      </div>
+      {{/each}}
+    </div>
+  </div>
+</body>
+</html>
