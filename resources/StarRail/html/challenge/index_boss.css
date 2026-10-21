@@ -21,6 +21,11 @@
   box-sizing: border-box;
 }
 
+/* Keep paragraph defaults from shifting titles, times and scores. */
+.detail-head p, .detail-bar p {
+  margin: 0;
+}
+
 img.rogue-star {
   width: 40px;
   height: 40px;
@@ -62,6 +67,8 @@ img.red-clock {
 .body .time-container {
   display: flex;
   justify-content: space-between; /* 左右对齐 */
+  align-items: center;
+  min-height: 60px;
   padding: 10px;
 }
 
@@ -69,16 +76,24 @@ img.red-clock {
   color: #f3ca87;
   font-style: italic;
   font-size: 35px;
+  line-height: 40px;
 }
 
 .body div.red {
   color: #fc3c49;
   font-style: italic;
   font-size: 35px;
+  line-height: 40px;
 }
 
 .count {
   color: #aaa;
+}
+
+.time-container .count {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .summar {
@@ -236,12 +251,13 @@ img.boss {
 .detail-avatars {
   margin-top: 14px;
   display: flex;
-  margin-left: 30px;
+  justify-content: center;
+  gap: 20px;
 }
 
 .detail-avatar {
   position: relative;
-  margin-left: 20px;
+  flex-shrink: 0;
   border-top-right-radius: 20px;
   padding: 4px;
   width: 120px;
@@ -342,6 +358,7 @@ img.boss {
 }
 
 .buff-col {
+  flex: 0 0 80px;
   width: 80px;
 }
 
@@ -358,6 +375,7 @@ img.buff-icon {
 }
 
 .description-col {
+  min-width: 0;
   flex-grow: 1;
 }
 
