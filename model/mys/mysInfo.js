@@ -135,8 +135,8 @@ export default class MysInfo {
       return ret[0]
     }
 
-    // 消息携带UID、当前用户UID、群名片携带UID 依次获取
-    uid = matchUid(msg) || user.getUid(game) || matchUid(e.sender.card)
+    // 消息携带UID、当前用户UID 依次获取
+    uid = matchUid(msg) || user.getUid(game)
     if (!matchMsgUid) uid = user.getUid(game)
     if (uid) {
       /** 没有绑定的自动绑定 */
