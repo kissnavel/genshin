@@ -333,6 +333,13 @@ export function supportGuoba() {
           label: '体力查询·推送设置'
         },
         {
+          field: 'config.noteMultiGame',
+          label: '多体力查询',
+          bottomHelpMessage: '开启后，# / * / % 三种前缀都会同时查询原神、星铁、绝区零体力；关闭后只查询对应前缀的游戏。',
+          component: 'Switch',
+          defaultValue: true,
+        },
+        {
           field: 'config.Note',
           label: '体力查询',
           bottomHelpMessage: '是否开启体力查询',
