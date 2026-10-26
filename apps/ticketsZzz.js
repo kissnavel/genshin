@@ -10,11 +10,10 @@ export class tickets extends plugin {
       event: 'message',
       priority: Cfg.getConfig('config').priority,
       rule: [{
-        reg: '^#*绝区零?(调频|抽卡)道具',
+        reg: '^#*绝区零?(母带|(调频|抽卡)道具)',
         fnc: 'tickets'
       }]
     })
-
   }
 
   async tickets () {
