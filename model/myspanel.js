@@ -294,9 +294,9 @@ export default class Myspanel {
         let mb = {
             'uid': `${uid}`,
             'avatars': {}
-        }
+        }, oldmb
         if (fs.existsSync(path)) {
-            mb = JSON.parse(fs.readFileSync(path, 'utf8'))
+            mb, oldmb = JSON.parse(fs.readFileSync(path, 'utf8'))
         }
         data.data.avatar_list.map((v) => {
             //角色promote
@@ -581,9 +581,6 @@ export default class Myspanel {
                     '_update': new Date().getTime(),
                     '_talent': new Date().getTime()
                 }
-                mb.avatars = avatars
-                mb._profile = new Date().getTime()
-                fs.writeFileSync(path, JSON.stringify(mb), 'utf-8')
             }
             avatars[v.id] = {
                 'name': v.name,
@@ -617,6 +614,7 @@ export default class Myspanel {
         })
         mb.avatars = avatars
         mb._profile = new Date().getTime()
+        if (oldmb) mb.avatars = {...oldmb.avatars, ...avatars}
         fs.writeFileSync(path, JSON.stringify(mb), 'utf-8')
     }
 }
