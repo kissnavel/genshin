@@ -9,12 +9,16 @@ import _ from 'lodash'
 import User from './user.js'
 
 let signing = false
+/** 请求中止当前签到任务 */
+let abortSign = false
 let finishTime
 let Nosign = 0
 export default class MysSign extends base {
     constructor(e) {
         super(e)
         this.model = 'MysSign'
+        /** 本轮任务中每个账号的ck刷新结果，key为 skid(ltuid_qq)，按账号隔离，避免多用户/多账号串号 */
+        this.refreshed = new Map()
     }
 
     static async sign(e) {
@@ -136,7 +140,14 @@ export default class MysSign extends base {
     }
 
     async doSign(ck, uid, game, name) {
-        this.mysApi = new MysApi(uid, ck.ck, { device: ck.device_id }, ck.region, ck.game_biz, game)
+        if (abortSign) return { retcode: -999, msg: '\n签到任务已中止' }
+
+        this.signed = false
+        this.signMsg = ''
+
+        /** 优先使用本轮任务中该账号已刷新成功的ck */
+        let usedCk = this.refreshed.get(ck.skid)?.ck || ck.ck
+        this.mysApi = new MysApi(uid, usedCk, { device: ck.device_id }, ck.region, ck.game_biz, game)
         this.key = `${game}:Sign:${uid}`
 
         this.log = `[${name}uid:${uid}][qq:${_.padEnd(ck.qq, 10, ' ')}]`
@@ -158,21 +169,17 @@ export default class MysSign extends base {
         if (!signInfo) return false
 
         if (signInfo.retcode !== 0 && signInfo.message?.includes('登录')) {
-            if (this.e.user_id == ck.qq && this.e.ck) {
-                this.mysApi = new MysApi(uid, this.e.ck, { device: ck.device_id }, ck.region, ck.game_biz, game)
-                signInfo = await this.mysApi.getData('sign_info')
-            } else {
-                this.e.AutoupCookie = true
-                if (this.e.user_id !== ck.qq) await this.upCookie(ck.qq, ck.skid)
-                if (!this.e.EmptyStoken && this.e.user_id == ck.qq && this.e.ck) {
-                    this.mysApi = new MysApi(uid, this.e.ck, { device: ck.device_id }, ck.region, ck.game_biz, game)
-                    signInfo = await this.mysApi.getData('sign_info')
-                }
+            /** 按 skid 刷新ck，刷新结果只在本账号内复用，不再使用事件对象上的ck */
+            let refresh = await this.getRefreshedCk(ck)
+            if (refresh.ok && refresh.ckStr !== usedCk) {
+                this.mysApi = new MysApi(uid, refresh.ckStr, { device: ck.device_id }, ck.region, ck.game_biz, game)
+                signInfo = await this.mysApi.getData('sign_info') || { retcode: -1, message: '请求异常' }
             }
 
             if (signInfo.retcode !== 0 && signInfo.message?.includes('登录')) {
-                logger.error(`[${name}签到失败]${this.log} 绑定cookie已失效`)
-                if (this.set.Autodelck)
+                logger.error(`[${name}签到失败]${this.log} 绑定cookie已失效(${refresh.reason || '刷新后仍失效'})`)
+                /** 仅"无stoken可刷新"这种确定无法恢复的情况才按配置删除ck，避免接口异常误删刚刷新的ck */
+                if (this.set.Autodelck && ['无stoken', '未找到对应stoken'].includes(refresh.reason))
                     await Cfg.delck(ck.ltuid, ck.qq)
                 return {
                     retcode: -100,
@@ -183,9 +190,11 @@ export default class MysSign extends base {
         }
 
         if (signInfo.retcode !== 0) {
-            if (this.e.user_id == ck.qq && this.e.ck) {
-                this.mysApi = new MysApi(uid, this.e.ck, { device: ck.device_id }, ck.region, ck.game_biz, game)
-                signInfo = await this.mysApi.getData('sign_info')
+            /** 若本账号本轮已刷新过ck，用它再试一次（旧ck已确认不可用） */
+            let fresh = this.refreshed.get(ck.skid)?.ck
+            if (fresh && fresh !== usedCk) {
+                this.mysApi = new MysApi(uid, fresh, { device: ck.device_id }, ck.region, ck.game_biz, game)
+                signInfo = await this.mysApi.getData('sign_info') || { retcode: -1, message: '请求异常' }
             }
             if (signInfo.retcode !== 0) {
                 logger.error(`[${name}签到失败]${this.log} ${signInfo.message || '未知错误'}`)
@@ -380,134 +389,153 @@ export default class MysSign extends base {
     async signTask(manual) {
         if (!this.set.AutoSign && !manual) return
 
-        if (this?.e?.msg?.includes('重新'))
-            signing = false, Nosign = 0
-
         if (signing) {
-            if (manual) await this.e.reply('签到任务进行中，完成前请勿重复执行')
+            /** 不再直接清锁，改为请求中止，避免两个签到任务并发跑同一批ck */
+            if (manual && this?.e?.msg?.includes('重新')) {
+                abortSign = true
+                await this.e.reply('已请求中止当前签到任务，停止后请重新发送【#重新全部签到】')
+            } else if (manual) {
+                await this.e.reply('签到任务进行中，完成前请勿重复执行')
+            }
             return
         }
 
-        let { cks, uids } = await Cfg.signCk()
-        let length = 0
-        for (let game of this.set.game)
-            length += uids[game].length
-
-        let { noSignNum } = await this.getsignNum(uids, length)
-
-        if (noSignNum <= 0 || length <= 0) {
-            if (manual)
-                if (this.white['QQ'].length > 0 || (this.white['QQ'].length == 0 && this.white.Group.length > 0))
-                    await this.e.reply('白名单中暂无ck需要签到')
-                else
-                    await this.e.reply('暂无ck需要签到')
-            return
-        }
-        Nosign = noSignNum
         signing = true
+        abortSign = false
 
-        const START = moment().unix()
-        let tips = ['【开始签到任务】']
+        try {
+            let { cks, uids } = await Cfg.signCk()
+            let length = 0
+            for (let game of this.set.game)
+                length += uids[game].length
 
-        let time = 0
-        for (let i = 0; i < noSignNum; i++)
-            time += (Math.floor(Math.random() * 6000)) / 1000 + 3
+            let { noSignNum } = await this.getsignNum(uids, length)
 
-        if (this.white['QQ'].length > 0 || this.white.Group.length > 0)
-            tips.push(`\n已开启白名单签到，仅签到白名单`)
-        else
-            tips.push(`\n未开启白名单签到，将签到全部ck`)
+            if (noSignNum <= 0 || length <= 0) {
+                if (manual)
+                    if (this.white['QQ'].length > 0 || (this.white['QQ'].length == 0 && this.white.Group.length > 0))
+                        await this.e.reply('白名单中暂无ck需要签到')
+                    else
+                        await this.e.reply('暂无ck需要签到')
+                return
+            }
+            Nosign = noSignNum
 
-        finishTime = moment().add(time, 's').format('MM-DD HH:mm:ss')
+            const START = moment().unix()
+            let tips = ['【开始签到任务】']
 
-        let smsg = `\n`
-        for (let game of this.set.game)
-            smsg += `${game == 'gs' ? '原神' : game == 'sr' ? '星铁' : game == 'zzz' ? '绝区零' : game == 'bh3' ? '崩三' : game == 'bh2' ? '崩二' : '未定'}：${uids[game].length}|`
-        tips.push(smsg)
+            let time = 0
+            for (let i = 0; i < noSignNum; i++)
+                time += (Math.floor(Math.random() * 6000)) / 1000 + 3
 
-        tips.push(`\n未签：${noSignNum}个`)
-        if (this.white['QQ'].length > 0 || this.white.Group.length > 0)
-            tips.push(` | 白名单：${this.white.Group.length > 0 ? `${this.white.Group.length}群|` : ''}${this.white['QQ'].length > 0 ? `${this.white['QQ'].length}人` : ''}`)
+            if (this.white['QQ'].length > 0 || this.white.Group.length > 0)
+                tips.push(`\n已开启白名单签到，仅签到白名单`)
+            else
+                tips.push(`\n未开启白名单签到，将签到全部ck`)
 
-        tips.push(`\n预计需要：${Cfg.countTime(time)}`)
-        if (time > 120) tips.push(`\n完成时间：${finishTime}`)
+            finishTime = moment().add(time, 's').format('MM-DD HH:mm:ss')
 
-        logger.mark(`签到ck:${length}个，预计需要${Cfg.countTime(time)} ${finishTime} 完成`)
+            let smsg = `\n`
+            for (let game of this.set.game)
+                smsg += `${game == 'gs' ? '原神' : game == 'sr' ? '星铁' : game == 'zzz' ? '绝区零' : game == 'bh3' ? '崩三' : game == 'bh2' ? '崩二' : '未定'}：${uids[game].length}|`
+            tips.push(smsg)
 
-        await this.send(manual, tips)
+            tips.push(`\n未签：${noSignNum}个`)
+            if (this.white['QQ'].length > 0 || this.white.Group.length > 0)
+                tips.push(` | 白名单：${this.white.Group.length > 0 ? `${this.white.Group.length}群|` : ''}${this.white['QQ'].length > 0 ? `${this.white['QQ'].length}人` : ''}`)
 
-        let sucNum = _.fromPairs(this.set.game.map((game) => [game, 0]))
-        let finshNum = _.fromPairs(this.set.game.map((game) => [game, 0]))
-        let failNum = _.fromPairs(this.set.game.map((game) => [game, 0]))
-        let invalidNum = _.fromPairs(this.set.game.map((game) => [game, 0]))
-        let invalidqq = []
+            tips.push(`\n预计需要：${Cfg.countTime(time)}`)
+            if (time > 120) tips.push(`\n完成时间：${finishTime}`)
 
-        for (let g of this.set.game) {
-            let name = g == 'gs' ? '原神' : g == 'sr' ? '星铁' : g == 'zzz' ? '绝区零' : g == 'bh3' ? '崩三' : g == 'bh2' ? '崩二' : '未定'
-            for (let i = 0; i < uids[g].length; i++) {
-                this.ckNum = Number(i) + 1
-                let uid = uids[g][i]
-                let ck = cks[g][uid]
-                Nosign = Nosign - 1
-                if (await redis.get(`${g}:Sign:${uid}`)) {
-                    finshNum[g]++
-                    continue
-                }
+            logger.mark(`签到ck:${length}个，预计需要${Cfg.countTime(time)} ${finishTime} 完成`)
 
-                logger.mark(`自动签到[${name}]白名单用户·QQ:${ck.qq} UID:${ck.uid}`)
+            await this.send(manual, tips)
 
-                let retry = 0
-                let ret = await this.doSign(ck, ck.uid, g, name)
-                if (ret.retcode === -1000)
-                    while (ret.retcode === -1000 && retry < this.set.retry) {
+            let sucNum = _.fromPairs(this.set.game.map((game) => [game, 0]))
+            let finshNum = _.fromPairs(this.set.game.map((game) => [game, 0]))
+            let failNum = _.fromPairs(this.set.game.map((game) => [game, 0]))
+            let invalidNum = _.fromPairs(this.set.game.map((game) => [game, 0]))
+            let invalidqq = []
+
+            for (let g of this.set.game) {
+                if (abortSign) break
+                let name = g == 'gs' ? '原神' : g == 'sr' ? '星铁' : g == 'zzz' ? '绝区零' : g == 'bh3' ? '崩三' : g == 'bh2' ? '崩二' : '未定'
+                for (let i = 0; i < uids[g].length; i++) {
+                    if (abortSign) break
+                    this.ckNum = Number(i) + 1
+                    let uid = uids[g][i]
+                    let ck = cks[g][uid]
+                    if (await redis.get(`${g}:Sign:${uid}`)) {
+                        Nosign = Nosign - 1
+                        finshNum[g]++
+                        continue
+                    }
+                    Nosign = Nosign - 1
+
+                    logger.mark(`自动签到[${name}]白名单用户·QQ:${ck.qq} UID:${ck.uid}`)
+
+                    let retry = 0
+                    let ret = await this.doSign(ck, ck.uid, g, name)
+                    while (ret.retcode === -1000 && retry < this.set.retry && !abortSign) {
                         ret = await this.doSign(ck, ck.uid, g, name)
                         retry++
                     }
 
-                if (ret.retcode === 0)
-                    if (ret.is_sign)
-                        finshNum[g]++
+                    if (abortSign) break
+
+                    if (ret.retcode === 0)
+                        if (ret.is_sign)
+                            finshNum[g]++
+                        else
+                            sucNum[g]++
                     else
-                        sucNum[g]++
-                else
-                    if (ret.is_invalid) {
-                        invalidNum[g]++
-                        if (!invalidqq?.includes(ck.qq))
-                            invalidqq.push(ck.qq)
-                    } else {
-                        failNum[g]++
-                    }
+                        if (ret.is_invalid) {
+                            invalidNum[g]++
+                            if (!invalidqq?.includes(ck.qq))
+                                invalidqq.push(ck.qq)
+                        } else {
+                            failNum[g]++
+                        }
 
-                if (this.signApi)
-                    this.signApi = false
+                    if (this.signApi)
+                        this.signApi = false
+                }
             }
+
+            if (abortSign) {
+                logger.mark(`签到任务已中止，剩余${Math.max(Nosign, 0)}个未处理`)
+                if (manual) await this.e.reply('签到任务已中止')
+                return
+            }
+
+            const END = moment().unix()
+            let msg = `【签到任务完成】\n总耗时：${Cfg.countTime(END - START)}`
+            for (let game of this.set.game)
+                msg += `\n${game == 'gs' ? '原神' : game == 'sr' ? '崩坏：星穹铁道' : game == 'zzz' ? '绝区零' : game == 'bh3' ? '崩坏三' : game == 'bh2' ? '崩坏学园2' : '未定事件簿'}：\n成功：${sucNum[game]} | 已签：${finshNum[game]} | 失败：${failNum[game]}`
+
+            msg += `\n失效ck：\n`
+            for (let game of this.set.game)
+                if (invalidNum[game] > 0)
+                    msg += `${game == 'gs' ? '原神' : game == 'sr' ? '星铁' : game == 'zzz' ? '绝区零' : game == 'bh3' ? '崩三' : game == 'bh2' ? '崩二' : '未定'}：${invalidNum[game]}|`
+
+            msg += '\n'
+            let qq = invalidqq.slice()
+            let qqnum = this.set.invalid || 2
+            msg += qq.map((e, i) => {
+                let line = `${i + 1}. ${e}`
+                if ((i + 1) % qqnum === 0)
+                    line += '\n'
+                else
+                    line += '，'
+                return line
+            })
+
+            await this.send(manual, msg)
+        } finally {
+            signing = false
+            abortSign = false
+            Nosign = 0
         }
-
-        const END = moment().unix()
-        let msg = `【签到任务完成】\n总耗时：${Cfg.countTime(END - START)}`
-        for (let game of this.set.game)
-            msg += `\n${game == 'gs' ? '原神' : game == 'sr' ? '崩坏：星穹铁道' : game == 'zzz' ? '绝区零' : game == 'bh3' ? '崩坏三' : game == 'bh2' ? '崩坏学园2' : '未定事件簿'}：\n成功：${sucNum[game]} | 已签：${finshNum[game]} | 失败：${failNum[game]}`
-
-        msg += `\n失效ck：\n`
-        for (let game of this.set.game)
-            if (invalidNum[game] > 0)
-                msg += `${game == 'gs' ? '原神' : game == 'sr' ? '星铁' : game == 'zzz' ? '绝区零' : game == 'bh3' ? '崩三' : game == 'bh2' ? '崩二' : '未定'}：${invalidNum[game]}|`
-
-        msg += '\n'
-        let qq = invalidqq.slice()
-        let qqnum = this.set.invalid || 2
-        msg += qq.map((e, i) => {
-            let line = `${i + 1}. ${e}`
-            if ((i + 1) % qqnum === 0)
-                line += '\n'
-            else
-                line += '，'
-            return line
-        })
-
-        await this.send(manual, msg)
-        signing = false
-        Nosign = 0
     }
 
     async send(manual, msg) {
@@ -544,57 +572,79 @@ export default class MysSign extends base {
         return { noSignNum, signNum }
     }
 
+    /**
+     * 获取该账号刷新后的ck，按 skid(ltuid_qq) 隔离
+     * 同一账号本轮只刷新一次，失败结果也会缓存，避免多uid重复请求
+     * @param ck 来自 Cfg.getcks 的账号ck对象
+     * @returns {Promise<{ok: boolean, ckStr: string, reason?: string}>}
+     */
+    async getRefreshedCk(ck) {
+        let ret = this.refreshed.get(ck.skid)
+        if (!ret) {
+            ret = await this.upCookie(ck.qq, ck.skid)
+            this.refreshed.set(ck.skid, ret)
+        }
+        if (ret.ok) ck.ck = ret.ck
+        return { ok: ret.ok, ckStr: ret.ck || '', reason: ret.reason }
+    }
+
+    /**
+     * 用stoken刷新ck
+     * @returns {Promise<{ok: boolean, ck?: string, reason?: string}>}
+     */
     async upCookie(qq, skid) {
         let { sks, ltuids } = await this.getStoken(qq)
-        if (!sks || !ltuids) return false
+        if (!sks || !ltuids) return { ok: false, reason: '无stoken' }
 
         for (let i of ltuids) {
-            if (skid == `${sks[i].stuid}_${qq}`) {
-                let game_biz = ''
-                if (sks[i].type == 'hoyolab') {
-                    if (/os_/.test(sks[i].region)) {
-                        game_biz = 'hk4e_global'
-                    } else if (/official/.test(sks[i].region)) {
-                        game_biz = 'hkrpg_global'
-                    } else if (/_us|_eu|_jp|_sg/.test(sks[i].region)) {
-                        game_biz = 'nap_global'
-                    }
-                } else {
-                    if (/cn_/.test(sks[i].region)) {
-                        game_biz = 'hk4e_cn'
-                    } else if (/_cn/.test(sks[i].region)) {
-                        if (sks[i].uid.length < 10) {
-                            game_biz = 'nap_cn'
-                        } else {
-                            game_biz = 'hkrpg_cn'
-                        }
-                    }
-                }
-                let mysApi = new MysApi(sks[i].stuid, sks[i].sk, { game: 'bbs' }, sks[i].region, game_biz)
+            if (skid != `${sks[i].stuid}_${qq}`) continue
 
-                let res = await mysApi.getData('bbsGetCookie')
-                if (!res?.data) {
-                    logger.error(`stuid:${sks[i].stuid},请求异常：${res.message}`)
-                    this.e.EmptyStoken = true
-                    this.e.user_id = qq
-                    continue
-                } else {
-                    this.e.user_id = qq
-                    this.e.ck = `ltoken=${sks[i].ltoken};ltuid=${sks[i].stuid};cookie_token=${res.data.cookie_token};account_id=${sks[i].stuid}`
-                    await new User(this.e).bing()
+            let game_biz = ''
+            if (sks[i].type == 'hoyolab') {
+                if (/os_/.test(sks[i].region)) {
+                    game_biz = 'hk4e_global'
+                } else if (/official/.test(sks[i].region)) {
+                    game_biz = 'hkrpg_global'
+                } else if (/_us|_eu|_jp|_sg/.test(sks[i].region)) {
+                    game_biz = 'nap_global'
+                }
+            } else {
+                if (/cn_/.test(sks[i].region)) {
+                    game_biz = 'hk4e_cn'
+                } else if (/_cn/.test(sks[i].region)) {
+                    if (String(sks[i].uid || '').length < 10) {
+                        game_biz = 'nap_cn'
+                    } else {
+                        game_biz = 'hkrpg_cn'
+                    }
                 }
             }
+            let mysApi = new MysApi(sks[i].stuid, sks[i].sk, { game: 'bbs' }, sks[i].region, game_biz)
+
+            let res = await mysApi.getData('bbsGetCookie')
+            if (!res?.data?.cookie_token) {
+                logger.error(`[刷新ck]stuid:${sks[i].stuid},请求异常：${res?.message || '无返回'}`)
+                return { ok: false, reason: 'bbsGetCookie异常' }
+            }
+
+            let ck = `ltoken=${sks[i].ltoken};ltuid=${sks[i].stuid};cookie_token=${res.data.cookie_token};account_id=${sks[i].stuid}`
+            /** 用独立的e对象绑定，不把ck写回共享的事件对象，避免污染其它用户 */
+            let bindE = { user_id: qq, ck, AutoupCookie: true, logFnc: this.e?.logFnc }
+            let ok = await new User(bindE).bing()
+            if (!ok) {
+                logger.error(`[刷新ck]qq:${qq} stuid:${sks[i].stuid} 绑定校验未通过`)
+                return { ok: false, reason: '绑定校验未通过' }
+            }
+            logger.mark(`[刷新ck]qq:${qq} stuid:${sks[i].stuid} 刷新成功`)
+            return { ok: true, ck }
         }
+
+        return { ok: false, reason: '未找到对应stoken' }
     }
 
     async getStoken(qq) {
         let sks = await Cfg.getsks(false, qq, false)
-        if (_.isEmpty(sks)) {
-            this.e.EmptyStoken = true
-            return false
-        } else {
-            this.e.EmptyStoken = false
-        }
+        if (_.isEmpty(sks)) return { sks: null, ltuids: null }
 
         let ltuids = _.map(sks, 'id')
 

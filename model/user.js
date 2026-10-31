@@ -47,7 +47,7 @@ export default class User extends base {
     }
     if (!this.e.ck) {
       if (!this.e.AutoupCookie) await this.e.reply(`请【私聊】发送米游社Cookie，获取教程：\n${set.cookieDoc}`)
-      return
+      return false
     }
 
     let ckStr = this.e.ck.replace(/#|'|"/g, '')
@@ -60,14 +60,14 @@ export default class User extends base {
 
     if (!param.cookie_token && !param.cookie_token_v2) {
       if (!this.e.AutoupCookie) await this.e.reply('发送Cookie不完整\n请退出米游社【重新登录】，刷新完整Cookie')
-      return
+      return false
     }
 
     // TODO：独立的mys数据，不走缓存ltuid
     let mys = await MysUser.create(param.ltuid || param.ltuid_v2 || param.account_id_v2 || param.ltmid_v2)
     if (!mys) {
       if (!this.e.AutoupCookie) await this.e.reply('发送Cookie不完整或数据错误')
-      return
+      return false
     }
     let data = {}
     data.ck = `ltoken=${param.ltoken};ltuid=${param.ltuid || param.login_uid};cookie_token=${param.cookie_token || param.cookie_token_v2}; account_id=${param.ltuid || param.login_uid};`
@@ -96,7 +96,7 @@ export default class User extends base {
       // 清除mys数据
       mys._delCache()
       if (!this.e.AutoupCookie) await this.e.reply(`绑定Cookie失败：${this.checkMsg || 'Cookie错误'}`)
-      return
+      return false
     }
 
     // 判断data.ltuid是否是数字
@@ -110,7 +110,7 @@ export default class User extends base {
       } else {
         logger.mark(`绑定Cookie错误2：${userFullInfo.message || 'Cookie错误'}`)
         if (!this.e.AutoupCookie) await this.e.reply(`绑定Cookie失败：${userFullInfo.message || 'Cookie错误'}`)
-        return
+        return false
       }
     }
 
@@ -127,6 +127,7 @@ export default class User extends base {
     if (!this.e.AutoupCookie) await this.e.reply([uidMsg.join('\n'), segment.button([
       { text: '#帮助', callback: '#帮助' }
     ])])
+    return true
   }
 
   /** 删除绑定ck */
