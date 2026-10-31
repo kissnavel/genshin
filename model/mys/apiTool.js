@@ -729,6 +729,11 @@ export default class apiTool {
           url: `${hostRecord}event/game_record_zzz/api/zzz/buddy/info`,
           query: `lang=zh-cn&role_id=${this.uid}&server=${this.server}`
         },
+        /** 绳网月报（菲林） */
+        ledger: {
+          url: `${host}event/nap_ledger/month_info`,
+          query: `uid=${this.uid}&region=${this.server}&month=${data.month}`
+        },
         tickets: {
           url: `${hostRecord}event/game_record_zzz/api/zzz/cur_gacha_detail`,
           query: `uid=${this.uid}&region=${this.server}`

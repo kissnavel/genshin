@@ -1,0 +1,174 @@
+@font-face {
+  font-family: "zzz";
+  src: url("../../../font/ZZZ.ttf");
+}
+
+@font-face {
+  font-family: "tttgbnumber";
+  src: url("../../../font/tttgbnumber.ttf");
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+body {
+  font-size: 16px;
+  width: 530px;
+  color: #1e1f20;
+  transform: scale(1.3);
+  transform-origin: 0 0;
+  background: #f5f6fb;
+}
+
+.container {
+  width: 530px;
+  font-family: "tttgbnumber", "zzz", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  padding: 20px 15px 10px;
+  background-color: #f5f6fb;
+}
+
+.head_box {
+  border-radius: 20px 50px 50px 20px;
+  padding: 10px 20px;
+  position: relative;
+  box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.15);
+  background-color: #2b2628;
+  background-position: right;
+  background-size: 100% 455%;
+  background-repeat: no-repeat;
+  color: #fff;
+  overflow: hidden;
+}
+
+.sr_id_text {
+  font-size: 24px;
+  color: #e8ebee;
+  font-family: "tttgbnumber";
+}
+
+.sr_day_text {
+  font-size: 20px;
+  color: #f3f6f8;
+  font-family: "zzz";
+}
+
+.gamelogo {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  width: 150px;
+}
+
+.data_box {
+  border-radius: 15px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  padding: 20px 15px 5px;
+  background: #fff;
+  box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.15);
+  position: relative;
+}
+
+.tab_lable {
+  position: absolute;
+  top: -10px;
+  left: -8px;
+  background: #d4b98c;
+  color: #fff;
+  font-size: 14px;
+  padding: 3px 10px;
+  border-radius: 15px 0 15px 15px;
+  z-index: 20;
+}
+
+.data_line {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  margin-bottom: 14px;
+}
+
+.data_line_item {
+  width: auto;
+  min-width: 0;
+  text-align: center;
+}
+
+.num {
+  font-size: 24px;
+  line-height: 1.2;
+  font-family: "tttgbnumber", "zzz", sans-serif;
+  white-space: nowrap;
+}
+
+.data_box .lable {
+  font-size: 14px;
+  color: #7f858a;
+  line-height: 1;
+  margin-top: 3px;
+}
+
+.tickets {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+  padding: 6px 0 16px;
+}
+
+.ticket {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: center;
+}
+
+.ticket img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.ticket .cnt {
+  font-family: "tttgbnumber";
+  font-size: 18px;
+  color: #1e1f20;
+  white-space: nowrap;
+}
+
+.ticket .tname {
+  font-size: 12px;
+  color: #7f858a;
+}
+
+#chartContainer {
+  width: 100%;
+  height: 300px;
+}
+
+#chartContainer2 {
+  width: 115%;
+  height: 280px;
+  margin-left: -60px;
+}
+
+.logo {
+  font-size: 14px;
+  text-align: center;
+  color: #7994a7;
+}
+
+.copyright {
+  font-size: 14px;
+  text-align: center;
+  color: #7994a7;
+  margin: 10px 0;
+  padding: 4px 0;
+}
+
+.hasMore {
+  font-size: 12px;
+  margin: 6px 0;
+  color: #7f858a;
+}

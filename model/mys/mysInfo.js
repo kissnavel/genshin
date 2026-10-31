@@ -31,6 +31,8 @@ export default class MysInfo {
     this.auth = [
       'dailyNote',
       'ys_ledger',
+      'ledger',
+      'tickets',
       'compute',
       'avatarSkill',
       'detail',
@@ -200,9 +202,9 @@ export default class MysInfo {
     if (!mysInfo.uid || !mysInfo.ckInfo.ck) return false
     e.uid = mysInfo.uid
 
-    let user = e.user?.getMysUser()
-    option.device = user.device
     option.game = e?.game || (e?.isSr ? 'sr' : 'gs')
+    let user = e.user?.getMysUser(option.game)
+    option.device = user?.device
     let mysApi = new MysApi(mysInfo.uid, mysInfo.ckInfo.ck, option)
 
     let res

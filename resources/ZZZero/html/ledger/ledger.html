@@ -1,0 +1,77 @@
+{{extend defaultLayout}}
+
+{{block 'css'}}
+<link rel="stylesheet" type="text/css" href="{{_res_path}}ZZZero/html/ledger/ledger.css"/>
+{{/block}}
+
+{{block 'main'}}
+<div class="lh">{{monthText}}菲林月报</div>
+<div class="box">
+  <div class="user-info">
+    <div class="avatar">
+      {{if avatar}}<img src="{{avatar}}" onerror="this.style.display='none'"/>{{/if}}
+    </div>
+    <div class="info-bar">
+      <div class="info">
+        <div class="nickname">{{nickname || '绳匠'}}</div>
+        {{if level}}<div class="label level">Lv{{level}}</div>{{/if}}
+        {{if server}}<div class="label server">{{server}}</div>{{/if}}
+      </div>
+      <div class="uid">UID {{uid}}</div>
+    </div>
+  </div>
+  <div class="bangboo"></div>
+  <div class="content">
+    <div class="title with-icon">收入一览</div>
+    <div class="itembox">
+      <div class="item">
+        <div class="icon feilin"></div>
+        <div class="count">{{cards.polychromes}}</div>
+      </div>
+      <div class="item">
+        <div class="icon tape"></div>
+        <div class="count">{{cards.tape}}</div>
+      </div>
+      <div class="item">
+        <div class="icon boopon"></div>
+        <div class="count">{{cards.boopons}}</div>
+      </div>
+    </div>
+    <div class="list">
+      <div class="title">菲林收入组成</div>
+      {{each components it}}
+      <div class="item">
+        <div class="info-line">
+          <div class="name">{{it.name}}</div>
+          <div class="percent">{{it.percent}}%</div>
+          <div class="value">{{it.num}}</div>
+        </div>
+        <div class="progress">
+          <div class="bar" style="width:{{it.percent}}%"></div>
+        </div>
+      </div>
+      {{/each}}
+    </div>
+    {{if tickets.length > 0}}
+    <div class="tickets-box">
+      <div class="title">当前调频道具</div>
+      <div class="tickets">
+        {{each tickets it}}
+        <div class="ticket">
+          <img src="{{pluResPath}}ZZZero/img/tickets/{{it.ticket_type}}.png" onerror="this.style.display='none'"/>
+          <div class="count">{{it.ticket_cnt}}</div>
+          <div class="name">{{it.ticket_type}}</div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+    {{/if}}
+  </div>
+</div>
+<div class="tips">
+  <ul>
+    <li>数据统计存在2小时左右延迟，请绳匠知悉</li>
+    <li>菲林收入不含充值获得菲林底片所兑换的菲林数量</li>
+  </ul>
+</div>
+{{/block}}
