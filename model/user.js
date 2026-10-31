@@ -263,7 +263,6 @@ export default class User extends base {
       { text: '体力', callback: '#体力' },
       { text: '原石', callback: '#原石' }
     ], [
-      { text: '留影', callback: '#留影叙佳期' },
       { text: '七圣', callback: '#七圣召唤查询牌组' },
       { text: '抽卡', callback: '#抽卡记录' },
       { text: '充值', callback: '#充值记录' }
