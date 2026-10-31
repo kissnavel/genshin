@@ -411,6 +411,32 @@ export default class MysInfo {
 
     res.retcode = Number(res.retcode)
 
+    /** ck失效：自动刷新，成功后继续本次查询 */
+    let ckRefreshed = false
+    if (MysApi.isLoginError(res)) {
+      let oldCk = mysApi?.cookie || this.ckInfo.ck
+      let refresh = await MysApi.refreshCk(oldCk)
+      if (refresh.ok) {
+        ckRefreshed = true
+        this.ckInfo.ck = refresh.ck
+        if (this.ckUser) this.ckUser.ck = refresh.ck
+        /** 与当前使用的ck不同才需要重试，否则说明已经用刷新后的ck查询过 */
+        if (refresh.ck !== oldCk && type && mysApi?.getData) {
+          mysApi.cookie = refresh.ck
+          let retryRes = await mysApi.getData(type, data)
+          if (retryRes) {
+            retryRes.retcode = Number(retryRes.retcode)
+            if (retryRes.retcode === 0) {
+              if (type === 'character' && retryRes.data?.list) retryRes.data.avatars = retryRes.data.list
+              if (!isTask) await this.ckUser?.addQueryUid(this.uid)
+              return retryRes
+            }
+            res = retryRes
+          }
+        }
+      }
+    }
+
     switch (res.retcode) {
       case 0:
         break
@@ -419,15 +445,16 @@ export default class MysInfo {
       case 1001:
       case 10001:
       case 10103:
-        if (/(登录|login)/i.test(res.message)) {
+        if (MysApi.isLoginError(res)) {
           if (this.ckInfo.uid) {
-            logger.mark(`[ck失效][uid:${this.uid}][qq:${this.userId}]`)
-            if (!isTask) this.e.reply([`UID:${this.ckInfo.uid}，米游社Cookie已失效`, button])
+            logger.mark(`[ck失效][uid:${this.uid}][qq:${this.userId}]${ckRefreshed ? '[已自动刷新]' : ''}`)
+            if (!isTask) this.e.reply([`UID:${this.ckInfo.uid}，${ckRefreshed ? 'Cookie已自动刷新，但查询仍失败，请稍后再试' : '米游社Cookie已失效'}`, button])
           } else {
             logger.mark(`[公共ck失效][ltuid:${this.ckInfo.ltuid}]`)
             if (!isTask) this.e.reply([`UID:${this.uid}，米游社查询失败，请稍后再试`, button])
           }
-          if (!isTask) await this.delCk()
+          /** 已刷新成功时不再删除ck，避免误删新ck */
+          if (!isTask && !ckRefreshed) await this.delCk()
         } else {
           if (!isTask) this.e.reply([`UID:${this.uid}，米游社接口报错，暂时无法查询：${res.message}`, button])
         }
@@ -465,6 +492,22 @@ export default class MysInfo {
         while ([1034, 10035].includes(res?.retcode) && retry < Cfg.getConfig('config').retrytime) {
           res = await this.geetest(type, mysApi, data, res?.retcode)
           retry++
+        }
+
+        /** 验证码流程后若发现ck失效，同样尝试自动刷新后继续查询 */
+        if (!ckRefreshed && MysApi.isLoginError(res)) {
+          let oldCk = mysApi?.cookie || this.ckInfo.ck
+          let refresh = await MysApi.refreshCk(oldCk)
+          if (refresh.ok) {
+            ckRefreshed = true
+            this.ckInfo.ck = refresh.ck
+            if (this.ckUser) this.ckUser.ck = refresh.ck
+            if (refresh.ck !== oldCk && mysApi?.getData) {
+              mysApi.cookie = refresh.ck
+              let retryRes = await mysApi.getData(type, data)
+              if (retryRes) res = retryRes
+            }
+          }
         }
 
         if (res?.retcode !== 0 && res.retcode !== 10103) {

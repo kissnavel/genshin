@@ -51,6 +51,120 @@ export default class MysApi {
     ]
   }
 
+  /** ltuid -> 刷新结果缓存，避免同一次查询内重复刷新 */
+  static ckRefreshCache = new Map()
+  /** ltuid -> 刷新中的 Promise，避免并发重复刷新 */
+  static ckRefreshTasks = new Map()
+  /** 刷新结果缓存时间(ms) */
+  static ckRefreshCacheTtl = 60 * 1000
+  /** stoken列表短时缓存，避免多账号刷新时反复读取yaml */
+  static skScanCache = null
+
+  /** 从ck中解析ltuid */
+  static getLtuid(ck = '') {
+    let ret = String(ck || '').match(/ltuid=(\d+)|stuid=(\d+)/)
+    return ret ? (ret[1] || ret[2]) : ''
+  }
+
+  /** 是否为ck登录失效返回 */
+  static isLoginError(res) {
+    if (!res) return false
+    let retcode = Number(res.retcode)
+    if (![-1, -100, 1001, 10001, 10103].includes(retcode)) return false
+    return /(登录|login|ck失效|cookie.*失效)/i.test(res.message || '')
+  }
+
+  /** 根据stoken推断bbs的game_biz */
+  static getBbsGameBiz(sk = {}) {
+    let game_biz = ''
+    if (sk.type == 'hoyolab') {
+      if (/os_/.test(sk.region)) {
+        game_biz = 'hk4e_global'
+      } else if (/official/.test(sk.region)) {
+        game_biz = 'hkrpg_global'
+      } else if (/_us|_eu|_jp|_sg/.test(sk.region)) {
+        game_biz = 'nap_global'
+      }
+    } else {
+      if (/cn_/.test(sk.region)) {
+        game_biz = 'hk4e_cn'
+      } else if (/_cn/.test(sk.region)) {
+        game_biz = String(sk.uid || '').length < 10 ? 'nap_cn' : 'hkrpg_cn'
+      }
+    }
+    return game_biz
+  }
+
+  /**
+   * 自动刷新ck
+   * @param ck 失效的ck
+   * @returns {Promise<{ok: boolean, ck?: string, ltuid?: string, qq?: string, reason?: string}>}
+   */
+  static async refreshCk(ck) {
+    let ltuid = MysApi.getLtuid(ck)
+    if (!ltuid) return { ok: false, reason: '无法解析ltuid' }
+
+    let cache = MysApi.ckRefreshCache.get(ltuid)
+    if (cache && Date.now() - cache.at < MysApi.ckRefreshCacheTtl) return cache.ret
+
+    if (MysApi.ckRefreshTasks.has(ltuid)) return await MysApi.ckRefreshTasks.get(ltuid)
+
+    let task = MysApi.doRefreshCk(ltuid)
+    MysApi.ckRefreshTasks.set(ltuid, task)
+    let ret
+    try {
+      ret = await task
+    } finally {
+      MysApi.ckRefreshTasks.delete(ltuid)
+    }
+    MysApi.ckRefreshCache.set(ltuid, { at: Date.now(), ret })
+    return ret
+  }
+
+  /** 用stoken刷新ck并写回MysUsers */
+  static async doRefreshCk(ltuid) {
+    try {
+      const [{ default: Cfg }, { default: MysUser }] = await Promise.all([
+        import('../Cfg.js'),
+        import('./MysUser.js')
+      ])
+
+      /** 查找该ltuid对应的stoken（短时缓存，避免多账号刷新时反复扫描yaml） */
+      let sks
+      if (MysApi.skScanCache && Date.now() - MysApi.skScanCache.at < 10 * 1000) {
+        sks = MysApi.skScanCache.sks
+      } else {
+        sks = await Cfg.getsks(true, '', false)
+        MysApi.skScanCache = { at: Date.now(), sks }
+      }
+      let sk = Object.values(sks || {}).find(v => v && String(v.stuid) === String(ltuid) && v.stoken && v.ltoken)
+      if (!sk) return { ok: false, reason: '无stoken' }
+
+      let mysApi = new MysApi(sk.stuid, sk.sk, { game: 'bbs', log: false }, sk.region, MysApi.getBbsGameBiz(sk))
+      let res = await mysApi.getData('bbsGetCookie')
+      if (!res?.data?.cookie_token) {
+        return { ok: false, reason: `bbsGetCookie失败${res?.message ? `：${res.message}` : ''}` }
+      }
+
+      let ck = `ltoken=${sk.ltoken};ltuid=${sk.stuid};cookie_token=${res.data.cookie_token};account_id=${sk.stuid}`
+      let mys = await MysUser.create(sk.stuid)
+      if (!mys || !mys.ck) return { ok: false, reason: 'ck记录不存在' }
+
+      mys.setCkData({ ck })
+      await mys.save()
+      try {
+        await mys.initCache()
+      } catch (error) {
+        logger.error(`[自动刷新ck]ltuid:${ltuid} 刷新缓存失败：${error.message}`)
+      }
+      logger.mark(`[自动刷新ck]ltuid:${ltuid} qq:${sk.userId} 刷新成功`)
+      return { ok: true, ck, ltuid: String(ltuid), qq: sk.userId }
+    } catch (error) {
+      logger.error(`[自动刷新ck]ltuid:${ltuid} 刷新异常：${error.message}`)
+      return { ok: false, reason: '刷新异常' }
+    }
+  }
+
   /* eslint-disable quotes */
   get device() {
     if (!this._device) this._device = this.getGuid()
@@ -172,7 +286,10 @@ export default class MysApi {
     return isWd ? 'cn_prod_gf01' : (isZzz || isSr) ? 'prod_gf_cn' : 'cn_gf01'// 官服
   }
 
-  async getData(type, data = {}, cached = false) {
+  async getData(type, data = {}, cached = false, refreshed = false) {
+    /** 保留原始请求参数，ck刷新成功后重试使用；同时避免修改调用方传入的对象 */
+    let originData = { ...data }
+    data = { ...data }
     if (!this.types.includes(type)) {
       let ltuid
       if (this.game == 'bbs') {
@@ -231,6 +348,8 @@ export default class MysApi {
     let cahce = await redis.get(cacheKey)
     if (cahce) return JSON.parse(cahce)
 
+    /** 记录本次请求实际使用的ck，刷新后判断是否需要重试 */
+    let reqCk = this.cookie
     headers.Cookie = this.cookie
 
     if (data.headers) {
@@ -299,6 +418,15 @@ export default class MysApi {
     res.api = type
 
     if (cached) this.cache(res, cacheKey)
+
+    /** ck失效：自动刷新后重试一次，成功则继续查询 */
+    if (!refreshed && type !== 'bbsGetCookie' && this.game !== 'bbs' && MysApi.isLoginError(res)) {
+      let refresh = await MysApi.refreshCk(reqCk)
+      if (refresh.ok && refresh.ck !== reqCk) {
+        this.cookie = refresh.ck
+        return await this.getData(type, originData, cached, true)
+      }
+    }
 
     return res
   }
