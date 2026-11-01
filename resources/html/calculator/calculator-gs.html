@@ -50,7 +50,7 @@
     <div class="skill">
       <div class="skillimg">
         <img class="skillimgC"
-             src="{{skill.icon}}"/>
+             src="{{if skill.miaoIcon}}{{_miao_path}}{{skill.icon}}{{else}}{{skill.icon}}{{/if}}"/>
       </div>
       <div class="skillname">
         {{skill.name}}

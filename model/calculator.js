@@ -3,6 +3,7 @@ import MysInfo from './mys/mysInfo.js'
 import MysApi from './mys/mysApi.js'
 import lodash from 'lodash'
 import gsCfg from './gsCfg.js'
+import { Character } from '#miao.models'
 
 export default class Calculator extends base {
   constructor (e) {
@@ -168,6 +169,21 @@ export default class Calculator extends base {
       })
     } else {
       skillList = skillList.filter((item) => item.max_level != 1)
+
+      /** 国际服技能图标地址不可访问，使用 miao-plugin 本地图片替换 */
+      if (this.mysApi.getServer().startsWith('os')) {
+        try {
+          let char = Character.get(this.role.name || this.role.alias, 'gs')
+          let imgs = [char?.imgs?.a, char?.imgs?.e, char?.imgs?.q]
+          skillList.forEach((item, index) => {
+            if (imgs[index]) {
+              item.icon = imgs[index].replace(/^\/+/, '')
+              item.miaoIcon = true
+            }
+          })
+        } catch (error) {
+        }
+      }
 
       body = {
         avatar_id: Number(this.role.roleId),

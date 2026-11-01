@@ -369,7 +369,7 @@ export default class apiTool {
         },
         /** 养成计算器 */
         compute: {
-          url: `${host}event/e20200928calculate/v3/batch_compute`,
+          url: `${host}event/e20200928calculate/v3/batch_compute?lang=zh-cn`,
           body: data.body
         },
         computeList: {
@@ -1028,7 +1028,6 @@ export default class apiTool {
       urlMap.gs.detail.query = `lang=zh-cn&uid=${this.uid}&region=${this.server}&avatar_id=${data.avatar_id}`
       urlMap.gs.avatarSkill.url = `${host}event/calculateos/avatar/skill_list`// 查询未持有的角色天赋
       urlMap.gs.avatarSkill.query = `lang=zh-cn&avatar_id=${data.avatar_id}`
-      urlMap.gs.compute.url = `${host}event/calculateos/compute`// 已支持养成计算
       urlMap.gs.blueprint.url = `${host}event/calculateos/furniture/blueprint`
       urlMap.gs.blueprint.query = `share_code=${data.share_code}&region=${this.server}&lang=zh-cn`
       urlMap.gs.blueprintCompute.url = `${host}event/calculateos/furniture/compute`
