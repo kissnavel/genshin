@@ -29,6 +29,14 @@ for (let game of ['gs', 'sr']) {
     }
   }
 }
+
+try {
+  let { default: CustomAlias } = await import('../../../plugins/miao-plugin/models/alias/CustomAlias.js')
+  await CustomAlias.init()
+} catch (e) {
+  console.log('miao custom alias init failed', e)
+}
+
 export {
   Base,
   Abyss,

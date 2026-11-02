@@ -4,7 +4,8 @@
     "type": "module",
     "dependencies": {
         "express": "^4.18.2",
-        "lodash": "^4.17.21"
+        "lodash": "^4.17.21",
+        "moment": "^2.30.1"
     },
     "imports": {
         "#miao": "./model/miao.js",
