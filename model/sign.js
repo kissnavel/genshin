@@ -178,8 +178,7 @@ export default class MysSign extends base {
 
             if (signInfo.retcode !== 0 && signInfo.message?.includes('登录')) {
                 logger.error(`[${name}签到失败]${this.log} 绑定cookie已失效(${refresh.reason || '刷新后仍失效'})`)
-                /** 仅"无stoken可刷新"这种确定无法恢复的情况才按配置删除ck，避免接口异常误删刚刷新的ck */
-                if (this.set.Autodelck && ['无stoken', '未找到对应stoken'].includes(refresh.reason))
+                if (this.set.Autodelck)
                     await Cfg.delck(ck.ltuid, ck.qq)
                 return {
                     retcode: -100,
@@ -638,8 +637,6 @@ export default class MysSign extends base {
             logger.mark(`[刷新ck]qq:${qq} stuid:${sks[i].stuid} 刷新成功`)
             return { ok: true, ck }
         }
-
-        return { ok: false, reason: '未找到对应stoken' }
     }
 
     async getStoken(qq) {
