@@ -1,11 +1,14 @@
 import express from 'express'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import Cfg from '../Cfg.js'
 import _ from 'lodash'
 
 let tmp = {}
 let isRegister = {}
 let result = {}
-const Path = 'https://img-hut.top/gt/'
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const AssetPath = path.join(__dirname, 'assets')
 export default class GT_Manual {
   constructor() {
     this.cfg = Cfg.api
@@ -14,6 +17,7 @@ export default class GT_Manual {
 
   load () {
     this.app.listen(this.cfg.Port)
+    this.app.use('/GTest/assets', express.static(AssetPath))
     this.app.use(express.static(process.cwd()))
     this.app.use(express.urlencoded({ extended: false }))
     this.app.use(express.json())
@@ -36,7 +40,7 @@ export default class GT_Manual {
     <title>GTest</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <link rel="stylesheet" href="${Path}style.css">
+    <link rel="stylesheet" href="/GTest/assets/style.css">
   </head>
   <body>
     <h1></h1><br>
@@ -49,9 +53,9 @@ export default class GT_Manual {
     <footer id="footer">
       <p class="copyright">Copyright GT-Manual</p>
     </footer>
-    <script src="${Path}jquery.min.js"></script>
-    <script src="${Path}gt.js"></script>
-    <script src="${Path}script.js"></script>
+    <script src="/GTest/assets/jquery.min.js"></script>
+    <script src="/GTest/assets/gt.js"></script>
+    <script src="/GTest/assets/script.js"></script>
   </body>
 </html>`)
   }
