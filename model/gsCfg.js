@@ -160,7 +160,7 @@ class GsCfg {
         }
       }
 
-      let data = res.data.list.find(item => item.game_uid === uid)
+      let data = res?.data?.list?.find(item => item.game_uid === uid)
       if (data) {
         game_biz = data.game_biz,
         region = data.region

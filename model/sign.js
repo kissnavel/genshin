@@ -166,9 +166,10 @@ export default class MysSign extends base {
         await common.sleep(2000)
         let signInfo = await this.mysApi.getData('sign_info')
 
-        if (!signInfo) return false
+        if (!signInfo) return { retcode: -1, msg: '请求异常' }
 
-        if (signInfo.retcode !== 0 && signInfo.message?.includes('登录')) {
+        /** 若出现未登录情况尝试刷新ck */
+        if (signInfo.retcode == -100 || signInfo.message?.includes('登录')) {
             /** 按 skid 刷新ck，刷新结果只在本账号内复用，不再使用事件对象上的ck */
             let refresh = await this.getRefreshedCk(ck)
             if (refresh.ok && refresh.ckStr !== usedCk) {
@@ -176,7 +177,7 @@ export default class MysSign extends base {
                 signInfo = await this.mysApi.getData('sign_info') || { retcode: -1, message: '请求异常' }
             }
 
-            if (signInfo.retcode !== 0 && signInfo.message?.includes('登录')) {
+            if (signInfo.retcode == -100 || signInfo.message?.includes('登录')) {
                 logger.error(`[${name}签到失败]${this.log} 绑定cookie已失效(${refresh.reason || '刷新后仍失效'})`)
                 if (this.set.Autodelck)
                     await Cfg.delck(ck.ltuid, ck.qq)

@@ -222,20 +222,25 @@ class Cfg {
         let res, game_biz, region
         if (game == 'bh2') {
           res = await mysApi.getData('bh2_cn')
-          if (res?.retcode !== 0) return cks
-          if (res?.data?.list.length == 0) continue
+          if (res?.retcode !== 0 || res?.data?.list?.length == 0) {
+            delete cks[game][uid]
+            continue
+          }
         } else {
           res = await mysApi.getData('bh3_cn')
           if (res?.retcode !== 0) res = await mysApi.getData('bh3_global')
-          if (res?.retcode !== 0) return cks
-          if (res?.data?.list.length == 0) continue
+          if (res?.retcode !== 0 || res?.data?.list?.length == 0) {
+            delete cks[game][uid]
+            continue
+          }
         }
 
-        let data = res?.data?.list.find(item => item.game_uid === uid)
+        let data = res?.data?.list?.find(item => item.game_uid === uid)
         if (data) {
           game_biz = data.game_biz,
           region = data.region
         } else {
+          delete cks[game][uid]
           continue
         }
         let CK = {
