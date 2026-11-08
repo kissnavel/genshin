@@ -48,7 +48,7 @@
           </table>
         </div>
         {{/if}}
-        {{if account.status === 'failed' || !account.forums || !account.forums.length}}
+        {{if account.status === 'failed'}}
         <div class="result-message">{{account.message}}</div>
         {{/if}}
       </div>
