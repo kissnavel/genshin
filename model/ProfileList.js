@@ -30,7 +30,7 @@ const ProfileList = {
     }
     let rank = false
 
-    let hasNew = true
+    let hasNew = false
     // let newCount = 0
 
     let chars = []
@@ -72,6 +72,14 @@ const ProfileList = {
       tmp.level = profile.level || 1
       tmp.cons = profile.cons
       tmp.isNew = 1
+      /** 将星铁 2 开头强化角色、8 开头开拓者移出本次更新角色防止置顶 */
+      let charId = String(char.id || '')
+      if (player.isSr && (charId.startsWith('2') || charId.startsWith('8'))) {
+        tmp.isNew = 0
+      }
+      if (tmp.isNew) {
+        hasNew = true
+      }
       // if (newChar[char.name]) {
         // tmp.isNew = 1
         // newCount++

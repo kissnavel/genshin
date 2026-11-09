@@ -332,7 +332,7 @@ export default class Myspanel {
             if (v.id == 8008) v.name = '星·记忆'
             if (v.id == 8010) v.name = '星·欢愉'
             //处理强化角色
-            let cur_id, cur_name
+            let cur_id = v.id, cur_name = v.name
             if (v.cur_enhanced_id == 1) {
                 cur_id = `2${String(v.id).slice(-3)}`
                 cur_name = `${v.name}Pro`
@@ -341,7 +341,7 @@ export default class Myspanel {
             //星魂影响
             let ava
             try {
-                ava = JSON.parse(fs.readFileSync(`./plugins/miao-plugin/resources/meta-sr/character/${v.name}/data.json`, 'utf-8'))
+                ava = JSON.parse(fs.readFileSync(`./plugins/miao-plugin/resources/meta-sr/character/${cur_name}/data.json`, 'utf-8'))
             } catch (e) {
                 return 
             }
@@ -551,40 +551,9 @@ export default class Myspanel {
             }
 
             //我们合体！！！
-            if (v.cur_enhanced_id == 1) {
-                avatars[cur_id] = {
-                    'name': cur_name,
-                    'id': cur_id,
-                    'elem': elem,
-                    'level': v.level,
-                    'promote': pro,
-                    'cons': v.rank,
-                    'talent': {
-                        'a': a,
-                        'e': e,
-                        'q': q,
-                        't': t,
-                        'me': me,
-                        'mt': mt,
-                        'xe': xe
-                    },
-                    'trees': trees,
-                    'weapon': v.equip ? {
-                        'id': v.equip.id,
-                        'level': v.equip.level,
-                        'promote': gzpro,
-                        'affix': v.equip.rank
-                    } : null,
-                    'artis': artis,
-                    '_source': 'mysPanelHSR',
-                    '_time': new Date().getTime(),
-                    '_update': new Date().getTime(),
-                    '_talent': new Date().getTime()
-                }
-            }
-            avatars[v.id] = {
-                'name': v.name,
-                'id': v.id,
+            avatars[cur_id] = {
+                'name': cur_name,
+                'id': cur_id,
                 'elem': elem,
                 'level': v.level,
                 'promote': pro,
