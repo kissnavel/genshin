@@ -173,7 +173,7 @@ export default class MysSign extends base {
         /** 若出现未登录情况尝试刷新ck */
         if (signInfo.retcode == -100 || signInfo.message?.includes('登录')) {
             /** 按 skid 刷新ck，刷新结果只在本账号内复用，不再使用事件对象上的ck */
-            let refresh = await this.getRefreshedCk(ck)
+            let refresh = await this.getRefreshedCk(ck, game)
             if (refresh.ok && refresh.ckStr !== usedCk) {
                 this.mysApi = new MysApi(uid, refresh.ckStr, { device: ck.device_id }, ck.region, ck.game_biz, game)
                 signInfo = await this.mysApi.getData('sign_info') || { retcode: -1, message: '请求异常' }
@@ -532,6 +532,30 @@ export default class MysSign extends base {
                 return line
             })
 
+            let refreshNum = _.fromPairs(this.set.game.map((game) => [game, 0]))
+            let refreshqq = []
+            for (let ret of this.refreshed.values()) {
+                if (!ret.ok) continue
+                if (ret.game) refreshNum[ret.game] = (refreshNum[ret.game] || 0) + 1
+                if (ret.qq && !refreshqq.includes(ret.qq)) refreshqq.push(ret.qq)
+            }
+            if (refreshqq.length > 0) {
+                msg += `\n刷新ck：\n`
+                for (let game of this.set.game)
+                    if (refreshNum[game] > 0)
+                        msg += `${game == 'gs' ? '原神' : game == 'sr' ? '星铁' : game == 'zzz' ? '绝区零' : game == 'bh3' ? '崩三' : game == 'bh2' ? '崩二' : '未定'}：${refreshNum[game]}|`
+                msg += '\n'
+                let refreshQqNum = this.set.invalid || 2
+                msg += refreshqq.map((e, i) => {
+                    let line = `${i + 1}. ${e}`
+                    if ((i + 1) % refreshQqNum === 0)
+                        line += '\n'
+                    else
+                        line += '，'
+                    return line
+                })
+            }
+
             await this.send(manual, msg)
         } finally {
             signing = false
@@ -580,11 +604,16 @@ export default class MysSign extends base {
      * @param ck 来自 Cfg.getcks 的账号ck对象
      * @returns {Promise<{ok: boolean, ckStr: string, reason?: string}>}
      */
-    async getRefreshedCk(ck) {
+    async getRefreshedCk(ck, game = '') {
         let ret = this.refreshed.get(ck.skid)
         if (!ret) {
             ret = await this.upCookie(ck.qq, ck.skid)
+            ret.qq = ck.qq
+            ret.game = game
             this.refreshed.set(ck.skid, ret)
+        } else {
+            if (!ret.qq) ret.qq = ck.qq
+            if (!ret.game && game) ret.game = game
         }
         if (ret.ok) ck.ck = ret.ck
         return { ok: ret.ok, ckStr: ret.ck || '', reason: ret.reason }
