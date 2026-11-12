@@ -91,14 +91,16 @@ export default class MysSign extends base {
                         }
                     }
 
+                    let message = String(res.msg || res.message || '').replace(/\s+/g, ' ').trim()
+
                     gameData.results.push({
-                        index: i + 1,
                         uid,
                         status,
                         statusText,
                         icon,
                         reward,
-                        totalDays
+                        totalDays,
+                        message
                     })
 
                     if (res.retcode === 0) {

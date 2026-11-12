@@ -26,10 +26,8 @@
           <table class="sign-table">
             <thead>
               <tr>
-                <th>#</th>
                 <th>UID</th>
                 <th>签到结果</th>
-                <th>#</th>
                 <th>今日奖励</th>
                 <th>累计签到</th>
               </tr>
@@ -37,7 +35,6 @@
             <tbody>
               {{ each game.results result}}
               <tr>
-                <td>{{result.index}}</td>
                 <td>{{result.uid}}</td>
                 <td>
                   <div class="status-icon status-{{result.status}}">
@@ -49,11 +46,17 @@
                   </div>
                   {{result.statusText}}
                 </td>
-                <td>
-                  <img class="icon" src="{{ result.icon }}" alt="">
+                <td class="reward-cell">
+                  {{if result.status === 'failed'}}
+                  <span class="reward-fail">{{result.message || result.statusText}}</span>
+                  {{else}}
+                  <div class="reward-content">
+                    {{if result.icon}}<img class="icon" src="{{result.icon}}" alt="">{{/if}}
+                    <span>{{result.reward}}</span>
+                  </div>
+                  {{/if}}
                 </td>
-                <td>{{result.reward}}</td>
-                <td>{{result.totalDays}} 天</td>
+                <td>{{if result.totalDays}}{{result.totalDays}} 天{{else}}-{{/if}}</td>
               </tr>
               {{/each}}
             </tbody>
