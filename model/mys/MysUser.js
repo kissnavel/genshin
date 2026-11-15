@@ -110,7 +110,20 @@ export default class MysUser extends BaseModel {
     }
 
     // 若只获取自身ck，则无需走到分配逻辑
-    if (onlySelfCk) return false
+    if (onlySelfCk) {
+      // 查询缓存可能因失效ck清理而缺失，回退扫描自身ck，避免误报暂无可用CK
+      let ownUser = null
+      await MysUser.forEach(async (mys) => {
+        if (ownUser) return
+        if (mys.ck && mys.ownUid(uid, game)) ownUser = mys
+      })
+      if (ownUser) {
+        await servCache.zAdd(tables.detail, ownUser.ltuid, uid)
+        logger.mark(`[米游社查询][uid：${uid}]${logger.green(`[使用自身ck：${ownUser.ltuid}]`)}`)
+        return ownUser
+      }
+      return false
+    }
 
     // 使用CK池内容，分配次数最少的一个ltuid
     ret = await create(await servCache.zMinKey(tables.detail))
@@ -584,7 +597,7 @@ export default class MysUser extends BaseModel {
       return false
     }
     let gameKey = this.gameKey(game)
-    let uids = this.uids[gameKey]
+    let uids = this.uids[gameKey] || []
     return uids.includes(uid + '')
   }
 }
