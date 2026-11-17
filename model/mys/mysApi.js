@@ -204,7 +204,7 @@ export default class MysApi {
         headers['x-rpc-device_model'] = modelName
         headers['x-rpc-csm_source'] = 'myself'
         // 国际服不需要绑定设备，故写入的'User-Agent'为国服
-        headers['User-Agent'] = `Mozilla/5.0 (Linux; Android ${osVersion}; ${modelName} Build/${deviceDisplay}; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/111.0.5563.116 Mobile Safari/537.36 miHoYoBBS/2.73.1`
+        headers['User-Agent'] = `Mozilla/5.0 (Linux; Android ${osVersion}; ${modelName} Build/${deviceDisplay}; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/111.0.5563.116 Mobile Safari/537.36 miHoYoBBS/2.118.1`
       } catch (error) {
         logger.error(`[genshin]设备信息解析失败：${error.message}`)
       }
@@ -220,7 +220,7 @@ export default class MysApi {
 
     if (type == 'deviceLogin' || type == 'saveDevice') {
       try {
-        headers['x-rpc-sys_version'] = '12'
+        headers['x-rpc-sys_version'] = '13'
         headers['x-rpc-client_type'] = '2'
         headers['x-rpc-channel'] = 'miyousheluodi'
         headers['x-rpc-csm_source'] = 'home'
@@ -433,23 +433,23 @@ export default class MysApi {
 
   getHeaders(types, query = '', body = '', sign = false) {
     const header = {
-      'x-rpc-app_version': '2.73.1',
+      'x-rpc-app_version': '2.118.1',
       'x-rpc-client_type': '5',
       'x-rpc-device_id': this._device,
-      'User-Agent': 'Mozilla/5.0 (Linux; Android 13; XQ-BC52 Build/61.2.A.0.472A; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/111.0.5563.116 Mobile Safari/537.36 miHoYoBBS/2.73.1',
+      'User-Agent': 'Mozilla/5.0 (Linux; Android 13; XQ-BC52 Build/61.2.A.0.472A; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/111.0.5563.116 Mobile Safari/537.36 miHoYoBBS/2.118.1',
       Referer: 'https://act.mihoyo.com/'
     }
 
     const header_os = {
-      'x-rpc-app_version': '2.57.1',
+      'x-rpc-app_version': '4.23.0',
       'x-rpc-client_type': '2',
       'x-rpc-device_id': this._device,
-      'User-Agent': 'Mozilla/5.0 (Linux; Android 13; XQ-BC52 Build/61.2.A.0.472A; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/111.0.5563.116 Mobile Safari/537.36 miHoYoBBSOversea/2.57.1',
+      'User-Agent': 'Mozilla/5.0 (Linux; Android 13; XQ-BC52 Build/61.2.A.0.472A; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/111.0.5563.116 Mobile Safari/537.36 miHoYoBBSOversea/4.23.0',
       Referer: 'https://act.hoyolab.com/'
     }
 
     const header_bbs = {
-      'x-rpc-app_version': '2.73.1',
+      'x-rpc-app_version': '2.118.1',
       'x-rpc-channel': 'miyousheluodi',
       'x-rpc-client_type': '2',
       Referer: 'https://app.mihoyo.com/',
@@ -457,7 +457,7 @@ export default class MysApi {
       'x-rpc-device_id': this._device,
       'x-rpc-device_model': 'XQ-BC52',
       'x-rpc-device_name': 'Sony XQ-BC52',
-      'x-rpc-sys_version': '12'
+      'x-rpc-sys_version': '13'
     }
 
     let client
@@ -471,7 +471,7 @@ export default class MysApi {
     let x_rpc = {
       'x-rpc-device_model': 'XQ-BC52',
       'x-rpc-device_name': 'Sony XQ-BC52',
-      'x-rpc-sys_version': '12',
+      'x-rpc-sys_version': '13',
       'x-rpc-signgame': signgame,
       'x-rpc-platform': 'android'
     }
@@ -498,7 +498,7 @@ export default class MysApi {
       case 'bbs':
         return {
           ...header_bbs,
-          DS: (sign ? this.bbsDs(query, body) : this.SignDs("WGtruoQrwczmsjLOPXzJLnaAYycsLavx"))
+          DS: (sign ? this.bbsDs(query, body) : this.SignDs("7a047e46eadd8693f09513e55bdf6bd8"))
         }
       case 'qrcode':
         return {
@@ -552,7 +552,7 @@ export default class MysApi {
   getDs2() {
     let t = Math.round(new Date().getTime() / 1000)
     let r = this.randomString(6)
-    let DS = md5(`salt=WGtruoQrwczmsjLOPXzJLnaAYycsLavx&t=${t}&r=${r}`)
+    let DS = md5(`salt=7a047e46eadd8693f09513e55bdf6bd8&t=${t}&r=${r}`)
     return `${t},${r},${DS}`
   }
 

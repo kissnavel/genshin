@@ -1,8 +1,8 @@
 import plugin from '../../../lib/plugins/plugin.js'
-import common from '../../../lib/common/common.js'
 import fetch from 'node-fetch'
 import Cfg from '../model/Cfg.js'
 import MysApi from '../model/mys/mysApi.js'
+import MysInfo from '../model/mys/mysInfo.js'
 
 export class exchange extends plugin {
   constructor() {
@@ -15,6 +15,14 @@ export class exchange extends plugin {
         {
           reg: /^(#|\*)?(原神|星铁|崩铁|崩三|崩坏三|崩坏3|绝区零)?(国服|国际服)?(直播|前瞻)?兑换码$/,
           fnc: 'getCode'
+        },
+        {
+          reg: /^(#|\*)?(原神|星铁|绝区零)?国际服可用兑换码$/,
+          fnc: 'hoyocode'
+        },
+        {
+          reg: '^#(原神|星铁|绝区零)?(兑换码使用|cdk-u).+',
+          fnc: 'useCode'
         }
       ]
     })
@@ -80,18 +88,24 @@ export class exchange extends plugin {
       logger.info('[兑换码] 未获取到兑换码')
       return true
     }
-    let msgs = []
+    let msgs = [], button = []
+    let gametype = this.e.game == 'zzz' ? '%' : this.e.game == 'sr' ? '*' : '#'
     msgs.push(`${title}-直播兑换码`)
     msgs.push(`兑换码过期时间: \n${time}`)
 
     for (let val of code.data.code_list) {
       if (val.code) {
         msgs.push(val.code)
+        button.push([{ text: `${gametype}兑换码使用${val.code}`, callback: `${gametype}兑换码使用${val.code}` }])
       }
     }
 
     let msg = msgs.join('\n')
-    await this.reply(msg)
+    if (/gs|sr|zzz/.test(this.e.game)) {
+      await this.reply([msg, segment.button(...button)])
+    } else {
+      await this.reply(msg)
+    }
   }
 
   async getData(type) {
@@ -223,5 +237,81 @@ export class exchange extends plugin {
 
     let msg = msgData.join('\n')
     return this.e.reply([msg, segment.button(...button)])
+  }
+
+  async hoyocode() {
+    let url; let gametype
+    if (this.e.game == 'gs') {
+      url = 'https://genshin.hoyoverse.com/zh-tw/gift'
+      gametype = '#'
+    } else if (this.e.game == 'sr') {
+      url = 'https://hsr.hoyoverse.com/gift'
+      gametype = '*'
+    } else if (this.e.game == 'zzz') {
+      url = 'https://zenless.hoyoverse.com/redemption'
+      gametype = '%'
+    }
+
+    let codes = await this.gethoyoCode()
+    if (codes.length == 0) return this.e.reply('未获取到兑换码')
+    let msgData = []; let button = []
+    msgData.push('当前可用兑换码如下：')
+    codes.forEach(val => {
+      msgData.push(val)
+      button.push([{ text: `${gametype}兑换码使用${val}`, callback: `${gametype}兑换码使用${val}` }])
+    })
+    msgData.push(`兑换码使用网站：${url}`)
+    msgData.push(`可使用命令"${gametype}兑换码使用+(空格)+兑换码"进行兑换`)
+    msgData.push('若兑换失败，请尝试刷新cookie或重新绑定cookie')
+
+    let msg = msgData.join('\n')
+    return this.e.reply([msg, segment.button(...button)])
+  }
+
+  async gethoyoCode() {
+    let url
+    if (this.e.game == 'gs') {
+      url = 'https://gamewith.jp/genshin/article/show/231856'
+    } else if (this.e.game == 'sr') {
+      url = 'https://gamewith.jp/houkaistarrail/article/show/396232'
+    } else if (this.e.game == 'zzz') {
+      url = 'https://gamewith.jp/zenless/452252'
+    }
+
+    let response = await fetch(url)
+    let res = await response.text()
+    // 过滤掉注释
+    res = res.replace(/<!--(.|[\r\n])*?-->/g, "")
+    // 提取激活码所在元素
+    let rawCodes = res.match(/<div class="w-clipboard-copy-ui">\w+<\/div>/g)
+    let codeList = []; let promises = []
+    if (rawCodes) {
+      rawCodes.forEach(val => {
+        let code = val.replace(/<div class="w-clipboard-copy-ui">|<\/div>/g, "")
+        codeList.push(code)
+      })
+    }
+    if (this.e.game == 'zzz') {
+      for (let i = 0; i < codeList.length; i++) {
+        if (codeList[i] == 'ZENLESSGIFT') {
+          promises.push(codeList[i])
+          break
+        }
+        promises.push(codeList[i])
+      }
+      await Promise.all(promises)
+    }
+
+    let getCode = this.e.game == 'zzz' ? promises : codeList
+    return getCode
+  }
+
+  // 兑换码使用
+  async useCode() {
+    const cdkCode = this.e.msg.replace(/#(原神|星铁|绝区零)?(兑换码使用|cdk-u)/, '').trim()
+    const res = await MysInfo.get(this.e, 'useCdk', { cdk: cdkCode })
+    if (res.retcode == 0) {
+      this.e.reply(`${res.data.msg}`)
+    }
   }
 }

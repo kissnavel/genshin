@@ -73,11 +73,6 @@ export default class MysInfo {
       return false
     }
 
-    if (!/^(1[0-9]|[6-9])[0-9]{8}/i.test(mysInfo.uid) && api === 'useCdk') {
-      e.reply('兑换码使用只支持国际服uid')
-      return false
-    }
-
     mysInfo.e.uid = mysInfo.uid
 
     /** 获取ck */
