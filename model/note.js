@@ -145,16 +145,21 @@ export default class Note extends base {
   }
 
   async getData(ck, game) {
+    let isSr = game === 'sr'
+    let isZzz = game === 'zzz'
+    /** 当前查询的游戏状态固定在本轮，避免多游戏并发时相互覆盖 */
+    this.e.isSr = isSr
+    this.e.isZzz = isZzz
+    let screenNote = this.screenNote
+
     let res = await this.noteData(ck, game)
     if (res?.Data?.retcode !== 0 || _.isEmpty(res?.Sign)) return false
 
-    this.e.isSr = game == 'sr' ? true : false
-    this.e.isZzz = game == 'zzz' ? true : false
-    let data = this.e.isZzz ? await this.noteZzz(res.Data, ck.uid) : this.e.isSr ? await this.noteSr(res.Data, ck.uid) : await this.notegs(res.Data, ck.uid)
+    let data = isZzz ? await this.noteZzz(res.Data, ck.uid) : isSr ? await this.noteSr(res.Data, ck.uid) : await this.notegs(res.Data, ck.uid)
 
     data = {
       quality: 80,
-      ...this.screenNote,
+      ...screenNote,
       ...data,
       ...res.Sign
     }
