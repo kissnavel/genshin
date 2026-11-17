@@ -1,6 +1,9 @@
 #插件优先级
 priority: -114514
 
+#是否开启多体力查询（同时查三家游戏体力，默认开启）
+noteMultiGame: true
+
 #是否自动签到
 AutoSign: false
 #自动签到定时任务(更改需要重启)
