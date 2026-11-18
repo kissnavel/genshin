@@ -102,7 +102,9 @@ export class exchange extends plugin {
     let withButtons = ['gs', 'sr', 'zzz'].includes(this.gameKey)
     let img = await this.replyCodeList(codes, gametype, [
       `${title}-直播兑换码`,
-      `兑换码过期时间: \n${time}`
+      `兑换码过期时间: \n${time}`,
+      `可使用命令"${gametype}兑换码使用+(空格)+兑换码"进行兑换`,
+      '若兑换失败，请尝试刷新cookie或重新绑定cookie'
     ], [], withButtons)
     return img
   }
@@ -132,7 +134,7 @@ export class exchange extends plugin {
     }
   }
 
-  /** 统一输出兑换码列表、单码按钮和批量兑换按钮 */
+  /** 统一输出兑换码列表和批量兑换按钮 */
   async replyCodeList(codes, gametype, titleLines = [], extraLines = [], withButtons = true) {
     codes = [...new Set((codes || []).map(code => String(code || '').trim()).filter(Boolean))]
     if (codes.length === 0) return this.e.reply('暂无可用兑换码')
