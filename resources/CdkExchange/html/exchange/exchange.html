@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+  <link rel="shortcut icon" href="#" />
+  <link rel="stylesheet" type="text/css" href="{{pluResPath}}html/exchange/exchange.css" />
+</head>
+
+<body>
+  <div class="container" id="container">
+    <div class="page">
+      <div class="header">
+        <div class="header-content">
+          <strong>兑换码兑换结果</strong>
+          <div class="exchange-count">成功：<span class="count-num">{{successCount}}</span> / 共 {{total}} 个</div>
+          <div class="account">UID：{{uid}}{{if gameName}} · {{gameName}}{{/if}}</div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="exchange-table">
+          <thead>
+            <tr>
+              <th>兑换码</th>
+              <th>兑换结果</th>
+              <th>返回信息</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{ each results result }}
+            <tr>
+              <td class="code-cell">{{result.code}}</td>
+              <td>
+                <div class="status-icon status-{{result.status}}">
+                  {{if result.status === 'success'}}
+                  <div class="check-icon">✓</div>
+                  {{else if result.status === 'used' || result.status === 'expired'}}
+                  <div class="warn-icon">!</div>
+                  {{else}}
+                  <div class="error-icon">✗</div>
+                  {{/if}}
+                </div>
+                <span class="status-text">{{result.statusText}}</span>
+              </td>
+              <td class="message-cell">{{result.message}}</td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

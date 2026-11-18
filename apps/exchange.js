@@ -1,8 +1,11 @@
 import plugin from '../../../lib/plugins/plugin.js'
+import crypto from 'node:crypto'
 import fetch from 'node-fetch'
+import common from '../../../lib/common/common.js'
 import Cfg from '../model/Cfg.js'
 import MysApi from '../model/mys/mysApi.js'
 import MysInfo from '../model/mys/mysInfo.js'
+import CdkExchange from '../model/CdkExchange.js'
 
 export class exchange extends plugin {
   constructor() {
@@ -21,7 +24,7 @@ export class exchange extends plugin {
           fnc: 'hoyocode'
         },
         {
-          reg: '^#(原神|星铁|绝区零)?(兑换码使用|cdk-u).+',
+          reg: /^(#|\*)?(原神|星铁|绝区零)?(兑换码使用|cdk-u).*/,
           fnc: 'useCode'
         }
       ]
@@ -88,26 +91,112 @@ export class exchange extends plugin {
       logger.info('[兑换码] 未获取到兑换码')
       return true
     }
-    let msgs = [], button = []
     let gametype = this.e.game == 'zzz' ? '%' : this.e.game == 'sr' ? '*' : '#'
-    msgs.push(`${title}-直播兑换码`)
-    msgs.push(`兑换码过期时间: \n${time}`)
+    let codes = code.data.code_list.map(val => val.code).filter(Boolean)
 
-    for (let val of code.data.code_list) {
-      if (val.code) {
-        msgs.push(val.code)
-        button.push([{ text: `${gametype}兑换码使用${val.code}`, callback: `${gametype}兑换码使用${val.code}` }])
-      }
+    if (codes.length === 0) {
+      logger.info('[兑换码] 未获取到可用兑换码')
+      return await this.reply('暂无可用兑换码')
     }
 
-    let msg = msgs.join('\n')
-    if (/gs|sr|zzz/.test(this.e.game)) {
-      await this.reply([msg, segment.button(...button)])
-    } else {
-      await this.reply(msg)
+    let withButtons = ['gs', 'sr', 'zzz'].includes(this.gameKey)
+    let img = await this.replyCodeList(codes, gametype, [
+      `${title}-直播兑换码`,
+      `兑换码过期时间: \n${time}`
+    ], [], withButtons)
+    return img
+  }
+
+  get gameKey() {
+    return this.e.game || (this.e.isSr ? 'sr' : this.e.isZzz ? 'zzz' : 'gs')
+  }
+
+  get gameName() {
+    return { gs: '原神', sr: '崩坏：星穹铁道', zzz: '绝区零' }[this.gameKey] || '米游社'
+  }
+
+  /** 保存本次获取到的兑换码，返回随机令牌，供“批量兑换全部”按钮共享使用 */
+  async savePendingCodes(codes) {
+    let token = crypto.randomBytes(4).toString('hex')
+    await redis.set(`genshin:cdk:pending:${token}`, JSON.stringify(codes), { EX: 60 * 60 * 6 })
+    return token
+  }
+
+  async getPendingCodes(token) {
+    if (!token) return []
+    try {
+      let codes = JSON.parse(await redis.get(`genshin:cdk:pending:${token}`) || '[]')
+      return Array.isArray(codes) ? codes : []
+    } catch (error) {
+      return []
     }
   }
 
+  /** 统一输出兑换码列表、单码按钮和批量兑换按钮 */
+  async replyCodeList(codes, gametype, titleLines = [], extraLines = [], withButtons = true) {
+    codes = [...new Set((codes || []).map(code => String(code || '').trim()).filter(Boolean))]
+    if (codes.length === 0) return this.e.reply('暂无可用兑换码')
+
+    let msgs = [...titleLines, ...codes, ...extraLines]
+    if (!withButtons) return this.e.reply(msgs.join('\n'))
+
+    let token = await this.savePendingCodes(codes)
+
+    let button = [[{
+      text: '批量兑换全部',
+      callback: `${gametype}兑换码使用@batch:${token}`
+    }]]
+
+    return this.e.reply([msgs.join('\n'), segment.button(...button)])
+  }
+
+  /** 兑换码可能包含数字，避免 MysInfo 把兑换码误识别为 UID */
+  async initCdkMysInfo() {
+    let msg = this.e.msg
+    this.e.msg = '兑换码'
+    try {
+      return await MysInfo.init(this.e, 'useCdk')
+    } finally {
+      this.e.msg = msg
+    }
+  }
+
+  /** 将接口返回整理为图片需要的状态数据 */
+  formatCdkResult(code, res) {
+    let retcode = Number(res?.retcode)
+    let message = String(res?.data?.msg || res?.data?.message || res?.message || '').replace(/\s+/g, ' ').trim()
+    let status = 'failed'
+    let statusText = '兑换失败'
+
+    if (retcode === 0) {
+      status = 'success'
+      statusText = '兑换成功'
+    } else if (MysApi.isLoginError(res)) {
+      status = 'failed'
+      statusText = 'CK失效'
+    } else if (/已(使用|兑换|领取)|重复领取|already\s*(used|redeemed)/i.test(message) || retcode === -2017) {
+      status = 'used'
+      statusText = '已兑换'
+    } else if (/过期|失效|expired/i.test(message) || [-2018, -2020].includes(retcode)) {
+      status = 'expired'
+      statusText = '已过期'
+    } else if (/不存在|无效|错误|格式|invalid/i.test(message) || [-2016, -2001, -2002].includes(retcode)) {
+      status = 'invalid'
+      statusText = '无效兑换码'
+    }
+
+    if (!message) message = statusText
+    return { code, status, statusText, message, retcode, raw: res || null }
+  }
+
+  buildTextResult(data) {
+    let lines = [`兑换码兑换结果（UID：${data.uid}）`]
+    for (let result of data.results) {
+      let icon = result.status === 'success' ? '✅' : result.status === 'used' || result.status === 'expired' ? '⚠️' : '❌'
+      lines.push(`${icon} ${result.code}：${result.statusText}${result.message && result.message !== result.statusText ? ` - ${result.message}` : ''}`)
+    }
+    return lines.join('\n')
+  }
   async getData(type) {
     let url = {
       index: `https://api-takumi.mihoyo.com/event/miyolive/index`,
@@ -202,17 +291,18 @@ export class exchange extends plugin {
 
   async getHoyoCode() {
     let url, gametype, name, game_id
-    if (this.e.game == 'gs') {
+    let game = this.gameKey
+    if (game == 'gs') {
       url = 'https://genshin.hoyoverse.com/zh-tw/gift'
       gametype = '#'
       name = '原神'
       game_id = '2'
-    } else if (this.e.game == 'sr') {
+    } else if (game == 'sr') {
       url = 'https://hsr.hoyoverse.com/gift'
       gametype = '*'
       name = '崩坏星穹铁道'
       game_id = '6'
-    } else if (this.e.game == 'zzz') {
+    } else if (game == 'zzz') {
       url = 'https://zenless.hoyoverse.com/redemption'
       gametype = '%'
       name = '绝区零'
@@ -224,57 +314,53 @@ export class exchange extends plugin {
     res = res?.data?.modules[0]?.exchange_group?.bonuses
     if (!res || res.length == 0) return this.e.reply(`暂无《${name}》国际服前瞻直播兑换码`)
 
-    let msgData = [], button = []
-    msgData.push(`《${name}》国际服前瞻直播兑换码：`)
+    let codes = []
     for (let i = 0; i < res.length; i++) {
       if (!res[i].exchange_code) break
-      msgData.push(res[i].exchange_code)
-      button.push([{ text: `${gametype}兑换码使用${res[i].exchange_code}`, callback: `${gametype}兑换码使用${res[i].exchange_code}` }])
+      codes.push(res[i].exchange_code)
     }
-    msgData.push(`兑换码使用网站：${url}`)
-    msgData.push(`可使用命令"${gametype}兑换码使用+(空格)+兑换码"进行兑换`)
-    msgData.push('若兑换失败，请尝试刷新cookie或重新绑定cookie')
 
-    let msg = msgData.join('\n')
-    return this.e.reply([msg, segment.button(...button)])
+    return this.replyCodeList(codes, gametype, [
+      `《${name}》国际服前瞻直播兑换码：`
+    ], [
+      `兑换码使用网站：${url}`,
+      `可使用命令"${gametype}兑换码使用+(空格)+兑换码"进行兑换`,
+      '若兑换失败，请尝试刷新cookie或重新绑定cookie'
+    ])
   }
 
   async hoyocode() {
     let url; let gametype
-    if (this.e.game == 'gs') {
+    let game = this.gameKey
+    if (game == 'gs') {
       url = 'https://genshin.hoyoverse.com/zh-tw/gift'
       gametype = '#'
-    } else if (this.e.game == 'sr') {
+    } else if (game == 'sr') {
       url = 'https://hsr.hoyoverse.com/gift'
       gametype = '*'
-    } else if (this.e.game == 'zzz') {
+    } else if (game == 'zzz') {
       url = 'https://zenless.hoyoverse.com/redemption'
       gametype = '%'
     }
 
     let codes = await this.gethoyoCode()
     if (codes.length == 0) return this.e.reply('未获取到兑换码')
-    let msgData = []; let button = []
-    msgData.push('当前可用兑换码如下：')
-    codes.forEach(val => {
-      msgData.push(val)
-      button.push([{ text: `${gametype}兑换码使用${val}`, callback: `${gametype}兑换码使用${val}` }])
-    })
-    msgData.push(`兑换码使用网站：${url}`)
-    msgData.push(`可使用命令"${gametype}兑换码使用+(空格)+兑换码"进行兑换`)
-    msgData.push('若兑换失败，请尝试刷新cookie或重新绑定cookie')
 
-    let msg = msgData.join('\n')
-    return this.e.reply([msg, segment.button(...button)])
+    return this.replyCodeList(codes, gametype, ['当前可用兑换码如下：'], [
+      `兑换码使用网站：${url}`,
+      `可使用命令"${gametype}兑换码使用+(空格)+兑换码"进行兑换`,
+      '若兑换失败，请尝试刷新cookie或重新绑定cookie'
+    ])
   }
 
   async gethoyoCode() {
     let url
-    if (this.e.game == 'gs') {
+    let game = this.gameKey
+    if (game == 'gs') {
       url = 'https://gamewith.jp/genshin/article/show/231856'
-    } else if (this.e.game == 'sr') {
+    } else if (game == 'sr') {
       url = 'https://gamewith.jp/houkaistarrail/article/show/396232'
-    } else if (this.e.game == 'zzz') {
+    } else if (game == 'zzz') {
       url = 'https://gamewith.jp/zenless/452252'
     }
 
@@ -291,7 +377,7 @@ export class exchange extends plugin {
         codeList.push(code)
       })
     }
-    if (this.e.game == 'zzz') {
+    if (game == 'zzz') {
       for (let i = 0; i < codeList.length; i++) {
         if (codeList[i] == 'ZENLESSGIFT') {
           promises.push(codeList[i])
@@ -302,16 +388,78 @@ export class exchange extends plugin {
       await Promise.all(promises)
     }
 
-    let getCode = this.e.game == 'zzz' ? promises : codeList
+    let getCode = game == 'zzz' ? promises : codeList
     return getCode
   }
 
-  // 兑换码使用
+  // 兑换码使用，支持一次携带多个兑换码，或点击“批量兑换全部”按钮
   async useCode() {
-    const cdkCode = this.e.msg.replace(/#(原神|星铁|绝区零)?(兑换码使用|cdk-u)/, '').trim()
-    const res = await MysInfo.get(this.e, 'useCdk', { cdk: cdkCode })
-    if (res.retcode == 0) {
-      this.e.reply(`${res.data.msg}`)
+    let raw = String(this.e.msg || '').replace(/^(#|\*)?(原神|星铁|绝区零)?(兑换码使用|cdk-u)/, '').trim()
+    let codes = []
+
+    let batch = raw.match(/^@(?:batch|all)(?::([a-f0-9]+))?$/i)
+    if (batch) {
+      codes = await this.getPendingCodes(batch[1])
+      if (codes.length === 0) {
+        return this.e.reply('待兑换码已过期，请重新发送兑换码指令获取')
+      }
+    } else {
+      codes = raw.split(/[\s,，、;；]+/).map(code => code.trim()).filter(Boolean)
     }
+
+    codes = [...new Set(codes)]
+    if (codes.length === 0) {
+      return this.e.reply('请输入兑换码，多个兑换码用空格分隔')
+    }
+    if (codes.length > 20) {
+      return this.e.reply('一次最多兑换 20 个兑换码')
+    }
+
+    let mysInfo = await this.initCdkMysInfo()
+    if (!mysInfo || !mysInfo.uid || !mysInfo.ckInfo?.ck) return false
+
+    let game = this.gameKey
+    let user = this.e.user?.getMysUser?.(game)
+    let mysApi = new MysApi(mysInfo.uid, mysInfo.ckInfo.ck, { game, device: user?.device })
+
+    if (codes.length > 1) {
+      await this.e.reply(`正在批量兑换 ${codes.length} 个兑换码...`, false, { at: true })
+    }
+
+    let results = []
+    for (let i = 0; i < codes.length; i++) {
+      let code = codes[i]
+      let res = await mysApi.getData('useCdk', { cdk: code })
+      res = await mysInfo.checkCode(res, 'useCdk', mysApi, { cdk: code }, true)
+      let result = this.formatCdkResult(code, res)
+      results.push(result)
+      if (i < codes.length - 1) await common.sleep(5000)
+    }
+
+    let successCount = results.filter(result => result.status === 'success').length
+    let data = {
+      game,
+      gameName: this.gameName,
+      uid: mysInfo.uid,
+      total: results.length,
+      successCount,
+      results
+    }
+
+    try {
+      await redis.set(`genshin:cdk:result:${this.e.user_id}`, JSON.stringify({ time: Date.now(), ...data }), { EX: 86400 * 7 })
+    } catch (error) {
+      logger.error(`[兑换码] 保存兑换结果失败：${error.message}`)
+    }
+
+    let img
+    try {
+      img = await new CdkExchange(this.e).render(data)
+    } catch (error) {
+      logger.error(`[兑换码] 兑换结果图片渲染失败：${error.message}`)
+    }
+
+    if (img) return this.e.reply(img, false, { at: true })
+    return this.e.reply(this.buildTextResult(data), false, { at: true })
   }
 }
