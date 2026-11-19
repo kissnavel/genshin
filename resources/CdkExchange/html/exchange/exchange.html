@@ -35,7 +35,7 @@
                 <div class="status-icon status-{{result.status}}">
                   {{if result.status === 'success'}}
                   <div class="check-icon">✓</div>
-                  {{else if result.status === 'used' || result.status === 'expired'}}
+                  {{else if result.status === 'used' || result.status === 'expired' || result.status === 'unknown'}}
                   <div class="warn-icon">!</div>
                   {{else}}
                   <div class="error-icon">✗</div>

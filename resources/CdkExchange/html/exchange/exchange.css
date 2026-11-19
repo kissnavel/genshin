@@ -187,7 +187,8 @@ body {
 }
 
 .status-used,
-.status-expired {
+.status-expired,
+.status-unknown {
   background: #f0ad4e;
   color: white;
   box-shadow: 0 2px 6px rgba(240, 173, 78, 0.4);

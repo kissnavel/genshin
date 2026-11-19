@@ -5,7 +5,10 @@ import common from '../../../lib/common/common.js'
 import Cfg from '../model/Cfg.js'
 import MysApi from '../model/mys/mysApi.js'
 import MysInfo from '../model/mys/mysInfo.js'
+import NoteUser from '../model/mys/NoteUser.js'
 import CdkExchange from '../model/CdkExchange.js'
+
+const PENDING_CODES_TTL = 60 * 60 * 6
 
 export class exchange extends plugin {
   constructor() {
@@ -99,13 +102,17 @@ export class exchange extends plugin {
       return await this.reply('暂无可用兑换码')
     }
 
-    let withButtons = ['gs', 'sr', 'zzz'].includes(this.gameKey)
-    let img = await this.replyCodeList(codes, gametype, [
-      `${title}-直播兑换码`,
-      `兑换码过期时间: \n${time}`,
+    let canRedeem = this.gid !== '1' && ['gs', 'sr', 'zzz'].includes(this.gameKey)
+    let instructions = canRedeem ? [
       `可使用命令"${gametype}兑换码使用+(空格)+兑换码"进行兑换`,
       '若兑换失败，请尝试刷新cookie或重新绑定cookie'
-    ], [], withButtons)
+    ] : ['请在游戏内输入兑换码领取奖励']
+
+    let img = await this.replyCodeList(codes, gametype, 'mys', [
+      `${title}-直播兑换码`,
+      `兑换码过期时间: \n${time}`,
+      ...instructions
+    ], [], canRedeem)
     return img
   }
 
@@ -118,31 +125,33 @@ export class exchange extends plugin {
   }
 
   /** 保存本次获取到的兑换码，返回随机令牌，供“批量兑换全部”按钮共享使用 */
-  async savePendingCodes(codes) {
+  async savePendingCodes(codes, region) {
     let token = crypto.randomBytes(4).toString('hex')
-    await redis.set(`genshin:cdk:pending:${token}`, JSON.stringify(codes), { EX: 60 * 60 * 6 })
+    let pending = { codes, region, game: this.gameKey }
+    await redis.set(`genshin:cdk:pending:${token}`, JSON.stringify(pending), { EX: PENDING_CODES_TTL })
     return token
   }
 
   async getPendingCodes(token) {
-    if (!token) return []
+    if (!token) return null
     try {
-      let codes = JSON.parse(await redis.get(`genshin:cdk:pending:${token}`) || '[]')
-      return Array.isArray(codes) ? codes : []
+      let pending = JSON.parse(await redis.get(`genshin:cdk:pending:${token}`) || 'null')
+      if (!Array.isArray(pending?.codes) || !['mys', 'hoyo'].includes(pending.region)) return null
+      return pending
     } catch (error) {
-      return []
+      return null
     }
   }
 
   /** 统一输出兑换码列表和批量兑换按钮 */
-  async replyCodeList(codes, gametype, titleLines = [], extraLines = [], withButtons = true) {
+  async replyCodeList(codes, gametype, region, titleLines = [], extraLines = [], withButtons = true) {
     codes = [...new Set((codes || []).map(code => String(code || '').trim()).filter(Boolean))]
     if (codes.length === 0) return this.e.reply('暂无可用兑换码')
 
     let msgs = [...titleLines, ...codes, ...extraLines]
     if (!withButtons) return this.e.reply(msgs.join('\n'))
 
-    let token = await this.savePendingCodes(codes)
+    let token = await this.savePendingCodes(codes, region)
 
     let button = [[{
       text: '批量兑换全部',
@@ -152,15 +161,28 @@ export class exchange extends plugin {
     return this.e.reply([msgs.join('\n'), segment.button(...button)])
   }
 
-  /** 兑换码可能包含数字，避免 MysInfo 把兑换码误识别为 UID */
-  async initCdkMysInfo() {
-    let msg = this.e.msg
-    this.e.msg = '兑换码'
-    try {
-      return await MysInfo.init(this.e, 'useCdk')
-    } finally {
-      this.e.msg = msg
+  /** 兑换只使用发起人当前 UID 对应的已绑定账号 */
+  async initCdkMysInfo(game) {
+    let user = await NoteUser.create(this.e)
+    let uid = user.getUid(game)
+    if (!uid) {
+      await this.e.reply('请先绑定该游戏的 Cookie，再使用兑换码')
+      return null
     }
+
+    let uidData = user.getUidData(uid, game)
+    let ckUser = uidData?.type === 'ck' ? user.mysUsers[uidData.ltuid] : null
+    if (!ckUser?.ck || !ckUser.ownUid(uid, game)) {
+      await this.e.reply(`当前 UID ${uid} 未绑定 Cookie，请绑定对应账号或切换到已绑定 Cookie 的 UID 后再兑换`)
+      return null
+    }
+
+    let mysInfo = new MysInfo(this.e)
+    mysInfo.uid = uid
+    mysInfo.ckUser = ckUser
+    mysInfo.ckInfo = { ...ckUser.getCkInfo(game), uid }
+    this.e.uid = uid
+    return mysInfo
   }
 
   /** 将接口返回整理为图片需要的状态数据 */
@@ -194,7 +216,9 @@ export class exchange extends plugin {
   buildTextResult(data) {
     let lines = [`兑换码兑换结果（UID：${data.uid}）`]
     for (let result of data.results) {
-      let icon = result.status === 'success' ? '✅' : result.status === 'used' || result.status === 'expired' ? '⚠️' : '❌'
+      let icon = '❌'
+      if (result.status === 'success') icon = '✅'
+      else if (['used', 'expired', 'unknown'].includes(result.status)) icon = '⚠️'
       lines.push(`${icon} ${result.code}：${result.statusText}${result.message && result.message !== result.statusText ? ` - ${result.message}` : ''}`)
     }
     return lines.join('\n')
@@ -322,7 +346,7 @@ export class exchange extends plugin {
       codes.push(res[i].exchange_code)
     }
 
-    return this.replyCodeList(codes, gametype, [
+    return this.replyCodeList(codes, gametype, 'hoyo', [
       `《${name}》国际服前瞻直播兑换码：`
     ], [
       `兑换码使用网站：${url}`,
@@ -348,7 +372,7 @@ export class exchange extends plugin {
     let codes = await this.gethoyoCode()
     if (codes.length == 0) return this.e.reply('未获取到兑换码')
 
-    return this.replyCodeList(codes, gametype, ['当前可用兑换码如下：'], [
+    return this.replyCodeList(codes, gametype, 'hoyo', ['当前可用兑换码如下：'], [
       `兑换码使用网站：${url}`,
       `可使用命令"${gametype}兑换码使用+(空格)+兑换码"进行兑换`,
       '若兑换失败，请尝试刷新cookie或重新绑定cookie'
@@ -397,14 +421,18 @@ export class exchange extends plugin {
   // 兑换码使用，支持一次携带多个兑换码，或点击“批量兑换全部”按钮
   async useCode() {
     let raw = String(this.e.msg || '').replace(/^(#|\*)?(原神|星铁|绝区零)?(兑换码使用|cdk-u)/, '').trim()
+    let game = this.gameKey
     let codes = []
+    let pending
 
     let batch = raw.match(/^@(?:batch|all)(?::([a-f0-9]+))?$/i)
     if (batch) {
-      codes = await this.getPendingCodes(batch[1])
-      if (codes.length === 0) {
-        return this.e.reply('待兑换码已过期，请重新发送兑换码指令获取')
+      pending = await this.getPendingCodes(batch[1])
+      if (!pending?.codes.length) {
+        return this.e.reply('批量兑换列表不可用，请重新获取兑换码')
       }
+      if (pending.game !== game) return this.e.reply('这批兑换码属于其他游戏，请使用该游戏的兑换码列表')
+      codes = pending.codes
     } else {
       codes = raw.split(/[\s,，、;；]+/).map(code => code.trim()).filter(Boolean)
     }
@@ -413,16 +441,30 @@ export class exchange extends plugin {
     if (codes.length === 0) {
       return this.e.reply('请输入兑换码，多个兑换码用空格分隔')
     }
-    if (codes.length > 20) {
-      return this.e.reply('一次最多兑换 20 个兑换码')
+
+    let mysInfo = await this.initCdkMysInfo(game)
+    if (!mysInfo) return true
+
+    let mysApi = new MysApi(mysInfo.uid, mysInfo.ckInfo.ck, { game, device: mysInfo.ckUser.device })
+
+    if (pending) {
+      // server 由 MysApi.getServer() 推断，沿用 MysApi 的国服判断规则。
+      let region = /cn_|_cn/.test(mysApi.server) ? 'mys' : 'hoyo'
+      if (pending.region !== region) {
+        let requiredRegion = pending.region === 'mys' ? '国服' : '国际服'
+        return this.e.reply(`这批兑换码适用于${requiredRegion}，当前 UID ${mysInfo.uid} 的区服不匹配，请切换到对应区服的 UID 后再兑换`)
+      }
+
+      let claimed
+      try {
+        let key = `genshin:cdk:submitted:${batch[1]}:${game}:${mysApi.server}:${mysInfo.uid}`
+        claimed = await redis.set(key, '1', { NX: true, EX: PENDING_CODES_TTL })
+      } catch (error) {
+        logger.error(`[兑换码] 批量兑换提交失败：${error.message}`)
+        return this.e.reply('暂时无法提交批量兑换，请稍后再试')
+      }
+      if (!claimed) return this.e.reply(`UID ${mysInfo.uid} 已提交过这批兑换码，请勿重复点击`)
     }
-
-    let mysInfo = await this.initCdkMysInfo()
-    if (!mysInfo || !mysInfo.uid || !mysInfo.ckInfo?.ck) return false
-
-    let game = this.gameKey
-    let user = this.e.user?.getMysUser?.(game)
-    let mysApi = new MysApi(mysInfo.uid, mysInfo.ckInfo.ck, { game, device: user?.device })
 
     if (codes.length > 1) {
       await this.e.reply(`正在批量兑换 ${codes.length} 个兑换码...`, false, { at: true })
@@ -431,10 +473,21 @@ export class exchange extends plugin {
     let results = []
     for (let i = 0; i < codes.length; i++) {
       let code = codes[i]
-      let res = await mysApi.getData('useCdk', { cdk: code })
-      res = await mysInfo.checkCode(res, 'useCdk', mysApi, { cdk: code }, true)
-      let result = this.formatCdkResult(code, res)
-      results.push(result)
+      try {
+        let res = await mysApi.getData('useCdk', { cdk: code })
+        res = await mysInfo.checkCode(res, 'useCdk', mysApi, { cdk: code }, true)
+        results.push(this.formatCdkResult(code, res))
+      } catch (error) {
+        logger.error(`[兑换码] 单码兑换异常 [${game}][UID:${mysInfo.uid}][${i + 1}/${codes.length}] ${error?.name || 'Error'}`)
+        results.push({
+          code,
+          status: 'unknown',
+          statusText: '结果未知',
+          message: '本次未能确认兑换结果，请先检查游戏内邮件',
+          retcode: null,
+          raw: null
+        })
+      }
       if (i < codes.length - 1) await common.sleep(5000)
     }
 
