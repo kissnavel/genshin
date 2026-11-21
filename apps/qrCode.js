@@ -55,7 +55,7 @@ export class qrCode extends plugin {
             '2、提示绑定成功',
             '方法二(支持国服与国际服)：',
             '1、使用抓包软件抓取(米游社/hoyolab)APP主页与战绩的请求',
-            '2、在抓取的请求头的Cookie内找到"stuid"、"stoken"、"mid"、"ltoken"',
+            '2、在抓取的请求头的Cookie内找到"stuid"、"stoken"、"mid"',
             '3、自行构造如下格式的stoken信息：',
             '{"stuid": "抓取的stuid", "stoken": "抓取的stoken", "mid": "抓取的mid"}',
             '4、给机器人发送"(#/*/%)绑定sk"指令(需绑定对应游戏的uid)',

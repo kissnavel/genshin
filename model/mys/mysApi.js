@@ -41,6 +41,8 @@ export default class MysApi {
       'qrCodeLogin',
       'qrCodeQuery',
       'exchange',
+      'getBySToken',
+      'bbsGetCookie',
       'material'
     ]
 
@@ -133,7 +135,7 @@ export default class MysApi {
         let ltokenData = await mysApi.getData('exchange', { token: sk.stoken, type: 2, mid: sk.mid })
         let cookietokenData = await mysApi.getData('exchange', { token: sk.stoken, type: 4, mid: sk.mid })
         if (!ltokenData?.data || !cookietokenData?.data) {
-          return { ok: false, reason: `刷新ck失败: ${res?.message || "接口返回为空"}` }
+          return { ok: false, reason: `刷新ck失败: 接口返回为空` }
         } else {
           ck = `ltoken=${ltokenData.data?.token?.token};ltuid=${sk.stuid};cookie_token=${cookietokenData.data?.token?.token};account_id=${sk.stuid}`
         }

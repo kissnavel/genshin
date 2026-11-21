@@ -665,7 +665,7 @@ export default class MysSign extends base {
                 let ltokenData = await mysApi.getData('exchange', { token: sks[i].stoken, type: 2, mid: sks[i].mid })
                 let cookietokenData = await mysApi.getData('exchange', { token: sks[i].stoken, type: 4, mid: sks[i].mid })
                 if (!ltokenData?.data || !cookietokenData?.data) {
-                    logger.error(`[刷新ck]stuid:${sks[i].stuid},请求异常：${res?.message || '无返回'}`)
+                    logger.error(`[刷新ck]stuid:${sks[i].stuid},请求异常：无返回`)
                     return { ok: false, reason: '刷新ck异常' }
                 } else {
                     ck = `ltoken=${ltokenData.data?.token?.token};ltuid=${sks[i].stuid};cookie_token=${cookietokenData.data?.token?.token};account_id=${sks[i].stuid}`
