@@ -57,7 +57,7 @@ export class qrCode extends plugin {
             '1、使用抓包软件抓取(米游社/hoyolab)APP主页与战绩的请求',
             '2、在抓取的请求头的Cookie内找到"stuid"、"stoken"、"mid"、"ltoken"',
             '3、自行构造如下格式的stoken信息：',
-            '{"stuid": "抓取的stuid", "stoken": "抓取的stoken", "mid": "抓取的mid", "ltoken": "抓取的ltoken"}',
+            '{"stuid": "抓取的stuid", "stoken": "抓取的stoken", "mid": "抓取的mid"}',
             '4、给机器人发送"(#/*/%)绑定sk"指令(需绑定对应游戏的uid)',
             '5、机器人会提示发送stoken信息',
             '6、粘贴自行构造的stoken信息，并发送',
@@ -122,23 +122,19 @@ export class qrCode extends plugin {
 
         let res = await new qrcode(e).qrCodeLogin(e, mysApi)
         if (res?.data?.status !== 'Confirmed') return e.reply('验证超时')
+        if (!res?.data) return e.reply(`扫码登录失败：${res.message || "接口返回为空"}`)
         const Stoken = res.data?.tokens[0].token
         const Stuid = res.data?.user_info?.aid
         const Mid = res.data?.user_info?.mid
-        if (!Stoken || !Stuid || !Mid) return e.reply('扫码登录返回信息不完整，未能获取stoken')
+        if (!Stoken || !Stuid || !Mid) return e.reply('扫码登录返回信息不完整')
 
-        const ltokenData = await mysApi.getData('exchange', { token: Stoken, mid: Mid })
-        if (!ltokenData.data?.token?.token) return e.reply(`获取ck失败：${ltokenData?.message || "接口返回为空"}`)
-        const Ltoken = ltokenData.data?.token?.token
+        const ltokenData = await mysApi.getData('exchange', { token: Stoken, type: 2, mid: Mid })
+        if (!ltokenData?.data) return e.reply(`获取ltoken失败：${ltokenData?.message || "接口返回为空"}`)
 
-        let sk = `stuid=${Stuid};stoken=${Stoken};mid=${Mid};ltoken=${Ltoken}`
-        let biz = e.game == 'zzz' ? 'nap_cn' : e.game == 'sr' ? 'hkrpg_cn' : 'hk4e_cn'
-        mysApi = new MysApi(Stuid, sk, { game: 'bbs' }, '', biz)
+        const cookietokenData = await mysApi.getData('exchange', { token: Stoken, type: 4, mid: Mid })
+        if (!cookietokenData?.data) return e.reply(`获取cookie_token失败：${cookietokenData?.message || "接口返回为空"}`)
 
-        res = await mysApi.getData('bbsGetCookie')
-        if (!res?.data) return e.reply(`绑定stoken失败，异常：${res?.message}\n请稍后再试`)
-
-        e.ck = `ltoken=${Ltoken};ltuid=${Stuid};cookie_token=${res.data.cookie_token};account_id=${Stuid}`
+        e.ck = `ltoken=${ltokenData.data?.token?.token};ltuid=${Stuid};cookie_token=${cookietokenData.data?.token?.token};account_id=${Stuid}`
 
         for (let biz of ['hk4e_cn', 'hkrpg_cn', 'nap_cn']) {
             mysApi = new MysApi(Stuid, e.ck, { game: 'bbs' }, '', biz)
@@ -151,7 +147,7 @@ export class qrCode extends plugin {
         let info = {
             stuid: Stuid,
             stoken: Stoken,
-            ltoken: Ltoken,
+            ltoken: ltokenData.data?.token?.token,
             mid: Mid
         }
 
@@ -166,35 +162,48 @@ export class qrCode extends plugin {
         if (!sks || !ltuids) return false
 
         for (let i of ltuids) {
-            let game_biz = ''
+            let game = ''
             if (sks[i].type == 'hoyolab') {
                 if (/os_/.test(sks[i].region)) {
-                    game_biz = 'hk4e_global'
+                    game = 'gs'
                 } else if (/official/.test(sks[i].region)) {
-                    game_biz = 'hkrpg_global'
+                    game = 'sr'
                 } else if (/_us|_eu|_jp|_sg/.test(sks[i].region)) {
-                    game_biz = 'nap_global'
+                    game = 'zzz'
                 }
             } else {
                 if (/cn_/.test(sks[i].region)) {
-                    game_biz = 'hk4e_cn'
+                    game = 'gs'
                 } else if (/_cn/.test(sks[i].region)) {
                     if (sks[i].uid.length < 10) {
-                        game_biz = 'nap_cn'
+                        game = 'zzz'
                     } else {
-                        game_biz = 'hkrpg_cn'
+                        game = 'sr'
                     }
                 }
             }
-            let mysApi = new MysApi(sks[i].stuid, sks[i].sk, { game: 'bbs' }, sks[i].region, game_biz)
 
-            let res = await mysApi.getData('bbsGetCookie')
-            if (!res?.data) {
-	  		    e.reply(`stuid:${sks[i].stuid},请求异常：${res.message}`)
-                continue
-  		    } else {
-                e.ck = `ltoken=${sks[i].ltoken};ltuid=${sks[i].stuid};cookie_token=${res.data.cookie_token};account_id=${sks[i].stuid}`
-                await new User(e).bing()
+            let mysApi = new MysApi(sks[i].uid, sks[i].sk, { game: game })
+            if (sks[i].type == 'hoyolab') {
+                let ltoken = await mysApi.getData('getBySToken')
+                let res = await mysApi.getData('bbsGetCookie')
+                if (!ltoken?.data || !res?.data) {
+	  		        e.reply(`stuid:${sks[i].stuid},请求异常：接口返回为空`)
+                    continue
+  		        } else {
+                    e.ck = `ltoken=${ltoken?.data?.tokens[0].token};ltuid=${sks[i].stuid};cookie_token=${res.data?.cookie_token};account_id=${sks[i].stuid}`
+                    await new User(e).bing()
+                }
+            } else {
+                let ltokenData = await mysApi.getData('exchange', { token: sks[i].stoken, type: 2, mid: sks[i].mid })
+                let cookietokenData = await mysApi.getData('exchange', { token: sks[i].stoken, type: 4, mid: sks[i].mid })
+                if (!ltokenData?.data || !cookietokenData?.data) {
+                    e.reply(`stuid:${sks[i].stuid},请求异常：接口返回为空`)
+                    continue
+                } else {
+                    e.ck = `ltoken=${ltokenData.data?.token?.token};ltuid=${sks[i].stuid};cookie_token=${cookietokenData.data?.token?.token};account_id=${sks[i].stuid}`
+                    await new User(e).bing()
+                }
             }
         }
     }
@@ -223,28 +232,42 @@ export class qrCode extends plugin {
             return false
         }
         info = JSON.parse(info)
-        if (!info?.stuid || !info?.stoken || !info?.mid || !info?.ltoken) {
+        if (!info?.stuid || !info?.stoken || !info?.mid) {
             await this.e.reply('stoken信息格式错误')
             this.finish('toBindStoken')
             return false
         }
 
-        let sk = `stuid=${info.stuid};stoken=${info.stoken};mid=${info.mid};ltoken=${info.ltoken}`
+        let sk = `stuid=${info.stuid};stoken=${info.stoken};mid=${info.mid}`
         let uid = await redis.get(`genshin:bindStoken:${this.e.user_id}:uid`)
         let game = await redis.get(`genshin:bindStoken:${this.e.user_id}:game`)
 
         let mysApi = new MysApi(uid, sk, { game })
+        if (!/^(1[0-9]|[6-9])[0-9]{8}/i.test(uid)) {
+            let ltokenData = await mysApi.getData('exchange', { token: info.stoken, type: 2, mid: info.mid })
+            let cookietokenData = await mysApi.getData('exchange', { token: info.stoken, type: 4, mid: info.mid })
+            if (!ltokenData?.data || !cookietokenData?.data) {
+                await this.e.reply('绑定stoken失败，异常：接口返回为空\n请确认发送的stoken是否有效')
+                this.finish('toBindStoken')
+                return false
+            }
+            info.ltoken = ltokenData.data?.token?.token
+            this.e.ck = `ltoken=${ltokenData.data?.token?.token};ltuid=${info.stuid};cookie_token=${cookietokenData.data?.token?.token};account_id=${info.stuid}`
+        } else {
+            let ltoken = await mysApi.getData('getBySToken')
+            let res = await mysApi.getData('bbsGetCookie')
+            if (!ltoken?.data || !res?.data) {
+                await this.e.reply('绑定stoken失败，异常：接口返回为空\n请确认发送的stoken是否有效')
+                this.finish('toBindStoken')
+                return false
+            }
 
-        let res = await mysApi.getData('bbsGetCookie')
-        if (!res?.data) {
-            await this.e.reply(`绑定stoken失败，异常：${res?.message}\n请确认发送的stoken是否有效`)
-            this.finish('toBindStoken')
-            return false
+            info.ltoken = ltoken?.data?.tokens[0]?.token
+            this.e.ck = `ltoken=${ltoken?.data?.tokens[0]?.token};ltuid=${info.stuid};cookie_token=${res.data?.cookie_token};account_id=${info.stuid}`
         }
-        this.e.ck = `ltoken=${info.ltoken};ltuid=${info.stuid};cookie_token=${res.data.cookie_token};account_id=${info.stuid}`
 
         mysApi = new MysApi(uid, this.e.ck, { game })
-        res = await mysApi.getData('UserGame')
+        let res = await mysApi.getData('UserGame')
         let list = res?.data?.list
         if (list.length == 0) {
             await this.e.reply(`绑定stoken失败，无uid信息`)

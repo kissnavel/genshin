@@ -74,33 +74,12 @@ export default class MysApi {
     return /(登录|login|ck失效|cookie.*失效)/i.test(res.message || '')
   }
 
-  /** 根据stoken推断bbs的game_biz */
-  static getBbsGameBiz(sk = {}) {
-    let game_biz = ''
-    if (sk.type == 'hoyolab') {
-      if (/os_/.test(sk.region)) {
-        game_biz = 'hk4e_global'
-      } else if (/official/.test(sk.region)) {
-        game_biz = 'hkrpg_global'
-      } else if (/_us|_eu|_jp|_sg/.test(sk.region)) {
-        game_biz = 'nap_global'
-      }
-    } else {
-      if (/cn_/.test(sk.region)) {
-        game_biz = 'hk4e_cn'
-      } else if (/_cn/.test(sk.region)) {
-        game_biz = String(sk.uid || '').length < 10 ? 'nap_cn' : 'hkrpg_cn'
-      }
-    }
-    return game_biz
-  }
-
   /**
    * 自动刷新ck
    * @param ck 失效的ck
    * @returns {Promise<{ok: boolean, ck?: string, ltuid?: string, qq?: string, reason?: string}>}
    */
-  static async refreshCk(ck) {
+  static async refreshCk(ck, uid, game) {
     let ltuid = MysApi.getLtuid(ck)
     if (!ltuid) return { ok: false, reason: '无法解析ltuid' }
 
@@ -109,7 +88,7 @@ export default class MysApi {
 
     if (MysApi.ckRefreshTasks.has(ltuid)) return await MysApi.ckRefreshTasks.get(ltuid)
 
-    let task = MysApi.doRefreshCk(ltuid)
+    let task = MysApi.doRefreshCk(ltuid, uid, game)
     MysApi.ckRefreshTasks.set(ltuid, task)
     let ret
     try {
@@ -122,7 +101,7 @@ export default class MysApi {
   }
 
   /** 用stoken刷新ck并写回MysUsers */
-  static async doRefreshCk(ltuid) {
+  static async doRefreshCk(ltuid, uid, game) {
     try {
       const [{ default: Cfg }, { default: MysUser }] = await Promise.all([
         import('../Cfg.js'),
@@ -137,16 +116,29 @@ export default class MysApi {
         sks = await Cfg.getsks(true, '', false)
         MysApi.skScanCache = { at: Date.now(), sks }
       }
-      let sk = Object.values(sks || {}).find(v => v && String(v.stuid) === String(ltuid) && v.stoken && v.ltoken)
+      let sk = Object.values(sks || {}).find(v => v && String(v.stuid) === String(ltuid))
       if (!sk) return { ok: false, reason: '无stoken' }
 
-      let mysApi = new MysApi(sk.stuid, sk.sk, { game: 'bbs', log: false }, sk.region, MysApi.getBbsGameBiz(sk))
-      let res = await mysApi.getData('bbsGetCookie')
-      if (!res?.data?.cookie_token) {
-        return { ok: false, reason: `bbsGetCookie失败${res?.message ? `：${res.message}` : ''}` }
+      let mysApi = new MysApi(uid, sk.sk, { game: game, log: false })
+      let ck
+      if (sk.type == 'hoyolab') {
+        let ltoken = await mysApi.getData('getBySToken')
+        let res = await mysApi.getData('bbsGetCookie')
+        if (!ltoken?.data || !res?.data) {
+          return { ok: false, reason: '刷新ck失败: 接口返回为空' }
+        } else {
+          ck = `ltoken=${ltoken?.data?.tokens[0].token};ltuid=${sk.stuid};cookie_token=${res.data?.cookie_token};account_id=${sk.stuid}`
+        }
+      } else {
+        let ltokenData = await mysApi.getData('exchange', { token: sk.stoken, type: 2, mid: sk.mid })
+        let cookietokenData = await mysApi.getData('exchange', { token: sk.stoken, type: 4, mid: sk.mid })
+        if (!ltokenData?.data || !cookietokenData?.data) {
+          return { ok: false, reason: `刷新ck失败: ${res?.message || "接口返回为空"}` }
+        } else {
+          ck = `ltoken=${ltokenData.data?.token?.token};ltuid=${sk.stuid};cookie_token=${cookietokenData.data?.token?.token};account_id=${sk.stuid}`
+        }
       }
 
-      let ck = `ltoken=${sk.ltoken};ltuid=${sk.stuid};cookie_token=${res.data.cookie_token};account_id=${sk.stuid}`
       let mys = await MysUser.create(sk.stuid)
       if (!mys || !mys.ck) return { ok: false, reason: 'ck记录不存在' }
 
@@ -420,8 +412,8 @@ export default class MysApi {
     if (cached) this.cache(res, cacheKey)
 
     /** ck失效：自动刷新后重试一次，成功则继续查询 */
-    if (!refreshed && type !== 'bbsGetCookie' && this.game !== 'bbs' && MysApi.isLoginError(res)) {
-      let refresh = await MysApi.refreshCk(reqCk)
+    if (!refreshed && !/exchange|getBySToken|bbsGetCookie/.test(type) && MysApi.isLoginError(res)) {
+      let refresh = await MysApi.refreshCk(reqCk, this.uid, this.game)
       if (refresh.ok && refresh.ck !== reqCk) {
         this.cookie = refresh.ck
         return await this.getData(type, originData, cached, true)
@@ -498,7 +490,7 @@ export default class MysApi {
       case 'bbs':
         return {
           ...header_bbs,
-          DS: (sign ? this.bbsDs(query, body) : this.SignDs("7a047e46eadd8693f09513e55bdf6bd8"))
+          DS: (sign ? this.bbsDs(query, body) : this.SignDs('7a047e46eadd8693f09513e55bdf6bd8'))
         }
       case 'qrcode':
         return {
@@ -508,7 +500,7 @@ export default class MysApi {
           'x-rpc-app_id': 'bll8iq97cem8',
           'x-rpc-device_id': this._device,
           'x-rpc-device_name': 'Chrome',
-          "x-rpc-device_fp": '38d805974f6af',
+          'x-rpc-device_fp': '38d805974f6af',
           'x-rpc-client_type': '4',
           'x-rpc-game_biz': 'bbs_cn',
           'x-rpc-sdk_version': '2.54.0',
@@ -526,6 +518,16 @@ export default class MysApi {
         return {
           ...header_bbs,
           DS: this.getDs2()
+        }
+      case 'exchange':
+        return {
+          ...header,
+          'x-rpc-app_id': 'bll8iq97cem8'
+        }
+      case 'getBySToken':
+        return {
+          ...header_os,
+          'x-rpc-app_id': 'c9oqaq3s3gu8'
         }
       case 'noheader':
         return {}
@@ -556,7 +558,7 @@ export default class MysApi {
     return `${t},${r},${DS}`
   }
 
-  bbsDs(q = "", b, salt = "t0qEgfub6cvueAPgR5m9aQWWVciEer7v") {
+  bbsDs(q = '', b, salt = 't0qEgfub6cvueAPgR5m9aQWWVciEer7v') {
     let t = Math.floor(Date.now() / 1000)
     let r = _.random(100001, 200000)
     let DS = md5(`salt=${salt}&t=${t}&r=${r}&b=${b}&q=${q}`)
@@ -564,9 +566,9 @@ export default class MysApi {
   }
 
   SignDs(salt = 'jEpJb9rRARU2rXDA9qYbZ3selxkuct9a') {
-    const t = Math.floor(Date.now() / 1000)
+    let t = Math.floor(Date.now() / 1000)
     let r = this.randomString(6)
-    const DS = md5(`salt=${salt}&t=${t}&r=${r}`)
+    let DS = md5(`salt=${salt}&t=${t}&r=${r}`)
     return `${t},${r},${DS}`
   }
 

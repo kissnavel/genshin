@@ -90,7 +90,6 @@ export default class MysSign extends base {
                             }
                         }
                     }
-
                     let message = String(res.msg || res.message || '').replace(/\s+/g, ' ').trim()
 
                     gameData.results.push({
@@ -630,35 +629,49 @@ export default class MysSign extends base {
         for (let i of ltuids) {
             if (skid != `${sks[i].stuid}_${qq}`) continue
 
-            let game_biz = ''
+            let game = ''
             if (sks[i].type == 'hoyolab') {
                 if (/os_/.test(sks[i].region)) {
-                    game_biz = 'hk4e_global'
+                    game = 'gs'
                 } else if (/official/.test(sks[i].region)) {
-                    game_biz = 'hkrpg_global'
+                    game = 'sr'
                 } else if (/_us|_eu|_jp|_sg/.test(sks[i].region)) {
-                    game_biz = 'nap_global'
+                    game = 'zzz'
                 }
             } else {
                 if (/cn_/.test(sks[i].region)) {
-                    game_biz = 'hk4e_cn'
+                    game = 'gs'
                 } else if (/_cn/.test(sks[i].region)) {
-                    if (String(sks[i].uid || '').length < 10) {
-                        game_biz = 'nap_cn'
+                    if (sks[i].uid.length < 10) {
+                        game = 'zzz'
                     } else {
-                        game_biz = 'hkrpg_cn'
+                        game = 'sr'
                     }
                 }
             }
-            let mysApi = new MysApi(sks[i].stuid, sks[i].sk, { game: 'bbs' }, sks[i].region, game_biz)
+            let mysApi = new MysApi(sks[i].uid, sks[i].sk, { game: game })
 
-            let res = await mysApi.getData('bbsGetCookie')
-            if (!res?.data?.cookie_token) {
-                logger.error(`[刷新ck]stuid:${sks[i].stuid},请求异常：${res?.message || '无返回'}`)
-                return { ok: false, reason: 'bbsGetCookie异常' }
+            let ck
+            if (sks[i].type == 'hoyolab') {
+                let ltoken = await mysApi.getData('getBySToken')
+                let res = await mysApi.getData('bbsGetCookie')
+                if (!ltoken?.data || !res?.data) {
+                    logger.error(`[刷新ck]stuid:${sks[i].stuid},请求异常：无返回`)
+                    return { ok: false, reason: '刷新ck异常' }
+                } else {
+                    ck = `ltoken=${ltoken?.data?.tokens[0].token};ltuid=${sks[i].stuid};cookie_token=${res.data?.cookie_token};account_id=${sks[i].stuid}`
+                }
+            } else {
+                let ltokenData = await mysApi.getData('exchange', { token: sks[i].stoken, type: 2, mid: sks[i].mid })
+                let cookietokenData = await mysApi.getData('exchange', { token: sks[i].stoken, type: 4, mid: sks[i].mid })
+                if (!ltokenData?.data || !cookietokenData?.data) {
+                    logger.error(`[刷新ck]stuid:${sks[i].stuid},请求异常：${res?.message || '无返回'}`)
+                    return { ok: false, reason: '刷新ck异常' }
+                } else {
+                    ck = `ltoken=${ltokenData.data?.token?.token};ltuid=${sks[i].stuid};cookie_token=${cookietokenData.data?.token?.token};account_id=${sks[i].stuid}`
+                }
             }
 
-            let ck = `ltoken=${sks[i].ltoken};ltuid=${sks[i].stuid};cookie_token=${res.data.cookie_token};account_id=${sks[i].stuid}`
             /** 用独立的e对象绑定，不把ck写回共享的事件对象，避免污染其它用户 */
             let bindE = { user_id: qq, ck, AutoupCookie: true, logFnc: this.e?.logFnc }
             let ok = await new User(bindE).bing()

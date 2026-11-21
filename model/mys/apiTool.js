@@ -34,6 +34,7 @@ export default class apiTool {
     let bbs_api = 'https://bbs-api.miyoushe.com/'
     let bbs_api_os = 'https://bbs-api-os.hoyolab.com/'
     let pass_api = 'https://passport-api.miyoushe.com/'
+    let pass_api_os = 'https://passport-api-sg.hoyoverse.com/'
     let host, hostRecord, hostPublicData
     if (/_cn/.test(this.biz) || /cn_|_cn/.test(this.server)) {
       host = 'https://api-takumi.mihoyo.com/'
@@ -177,10 +178,6 @@ export default class apiTool {
           url: `${host}binding/api/getUserGameRolesByCookie`,
           query: `game_biz=${this.biz}`
         },
-        bbsGetCookie: {
-          url: `${host}auth/api/getCookieAccountInfoBySToken`,
-          query: `game_biz=${this.biz}`
-        },
         qrCodeLogin: {
           url: `${pass_api}account/ma-cn-passport/app/createQRLogin`,
           body: {},
@@ -201,9 +198,9 @@ export default class apiTool {
               token_type: 1
             },
             mid: data.mid,
-            dst_token_type: 4
+            dst_token_type: data.type
           },
-          types: 'qrcode'
+          types: 'exchange'
         },
         material: {
           url: `${bbs_api_os}community/painter/wapi/circle/channel/guide/material`,
@@ -261,9 +258,17 @@ export default class apiTool {
             query: 'lang=zh-cn&act_id=e202311201442471',
             types: 'sign'
           },
-          bbsGetCookie: {
-            url: `${host}auth/api/getCookieAccountInfoBySToken`,
-            query: 'game_biz=hk4e_cn',
+          exchange: {
+            url: `${pass_api}account/ma-cn-session/app/exchange`,
+            body: {
+              src_token: {
+                token: data.token,
+                token_type: 1
+              },
+              mid: data.mid,
+              dst_token_type: data.type
+            },
+            types: 'exchange'
           },
           useCdk: {
             url: 'https://public-operation-hk4e.mihoyo.com/common/apicdkey/api/webExchangeCdkey',
@@ -301,6 +306,13 @@ export default class apiTool {
             url: `${hostRecord}event/sol/home`,
             query: 'lang=zh-cn&act_id=e202102251931481',
             types: 'sign'
+          },
+          getBySToken: {
+            url: `${pass_api_os}account/ma-passport/token/getBySToken`,
+            body: {
+              dst_token_types: [2]
+            },
+            types: 'getBySToken'
           },
           bbsGetCookie: {
             url: `${host}auth/api/getCookieAccountInfoBySToken`,
@@ -472,9 +484,17 @@ export default class apiTool {
             query: 'lang=zh-cn&act_id=e202304121516551',
             types: 'sign'
           },
-          bbsGetCookie: {
-            url: `${host}auth/api/getCookieAccountInfoBySToken`,
-            query: 'game_biz=hkrpg_cn',
+          exchange: {
+            url: `${pass_api}account/ma-cn-session/app/exchange`,
+            body: {
+              src_token: {
+                token: data.token,
+                token_type: 1
+              },
+              mid: data.mid,
+              dst_token_type: data.type
+            },
+            types: 'exchange'
           },
           useCdk: {
             url: 'https://public-operation-hkrpg.mihoyo.com/common/apicdkey/api/webExchangeCdkey',
@@ -512,6 +532,13 @@ export default class apiTool {
             url: `${hostRecord}event/luna/hkrpg/os/home`,
             query: 'lang=zh-cn&act_id=e202303301540311',
             types: 'sign'
+          },
+          getBySToken: {
+            url: `${pass_api_os}account/ma-passport/token/getBySToken`,
+            body: {
+              dst_token_types: [2]
+            },
+            types: 'getBySToken'
           },
           bbsGetCookie: {
             url: `${host}auth/api/getCookieAccountInfoBySToken`,
@@ -660,9 +687,17 @@ export default class apiTool {
             query: 'lang=zh-cn&act_id=e202406242138391',
             types: 'sign'
           },
-          bbsGetCookie: {
-            url: `${host}auth/api/getCookieAccountInfoBySToken`,
-            query: 'game_biz=nap_cn',
+          exchange: {
+            url: `${pass_api}account/ma-cn-session/app/exchange`,
+            body: {
+              src_token: {
+                token: data.token,
+                token_type: 1
+              },
+              mid: data.mid,
+              dst_token_type: data.type
+            },
+            types: 'exchange'
           },
           useCdk: {
             url: 'https://public-operation-nap.mihoyo.com/common/apicdkey/api/webExchangeCdkey',
@@ -700,6 +735,13 @@ export default class apiTool {
             url: `${hostRecord}event/luna/zzz/os/home`,
             query: 'lang=zh-cn&act_id=e202406031448091',
             types: 'sign'
+          },
+          getBySToken: {
+            url: `${pass_api_os}account/ma-passport/token/getBySToken`,
+            body: {
+              dst_token_types: [2]
+            },
+            types: 'getBySToken'
           },
           bbsGetCookie: {
             url: `${host}auth/api/getCookieAccountInfoBySToken`,

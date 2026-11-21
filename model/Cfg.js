@@ -350,14 +350,16 @@ class Cfg {
         if (list[id]) continue
         let sk = {
           [id]: {
-            userId: sks[i].userId,
-            ltoken: sks[i].ltoken,
             stuid: sks[i].stuid,
+            stoken: sks[i].stoken,
+            ltoken: sks[i].ltoken,
+            mid: sks[i].mid,
             uid: sks[i].uid,
+            userId: sks[i].userId,
+            type: sks[i].type || (/cn_|_cn/.test(sks[i].region) ? 'mys' : 'hoyolab'),
             region: sks[i].region,
-            type: sks[i].type || /cn_|_cn/.test(sks[i].region) ? 'mys' : 'hoyolab',
             id: id,
-            sk: `stuid=${sks[i].stuid};stoken=${sks[i].stoken};mid=${sks[i].mid};ltoken=${sks[i].ltoken}`
+            sk: `stuid=${sks[i].stuid};stoken=${sks[i].stoken};mid=${sks[i].mid}`
           }
         }
         list = Object.assign({}, list, sk)
