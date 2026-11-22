@@ -308,7 +308,7 @@ export default class apiTool {
             types: 'sign'
           },
           getBySToken: {
-            url: `${pass_api_os}account/ma-passport/token/getBySToken?Irsag=1`,
+            url: `${pass_api_os}account/ma-passport/token/getBySToken?lrsag=1`,
             body: {
               dst_token_types: [2, 4]
             },
@@ -530,7 +530,7 @@ export default class apiTool {
             types: 'sign'
           },
           getBySToken: {
-            url: `${pass_api_os}account/ma-passport/token/getBySToken?Irsag=1`,
+            url: `${pass_api_os}account/ma-passport/token/getBySToken?lrsag=1`,
             body: {
               dst_token_types: [2, 4]
             },
@@ -729,7 +729,7 @@ export default class apiTool {
             types: 'sign'
           },
           getBySToken: {
-            url: `${pass_api_os}account/ma-passport/token/getBySToken?Irsag=1`,
+            url: `${pass_api_os}account/ma-passport/token/getBySToken?lrsag=1`,
             body: {
               dst_token_types: [2, 4]
             },
