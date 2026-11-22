@@ -331,7 +331,7 @@ export default class MysSign extends base {
                     }
                 }
             } else if (api.type == 1) {
-                res = await vall.getData('signrecognize', sign.data)
+                res = await vall.getData('recognize', sign.data)
                 if (res?.resultid) {
                     let results = res
                     await common.sleep(5000)

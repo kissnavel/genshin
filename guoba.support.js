@@ -141,15 +141,6 @@ export function supportGuoba() {
           },
         },
         {
-          field: 'api.signquery',
-          label: '签到需要的其他参数',
-          bottomHelpMessage: '除“key、gt、challenge”以外的，ttocr必填',
-          component: 'Input',
-          componentProps: {
-            placeholder: '例: referer=***',
-          },
-        },
-        {
           field: 'api.resquery',
           label: 'resapi需要的其他参数',
           bottomHelpMessage: '除“key”以外的，2captcha必填',

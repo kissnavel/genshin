@@ -1,7 +1,6 @@
 import common from '../../../lib/common/common.js'
 import getDeviceFp from './getDeviceFp.js'
 import MysApi from './mys/mysApi.js'
-import MysInfo from './mys/mysInfo.js'
 import fetch from 'node-fetch'
 import Cfg from './Cfg.js'
 

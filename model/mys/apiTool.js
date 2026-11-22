@@ -81,10 +81,6 @@ export default class apiTool {
           url: `${this.api.api}`,
           config: `${this.api.key}&${this.api.query}&gt=${data.gt}&challenge=${data.challenge}`
         },
-        signrecognize: {
-          url: `${this.api.api}`,
-          config: `${this.api.key}&${this.api.signquery}&gt=${data.gt}&challenge=${data.challenge}`
-        },
         results: {
           url: `${this.api.resapi}`,
           config: `${this.api.key}&resultid=${data.resultid}`

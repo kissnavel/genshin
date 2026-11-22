@@ -8,8 +8,6 @@ resapi:
 key: 
 #api需要的其他参数(除“key、gt、challenge”以外的，ttocr、2captcha必填)，例: referer=***
 query: 
-#签到需要的其他参数(除“key、gt、challenge”以外的，ttocr必填)，例: referer=***
-signquery: 
 #resapi需要的其他参数(除“key”以外的，2captcha必填)，例: action=***
 resquery: 
 

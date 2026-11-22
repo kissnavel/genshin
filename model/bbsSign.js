@@ -428,7 +428,7 @@ export default class BBsSign extends base {
                 }
             }
         } else if (api.type == 1) {
-            res = await vall.getData("signrecognize", res.data)
+            res = await vall.getData("recognize", res.data)
             if (res?.resultid) {
                 let results = res
                 await common.sleep(5000)

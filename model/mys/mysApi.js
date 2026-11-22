@@ -34,7 +34,6 @@ export default class MysApi {
     this.types = [
       'test_nine',
       'recognize',
-      'signrecognize',
       'results',
       'in',
       'res',
@@ -49,7 +48,6 @@ export default class MysApi {
 
     this.gttypes = [
       'recognize',
-      'signrecognize',
       'results'
     ]
   }
