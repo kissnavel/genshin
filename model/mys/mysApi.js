@@ -40,6 +40,8 @@ export default class MysApi {
       'res',
       'qrCodeLogin',
       'qrCodeQuery',
+      'AuthKey',
+      'AuthKeyByCookieToken',
       'exchange',
       'getBySToken',
       'material'

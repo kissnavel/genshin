@@ -291,24 +291,39 @@ export class qrCode extends plugin {
             { text: '#刷新ck', callback: '#刷新ck' }
         ])])
         ck = ck.ck
-        let ltuid = ck.match(/ltuid=(\d+)|ltuid_v2=(\d+)/)
-        ltuid = ltuid[1]
+        let mysApi
+        if (/^(18|[6-9])[0-9]{8}/i.test(uid)) {
+            mysApi = new MysApi(uid, ck, { game })
 
-        let { sks, ltuids } = await new qrcode(e).getStoken(e, true)
+            let res = await mysApi.getData('AuthKeyByCookieToken')
+            if (!res?.data) return e.reply(`authkey获取失败，异常：${res?.message}`)
+            let authkey = res?.data?.authkey
+            let region = mysApi.getServer()
 
-        for (let i of ltuids) {
-            if (sks[i].stuid == ltuid) {
-                let mysApi = new MysApi(uid, sks[i].sk, { game })
+            let url = `https://public-operation-hk4e-sg.hoyoverse.com/gacha_info/api/getGachaLog?authkey_ver=1&sign_type=2&auth_appid=webview_gacha&init_type=301&gacha_id=1fb9ed6285b467a840231a4e839c00171550e217&timestamp=${Math.floor(Date.now() / 1000)}&lang=zh-cn&device_type=mobile&plat_type=ios&region=${region}&authkey=${encodeURIComponent(authkey)}&game_biz=hk4e_global&gacha_type=301&page=1&size=20&end_id=0`
+            if(e.msg.match('获取')) return e.reply(`UID：${uid}抽卡链接：\n${url}`)
+            e.msg = url
+            await new GachaLog(e).logUrl()
+        } else {
+            let ltuid = ck.match(/ltuid=(\d+)|ltuid_v2=(\d+)/)
+            ltuid = ltuid[1]
 
-                let res = await mysApi.getData('AuthKey')
-                if (!res?.data) return e.reply(`authkey获取失败，异常：${res?.message}`)
-                let authkey = res?.data?.authkey
-                let region = mysApi.getServer()
+            let { sks, ltuids } = await new qrcode(e).getStoken(e, true)
 
-	            let url = `https://public-operation-hk4e.mihoyo.com/gacha_info/api/getGachaLog?authkey_ver=1&sign_type=2&auth_appid=webview_gacha&init_type=301&gacha_id=fecafa7b6560db5f3182222395d88aaa6aaac1bc&timestamp=${Math.floor(Date.now() / 1000)}&lang=zh-cn&device_type=mobile&plat_type=ios&region=${region}&authkey=${encodeURIComponent(authkey)}&game_biz=hk4e_cn&gacha_type=301&page=1&size=20&end_id=0`
-                if(e.msg.match('获取')) return e.reply(`UID：${uid}抽卡链接：\n${url}`)
-                e.msg = url
-                await new GachaLog(e).logUrl()
+            for (let i of ltuids) {
+                if (sks[i].stuid == ltuid) {
+                    mysApi = new MysApi(uid, sks[i].sk, { game })
+
+                    let res = await mysApi.getData('AuthKey')
+                    if (!res?.data) return e.reply(`authkey获取失败，异常：${res?.message}`)
+                    let authkey = res?.data?.authkey
+                    let region = mysApi.getServer()
+
+	                let url = `https://public-operation-hk4e.mihoyo.com/gacha_info/api/getGachaLog?authkey_ver=1&sign_type=2&auth_appid=webview_gacha&init_type=301&gacha_id=fecafa7b6560db5f3182222395d88aaa6aaac1bc&timestamp=${Math.floor(Date.now() / 1000)}&lang=zh-cn&device_type=mobile&plat_type=ios&region=${region}&authkey=${encodeURIComponent(authkey)}&game_biz=hk4e_cn&gacha_type=301&page=1&size=20&end_id=0`
+                    if(e.msg.match('获取')) return e.reply(`UID：${uid}抽卡链接：\n${url}`)
+                    e.msg = url
+                    await new GachaLog(e).logUrl()
+                }
             }
         }
     }
