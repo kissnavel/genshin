@@ -7,7 +7,7 @@ export default class getDeviceFp {
     if (game == 'bbs') {
       ltuid = uid
     } else {
-      ltuid = ck.match(/ltuid=(\d+)/)
+      ltuid = ck.match(/ltuid=(\d+)|ltuid_v2=(\d+)/)
       ltuid = ltuid[1]
     }
     let mysapi = new MysApi(uid, ck, { game }, server, biz)

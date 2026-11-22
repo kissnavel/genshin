@@ -41,7 +41,7 @@ export class setPubCk extends plugin {
   async pubCk () {
     let msg = this.e.msg
 
-    if (!(/(ltoken|ltoken_v2)/.test(this.e.msg) && /(ltuid|ltmid_v2|account_mid_v2)/.test(this.e.msg))) {
+    if (!(/(ltoken|ltoken_v2)/.test(this.e.msg) && /(ltuid|ltuid_v2|ltmid_v2|account_mid_v2)/.test(this.e.msg))) {
       this.e.reply("cookie错误，请发送正确的cookie")
       return true
     }
@@ -74,7 +74,7 @@ export class setPubCk extends plugin {
 
     this.ltuid = param.ltuid
     // 判断是否是v2版ck
-    if (param.cookie_token_v2 && (param.account_mid_v2 || param.ltoken_v2) && !(/(\d{4,9})/g).test(this.ltuid)) {
+    if (param.cookie_token_v2 && param.account_mid_v2 && !(/(\d{4,9})/g).test(this.ltuid)) {
       // 获取米游社通行证id
       let userFullInfo = await this.getUserInfo()
       if (userFullInfo?.data?.user_info) {

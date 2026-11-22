@@ -308,15 +308,11 @@ export default class apiTool {
             types: 'sign'
           },
           getBySToken: {
-            url: `${pass_api_os}account/ma-passport/token/getBySToken`,
+            url: `${pass_api_os}account/ma-passport/token/getBySToken?Irsag=1`,
             body: {
-              dst_token_types: [2]
+              dst_token_types: [2, 4]
             },
             types: 'getBySToken'
-          },
-          bbsGetCookie: {
-            url: `${host}auth/api/getCookieAccountInfoBySToken`,
-            query: 'game_biz=hk4e_global',
           },
           useCdk: {
             url: 'https://public-operation-hk4e.hoyolab.com/common/apicdkey/api/webExchangeCdkeyHyl',
@@ -534,15 +530,11 @@ export default class apiTool {
             types: 'sign'
           },
           getBySToken: {
-            url: `${pass_api_os}account/ma-passport/token/getBySToken`,
+            url: `${pass_api_os}account/ma-passport/token/getBySToken?Irsag=1`,
             body: {
-              dst_token_types: [2]
+              dst_token_types: [2, 4]
             },
             types: 'getBySToken'
-          },
-          bbsGetCookie: {
-            url: `${host}auth/api/getCookieAccountInfoBySToken`,
-            query: 'game_biz=hkrpg_global',
           },
           useCdk: {
             url: 'https://public-operation-hkrpg.hoyolab.com/common/apicdkey/api/webExchangeCdkeyHyl',
@@ -737,15 +729,11 @@ export default class apiTool {
             types: 'sign'
           },
           getBySToken: {
-            url: `${pass_api_os}account/ma-passport/token/getBySToken`,
+            url: `${pass_api_os}account/ma-passport/token/getBySToken?Irsag=1`,
             body: {
-              dst_token_types: [2]
+              dst_token_types: [2, 4]
             },
             types: 'getBySToken'
-          },
-          bbsGetCookie: {
-            url: `${host}auth/api/getCookieAccountInfoBySToken`,
-            query: 'game_biz=nap_global',
           },
           useCdk: {
             url: 'https://public-operation-nap.hoyolab.com/common/apicdkey/api/webExchangeCdkeyHyl',

@@ -74,8 +74,7 @@ export class user extends plugin {
   /** 接受到消息都会执行一次 */
   accept() {
     if (!this.e.msg) return
-    // 由于手机端米游社网页可能获取不到ltuid 可以尝试在通行证页面获取login_uid
-    if (/(ltoken|ltoken_v2)/.test(this.e.msg) && /(ltuid|login_uid|ltmid_v2)/.test(this.e.msg)) {
+    if (/(ltoken|ltoken_v2)/.test(this.e.msg) && /(ltuid|ltuid_v2|ltmid_v2|account_mid_v2)/.test(this.e.msg)) {
       if (this.e.isGroup) {
         this.reply('请私聊发送Cookie', false, { at: true })
         return true

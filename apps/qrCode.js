@@ -54,7 +54,7 @@ export class qrCode extends plugin {
             '1、给机器人发送"(#/*/%)扫码登录"指令，并按照提示操作',
             '2、提示绑定成功',
             '方法二(支持国服与国际服)：',
-            '1、使用抓包软件抓取(米游社/hoyolab)APP主页与战绩的请求',
+            '1、使用抓包软件抓取(米游社/hoyolab)APP主页的请求',
             '2、在抓取的请求头的Cookie内找到"stuid"、"stoken"、"mid"',
             '3、自行构造如下格式的stoken信息：',
             '{"stuid": "抓取的stuid", "stoken": "抓取的stoken", "mid": "抓取的mid"}',
@@ -134,7 +134,7 @@ export class qrCode extends plugin {
         const cookietokenData = await mysApi.getData('exchange', { token: Stoken, type: 4, mid: Mid })
         if (!cookietokenData?.data) return e.reply(`获取cookie_token失败：${cookietokenData?.message || "接口返回为空"}`)
 
-        e.ck = `ltoken=${ltokenData.data?.token?.token};ltuid=${Stuid};cookie_token=${cookietokenData.data?.token?.token};account_id=${Stuid}`
+        e.ck = `ltoken_v2=${ltokenData.data?.token?.token};ltuid_v2=${Stuid};cookie_token_v2=${cookietokenData.data?.token?.token};account_mid_v2=${Mid};`
 
         for (let biz of ['hk4e_cn', 'hkrpg_cn', 'nap_cn']) {
             mysApi = new MysApi(Stuid, e.ck, { game: 'bbs' }, '', biz)
@@ -185,13 +185,12 @@ export class qrCode extends plugin {
 
             let mysApi = new MysApi(sks[i].uid, sks[i].sk, { game: game })
             if (sks[i].type == 'hoyolab') {
-                let ltoken = await mysApi.getData('getBySToken')
-                let res = await mysApi.getData('bbsGetCookie')
-                if (!ltoken?.data || !res?.data) {
-	  		        e.reply(`stuid:${sks[i].stuid},请求异常：接口返回为空`)
+                let res = await mysApi.getData('getBySToken')
+                if (!res?.data) {
+                    e.reply(`stuid:${sks[i].stuid},请求异常：${res.message || "接口返回为空"}`)
                     continue
-  		        } else {
-                    e.ck = `ltoken=${ltoken?.data?.tokens[0].token};ltuid=${sks[i].stuid};cookie_token=${res.data?.cookie_token};account_id=${sks[i].stuid}`
+                } else {
+                    e.ck = `ltoken_v2=${res?.data?.tokens[0].token};ltuid_v2=${sks[i].stuid};cookie_token_v2=${res?.data?.tokens[1].token};account_mid_v2=${sks[i].mid};`
                     await new User(e).bing()
                 }
             } else {
@@ -201,7 +200,7 @@ export class qrCode extends plugin {
                     e.reply(`stuid:${sks[i].stuid},请求异常：接口返回为空`)
                     continue
                 } else {
-                    e.ck = `ltoken=${ltokenData.data?.token?.token};ltuid=${sks[i].stuid};cookie_token=${cookietokenData.data?.token?.token};account_id=${sks[i].stuid}`
+                    e.ck = `ltoken_v2=${ltokenData.data?.token?.token};ltuid_v2=${sks[i].stuid};cookie_token_v2=${cookietokenData.data?.token?.token};account_mid_v2=${sks[i].mid};`
                     await new User(e).bing()
                 }
             }
@@ -252,18 +251,17 @@ export class qrCode extends plugin {
                 return false
             }
             info.ltoken = ltokenData.data?.token?.token
-            this.e.ck = `ltoken=${ltokenData.data?.token?.token};ltuid=${info.stuid};cookie_token=${cookietokenData.data?.token?.token};account_id=${info.stuid}`
+            this.e.ck = `ltoken_v2=${ltokenData.data?.token?.token};ltuid_v2=${info.stuid};cookie_token_v2=${cookietokenData.data?.token?.token};account_mid_v2=${info.mid};`
         } else {
-            let ltoken = await mysApi.getData('getBySToken')
-            let res = await mysApi.getData('bbsGetCookie')
-            if (!ltoken?.data || !res?.data) {
-                await this.e.reply('绑定stoken失败，异常：接口返回为空\n请确认发送的stoken是否有效')
+            let res = await mysApi.getData('getBySToken')
+            if (!res?.data) {
+                await this.e.reply(`绑定stoken失败，异常：${res?.message || "接口返回为空"}\n请确认发送的stoken是否有效`)
                 this.finish('toBindStoken')
                 return false
             }
 
-            info.ltoken = ltoken?.data?.tokens[0]?.token
-            this.e.ck = `ltoken=${ltoken?.data?.tokens[0]?.token};ltuid=${info.stuid};cookie_token=${res.data?.cookie_token};account_id=${info.stuid}`
+            info.ltoken = res?.data?.tokens[0]?.token
+            this.e.ck = `ltoken_v2=${res?.data?.tokens[0]?.token};ltuid_v2=${info.stuid};cookie_token_v2=${res?.data?.tokens[1]?.token};account_mid_v2=${info.mid};`
         }
 
         mysApi = new MysApi(uid, this.e.ck, { game })
@@ -293,7 +291,7 @@ export class qrCode extends plugin {
             { text: '#刷新ck', callback: '#刷新ck' }
         ])])
         ck = ck.ck
-        let ltuid = ck.match(/ltuid=(\d+)/)
+        let ltuid = ck.match(/ltuid=(\d+)|ltuid_v2=(\d+)/)
         ltuid = ltuid[1]
 
         let { sks, ltuids } = await new qrcode(e).getStoken(e, true)

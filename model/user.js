@@ -64,25 +64,25 @@ export default class User extends base {
     }
 
     // TODO：独立的mys数据，不走缓存ltuid
-    let mys = await MysUser.create(param.ltuid || param.ltuid_v2 || param.account_id_v2 || param.ltmid_v2)
+    let mys = await MysUser.create(param.ltuid || param.ltuid_v2 || param.account_id || param.account_id_v2)
     if (!mys) {
       if (!this.e.AutoupCookie) await this.e.reply('发送Cookie不完整或数据错误')
       return false
     }
     let data = {}
-    data.ck = `ltoken=${param.ltoken};ltuid=${param.ltuid || param.login_uid};cookie_token=${param.cookie_token || param.cookie_token_v2}; account_id=${param.ltuid || param.login_uid};`
+    data.ck = `ltoken=${param.ltoken || param.ltoken_v2};ltuid=${param.ltuid || param.ltuid_v2};cookie_token=${param.cookie_token || param.cookie_token_v2}; account_id=${param.ltuid || param.ltuid_v2}`
     let flagV2 = false
 
-    if (param.cookie_token_v2 && (param.account_mid_v2 || param.ltmid_v2)) { //
+    if (param.cookie_token_v2 && param.account_mid_v2) { //
       // account_mid_v2 为版本必须带的字段，不带的话会一直提示绑定cookie失败 请重新登录
       flagV2 = true
-      data.ck = `ltuid=${param.ltuid || param.login_uid || param.ltuid_v2};account_mid_v2=${param.account_mid_v2};cookie_token_v2=${param.cookie_token_v2};ltoken_v2=${param.ltoken_v2};ltmid_v2=${param.ltmid_v2};`
+      data.ck = `ltuid=${param.ltuid_v2};ltuid_v2=${param.ltuid_v2};account_id_v2=${param.ltuid_v2};cookie_token_v2=${param.cookie_token_v2};ltoken_v2=${param.ltoken_v2};ltmid_v2=${param.account_mid_v2};account_mid_v2=${param.account_mid_v2}`
     }
     if (param.mi18nLang) {
       data.ck += ` mi18nLang=${param.mi18nLang};`
     }
     /** 拼接ck */
-    data.ltuid = param.ltuid || param.ltuid_v2 || param.account_id_v2 || param.ltmid_v2
+    data.ltuid = param.ltuid || param.ltuid_v2 || param.account_id || param.account_id_v2
 
     /** 米游币签到字段 */
     data.login_ticket = param.login_ticket ?? ''

@@ -171,7 +171,7 @@ export class exchange extends plugin {
     }
 
     let uidData = user.getUidData(uid, game)
-    let ckUser = uidData?.type === 'ck' ? user.mysUsers[uidData.ltuid] : null
+    let ckUser = uidData?.type === 'ck' ? user.mysUsers[uidData.ltuid || uidData.ltuid_v2] : null
     if (!ckUser?.ck || !ckUser.ownUid(uid, game)) {
       await this.e.reply(`当前 UID ${uid} 未绑定 Cookie，请绑定对应账号或切换到已绑定 Cookie 的 UID 后再兑换`)
       return null

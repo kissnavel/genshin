@@ -18,7 +18,7 @@ const MysUtil = {
     if (/^\d{4,10}$/.test(data)) {
       return data
     }
-    let testRet = /ltuid=(\d{4,10})/g.exec(data.ck || data)
+    let testRet = /ltuid=(\d{4,10})|ltuid_v2=(\d{4,10})/g.exec(data.ck || data)
     if (testRet && testRet[1]) {
       return testRet[1]
     }

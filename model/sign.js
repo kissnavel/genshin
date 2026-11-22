@@ -653,13 +653,12 @@ export default class MysSign extends base {
 
             let ck
             if (sks[i].type == 'hoyolab') {
-                let ltoken = await mysApi.getData('getBySToken')
-                let res = await mysApi.getData('bbsGetCookie')
-                if (!ltoken?.data || !res?.data) {
-                    logger.error(`[刷新ck]stuid:${sks[i].stuid},请求异常：无返回`)
+                let res = await mysApi.getData('getBySToken')
+                if (!res?.data) {
+                    logger.error(`[刷新ck]stuid:${sks[i].stuid},请求异常：${res?.message || '无返回'}`)
                     return { ok: false, reason: '刷新ck异常' }
                 } else {
-                    ck = `ltoken=${ltoken?.data?.tokens[0].token};ltuid=${sks[i].stuid};cookie_token=${res.data?.cookie_token};account_id=${sks[i].stuid}`
+                    ck = `ltuid=${sks[i].stuid};ltoken_v2=${res?.data?.tokens[0].token};ltuid_v2=${sks[i].stuid};account_id_v2=${sks[i].stuid};cookie_token_v2=${res?.data?.tokens[1].token};ltmid_v2=${sks[i].mid};account_mid_v2=${sks[i].mid};`
                 }
             } else {
                 let ltokenData = await mysApi.getData('exchange', { token: sks[i].stoken, type: 2, mid: sks[i].mid })
@@ -668,7 +667,7 @@ export default class MysSign extends base {
                     logger.error(`[刷新ck]stuid:${sks[i].stuid},请求异常：无返回`)
                     return { ok: false, reason: '刷新ck异常' }
                 } else {
-                    ck = `ltoken=${ltokenData.data?.token?.token};ltuid=${sks[i].stuid};cookie_token=${cookietokenData.data?.token?.token};account_id=${sks[i].stuid}`
+                    ck = `ltuid=${sks[i].stuid};ltoken_v2=${ltokenData.data?.token?.token};ltuid_v2=${sks[i].stuid};account_id_v2=${sks[i].stuid};cookie_token_v2=${cookietokenData.data?.token?.token};ltmid_v2=${sks[i].mid};account_mid_v2=${sks[i].mid};`
                 }
             }
 

@@ -42,7 +42,6 @@ export default class MysApi {
       'qrCodeQuery',
       'exchange',
       'getBySToken',
-      'bbsGetCookie',
       'material'
     ]
 
@@ -64,7 +63,7 @@ export default class MysApi {
 
   /** 从ck中解析ltuid */
   static getLtuid(ck = '') {
-    let ret = String(ck || '').match(/ltuid=(\d+)|stuid=(\d+)/)
+    let ret = String(ck || '').match(/ltuid=(\d+)|ltuid_v2=(\d+)|stuid=(\d+)/)
     return ret ? (ret[1] || ret[2]) : ''
   }
 
@@ -124,20 +123,19 @@ export default class MysApi {
       let mysApi = new MysApi(uid, sk.sk, { game: game, log: false })
       let ck
       if (sk.type == 'hoyolab') {
-        let ltoken = await mysApi.getData('getBySToken')
-        let res = await mysApi.getData('bbsGetCookie')
-        if (!ltoken?.data || !res?.data) {
-          return { ok: false, reason: '刷新ck失败: 接口返回为空' }
+        let res = await mysApi.getData('getBySToken')
+        if (!res?.data) {
+          return { ok: false, reason: `刷新ck失败: ${res?.message || "接口返回为空"}` }
         } else {
-          ck = `ltoken=${ltoken?.data?.tokens[0].token};ltuid=${sk.stuid};cookie_token=${res.data?.cookie_token};account_id=${sk.stuid}`
+          ck = `ltuid=${sk.stuid};ltoken_v2=${res?.data?.tokens[0].token};ltuid_v2=${sk.stuid};account_id_v2=${sk.stuid};cookie_token_v2=${res?.data?.tokens[1].token};ltmid_v2=${sk.mid};account_mid_v2=${sk.mid};`
         }
       } else {
         let ltokenData = await mysApi.getData('exchange', { token: sk.stoken, type: 2, mid: sk.mid })
         let cookietokenData = await mysApi.getData('exchange', { token: sk.stoken, type: 4, mid: sk.mid })
         if (!ltokenData?.data || !cookietokenData?.data) {
-          return { ok: false, reason: `刷新ck失败: 接口返回为空` }
+          return { ok: false, reason: '刷新ck失败: 接口返回为空' }
         } else {
-          ck = `ltoken=${ltokenData.data?.token?.token};ltuid=${sk.stuid};cookie_token=${cookietokenData.data?.token?.token};account_id=${sk.stuid}`
+          ck = `ltuid=${sk.stuid};ltoken_v2=${ltokenData.data?.token?.token};ltuid_v2=${sk.stuid};account_id_v2=${sk.stuid};cookie_token_v2=${cookietokenData.data?.token?.token};ltmid_v2=${sk.mid};account_mid_v2=${sk.mid};`
         }
       }
 
@@ -289,7 +287,7 @@ export default class MysApi {
       if (this.game == 'bbs') {
         ltuid = this.uid
       } else {
-        ltuid = this.cookie.match(/ltuid=(\d+)|stuid=(\d+)/)
+        ltuid = this.cookie.match(/ltuid=(\d+)|ltuid_v2=(\d+)|stuid=(\d+)/)
         ltuid = ltuid[1]
       }
       if (ltuid) {
@@ -371,8 +369,6 @@ export default class MysApi {
     if (body) {
       param.method = 'post'
       param.body = body
-    } else if (type == 'bbsGetCookie' && !/cn_|_cn/.test(this.server)) {
-      param.method = 'post'
     } else {
       param.method = 'get'
     }
@@ -414,7 +410,7 @@ export default class MysApi {
     if (cached) this.cache(res, cacheKey)
 
     /** ck失效：自动刷新后重试一次，成功则继续查询 */
-    if (!refreshed && !/exchange|getBySToken|bbsGetCookie/.test(type) && MysApi.isLoginError(res)) {
+    if (!refreshed && !/exchange|getBySToken/.test(type) && MysApi.isLoginError(res)) {
       let refresh = await MysApi.refreshCk(reqCk, this.uid, this.game)
       if (refresh.ok && refresh.ck !== reqCk) {
         this.cookie = refresh.ck
