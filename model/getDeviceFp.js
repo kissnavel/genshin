@@ -7,8 +7,7 @@ export default class getDeviceFp {
     if (game == 'bbs') {
       ltuid = uid
     } else {
-      ltuid = ck.match(/ltuid=(\d+)|ltuid_v2=(\d+)/)
-      ltuid = ltuid[1]
+      ltuid = String(ck || '').match(/(?:ltuid_v2|account_id_v2|stuid)=(\d+)/)?.[1] || ''
     }
     let mysapi = new MysApi(uid, ck, { game }, server, biz)
     let deviceFp = await redis.get(`genshin:device_fp:${ltuid}:fp`) || await redis.get(`ZZZ:DEVICE_FP:${ltuid}:FP`)

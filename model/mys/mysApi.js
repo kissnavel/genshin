@@ -63,8 +63,8 @@ export default class MysApi {
 
   /** 从ck中解析ltuid */
   static getLtuid(ck = '') {
-    let ret = String(ck || '').match(/ltuid=(\d+)|ltuid_v2=(\d+)|stuid=(\d+)/)
-    return ret ? (ret[1] || ret[2]) : ''
+    let ret = String(ck || '').match(/(?:ltuid_v2|account_id_v2|stuid)=(\d+)/)
+    return ret ? ret[1] : ''
   }
 
   /** 是否为ck登录失效返回 */
@@ -127,7 +127,7 @@ export default class MysApi {
         if (!res?.data) {
           return { ok: false, reason: `刷新ck失败: ${res?.message || "接口返回为空"}` }
         } else {
-          ck = `ltuid=${sk.stuid};ltoken_v2=${res?.data?.tokens[0].token};ltuid_v2=${sk.stuid};account_id_v2=${sk.stuid};cookie_token_v2=${res?.data?.tokens[1].token};ltmid_v2=${sk.mid};account_mid_v2=${sk.mid};`
+          ck = `ltoken_v2=${res?.data?.tokens[0].token};ltuid_v2=${sk.stuid};account_id_v2=${sk.stuid};cookie_token_v2=${res?.data?.tokens[1].token};ltmid_v2=${sk.mid};account_mid_v2=${sk.mid};`
         }
       } else {
         let ltokenData = await mysApi.getData('exchange', { token: sk.stoken, type: 2, mid: sk.mid })
@@ -135,7 +135,7 @@ export default class MysApi {
         if (!ltokenData?.data || !cookietokenData?.data) {
           return { ok: false, reason: '刷新ck失败: 接口返回为空' }
         } else {
-          ck = `ltuid=${sk.stuid};ltoken_v2=${ltokenData.data?.token?.token};ltuid_v2=${sk.stuid};account_id_v2=${sk.stuid};cookie_token_v2=${cookietokenData.data?.token?.token};ltmid_v2=${sk.mid};account_mid_v2=${sk.mid};`
+          ck = `ltoken_v2=${ltokenData.data?.token?.token};ltuid_v2=${sk.stuid};account_id_v2=${sk.stuid};cookie_token_v2=${cookietokenData.data?.token?.token};ltmid_v2=${sk.mid};account_mid_v2=${sk.mid};`
         }
       }
 
@@ -287,8 +287,7 @@ export default class MysApi {
       if (this.game == 'bbs') {
         ltuid = this.uid
       } else {
-        ltuid = this.cookie.match(/ltuid=(\d+)|ltuid_v2=(\d+)|stuid=(\d+)/)
-        ltuid = ltuid[1]
+        ltuid = MysApi.getLtuid(this.cookie)
       }
       if (ltuid) {
         let bindInfo = await redis.get(`genshin:device_fp:${ltuid}:bind`) || await redis.get(`ZZZ:DEVICE_FP:${ltuid}:BIND`)

@@ -53,36 +53,36 @@ export default class User extends base {
     let ckStr = this.e.ck.replace(/#|'|"/g, '')
     let param = {}
     ckStr.split(';').forEach((v) => {
-      // 处理分割特殊cookie_token
-      let tmp = lodash.trim(v).replace('=', '~').split('~')
-      param[tmp[0]] = tmp[1]
+      // 处理包含等号的 v2 token 值
+      let tmp = lodash.trim(v)
+      let index = tmp.indexOf('=')
+      if (index > -1) {
+        param[tmp.slice(0, index)] = tmp.slice(index + 1)
+      }
     })
 
-    if (!param.cookie_token && !param.cookie_token_v2) {
-      if (!this.e.AutoupCookie) await this.e.reply('发送Cookie不完整\n请退出米游社【重新登录】，刷新完整Cookie')
+    let midV2 = param.account_mid_v2 || param.ltmid_v2
+    let ltuidV2 = param.ltuid_v2 || param.account_id_v2
+
+    if (!param.ltoken_v2 || !param.cookie_token_v2 || !midV2) {
+      if (!this.e.AutoupCookie) await this.e.reply('发送Cookie不完整\n请退出米游社【重新登录】，刷新完整v2版Cookie')
       return false
     }
 
     // TODO：独立的mys数据，不走缓存ltuid
-    let mys = await MysUser.create(param.ltuid || param.ltuid_v2 || param.account_id || param.account_id_v2)
+    let mys = await MysUser.create(ltuidV2)
     if (!mys) {
       if (!this.e.AutoupCookie) await this.e.reply('发送Cookie不完整或数据错误')
       return false
     }
-    let data = {}
-    data.ck = `ltoken=${param.ltoken || param.ltoken_v2};ltuid=${param.ltuid || param.ltuid_v2};cookie_token=${param.cookie_token || param.cookie_token_v2}; account_id=${param.ltuid || param.ltuid_v2}`
-    let flagV2 = false
 
-    if (param.cookie_token_v2 && param.account_mid_v2) { //
-      // account_mid_v2 为版本必须带的字段，不带的话会一直提示绑定cookie失败 请重新登录
-      flagV2 = true
-      data.ck = `ltuid=${param.ltuid_v2};ltuid_v2=${param.ltuid_v2};account_id_v2=${param.ltuid_v2};cookie_token_v2=${param.cookie_token_v2};ltoken_v2=${param.ltoken_v2};ltmid_v2=${param.account_mid_v2};account_mid_v2=${param.account_mid_v2}`
-    }
+    let data = {}
+    data.ck = `ltuid_v2=${ltuidV2};account_id_v2=${ltuidV2};cookie_token_v2=${param.cookie_token_v2};ltoken_v2=${param.ltoken_v2};ltmid_v2=${midV2};account_mid_v2=${midV2};`
     if (param.mi18nLang) {
-      data.ck += ` mi18nLang=${param.mi18nLang};`
+      data.ck += `mi18nLang=${param.mi18nLang};`
     }
     /** 拼接ck */
-    data.ltuid = param.ltuid || param.ltuid_v2 || param.account_id || param.account_id_v2
+    data.ltuid = ltuidV2
 
     /** 米游币签到字段 */
     data.login_ticket = param.login_ticket ?? ''
@@ -92,26 +92,11 @@ export default class User extends base {
     /** 检查ck是否失效 */
     let uidRet = await mys.reqMysUid()
     if (uidRet.status !== 0) {
-      logger.mark(`绑定Cookie错误1：${this.checkMsg || 'Cookie错误'}`)
+      logger.mark(`绑定Cookie错误1：${this.checkMsg || uidRet.msg || 'Cookie错误'}`)
       // 清除mys数据
       mys._delCache()
-      if (!this.e.AutoupCookie) await this.e.reply(`绑定Cookie失败：${this.checkMsg || 'Cookie错误'}`)
+      if (!this.e.AutoupCookie) await this.e.reply(`绑定Cookie失败：${this.checkMsg || uidRet.msg || 'Cookie错误'}`)
       return false
-    }
-
-    // 判断data.ltuid是否是数字
-    if (flagV2 && isNaN(data.ltuid)) {
-      // 获取米游社通行证id
-      let userFullInfo = await mys.getUserFullInfo()
-      if (userFullInfo?.data?.user_info) {
-        let userInfo = userFullInfo?.data?.user_info
-        this.ltuid = userInfo.uid || this.ltuid
-        this.ck = `${this.ck}ltuid=${this.ltuid};`
-      } else {
-        logger.mark(`绑定Cookie错误2：${userFullInfo.message || 'Cookie错误'}`)
-        if (!this.e.AutoupCookie) await this.e.reply(`绑定Cookie失败：${userFullInfo.message || 'Cookie错误'}`)
-        return false
-      }
     }
 
     logger.mark(`${this.e.logFnc} 检查Cookie正常 [ltuid:${mys.ltuid}]`)
@@ -311,13 +296,16 @@ export default class User extends base {
 
       let param = {}
       ck.cookie.split(';').forEach((v) => {
-        let tmp = lodash.trim(v).split('=')
-        param[tmp[0]] = tmp[1]
+        let tmp = lodash.trim(v)
+        let index = tmp.indexOf('=')
+        if (index > -1) {
+          param[tmp.slice(0, index)] = tmp.slice(index + 1)
+        }
       })
 
-      let ltuid = param.ltuid
+      let ltuid = param.ltuid_v2 || param.account_id_v2
 
-      if (!param.cookie_token) return
+      if (!param.ltoken_v2 || !param.cookie_token_v2 || !ltuid) return
 
       arr[qq][String(ck.uid)] = {
         uid: ck.uid,

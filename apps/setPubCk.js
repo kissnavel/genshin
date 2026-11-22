@@ -41,8 +41,8 @@ export class setPubCk extends plugin {
   async pubCk () {
     let msg = this.e.msg
 
-    if (!(/(ltoken|ltoken_v2)/.test(this.e.msg) && /(ltuid|ltuid_v2|ltmid_v2|account_mid_v2)/.test(this.e.msg))) {
-      this.e.reply("cookie错误，请发送正确的cookie")
+    if (!(/ltoken_v2/.test(this.e.msg) && /(ltuid_v2|ltmid_v2|account_mid_v2)/.test(this.e.msg))) {
+      this.e.reply("cookie错误，请发送正确的v2版cookie")
       return true
     }
 
@@ -52,15 +52,16 @@ export class setPubCk extends plugin {
     let param = {}
     ck.split(";").forEach((v) => {
       // cookie_token_v2,ltoken_v2值也可能有=
-      // let tmp = lodash.trim(v).split("=")
-      let tmp = lodash.trim(v);
-      let index = tmp.indexOf("=");
-      param[tmp.slice(0,index)] = tmp.slice(index+1);
+      let tmp = lodash.trim(v)
+      let index = tmp.indexOf("=")
+      if (index > -1) {
+        param[tmp.slice(0, index)] = tmp.slice(index + 1)
+      }
     })
 
     this.ck = ""
     lodash.forEach(param, (v, k) => {
-      if (["ltoken", "ltuid", "cookie_token", "account_id", "cookie_token_v2", "account_mid_v2", "ltmid_v2", "ltoken_v2"].includes(k)) {
+      if (["ltoken_v2", "ltuid_v2", "cookie_token_v2", "account_id_v2", "account_mid_v2", "ltmid_v2"].includes(k)) {
         this.ck += `${k}=${v};`
       }
     })
@@ -72,20 +73,22 @@ export class setPubCk extends plugin {
       return
     }
 
-    this.ltuid = param.ltuid
-    // 判断是否是v2版ck
-    if (param.cookie_token_v2 && param.account_mid_v2 && !(/(\d{4,9})/g).test(this.ltuid)) {
+    this.ltuid = param.ltuid_v2 || param.account_id_v2
+    // 若缺少数字通行证ID，通过接口补全 ltuid_v2
+    if (!/^\d{4,10}$/.test(this.ltuid)) {
       // 获取米游社通行证id
       let userFullInfo = await this.getUserInfo()
       if (userFullInfo?.data?.user_info) {
         let userInfo = userFullInfo?.data?.user_info
         this.ltuid = userInfo.uid
-        this.ck = `${this.ck}ltuid=${this.ltuid};`
+        this.ck = `${this.ck}ltuid_v2=${this.ltuid};`
       } else {
-        logger.mark(`配置公共cookie错误：${userFullInfo.message || "cookie错误"}`)
-        await this.e.reply(`配置公共cookie错误：${userFullInfo.message || "cookie错误"}`)
+        logger.mark(`配置公共cookie错误：${userFullInfo?.message || "cookie错误"}`)
+        await this.e.reply(`配置公共cookie错误：${userFullInfo?.message || "cookie错误"}`)
         return
       }
+    } else if (!param.ltuid_v2) {
+      this.ck = `${this.ck}ltuid_v2=${this.ltuid};`
     }
 
     let ckArr = GsCfg.getConfig("mys", "pubCk") || []

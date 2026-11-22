@@ -1,10 +1,13 @@
 import plugin from '../../../lib/plugins/plugin.js'
+import common from '../../../lib/common/common.js'
 import Cfg from '../model/Cfg.js'
 import User from '../model/user.js'
 import MysApi from '../model/mys/mysApi.js'
 import MysInfo from '../model/mys/mysInfo.js'
 import qrcode from '../model/qrCode.js'
 import GachaLog from '../model/gachaLog.js'
+
+let refreshingAllCk = false
 
 export class qrCode extends plugin {
     constructor() {
@@ -14,6 +17,11 @@ export class qrCode extends plugin {
             event: 'message',
             priority: Cfg.getConfig('config').priority,
             rule: [
+                {
+                    reg: '^#?(刷新|更新)全部(c|C)(oo)?k(ie)?$',
+                    permission: 'master',
+                    fnc: 'upAllCookie'
+                },
                 {
                     reg: '^#?(原神|星铁|绝区零)?(刷新|更新)(c|C)(oo)?k(ie)?$',
                     fnc: 'upCookie'
@@ -80,7 +88,7 @@ export class qrCode extends plugin {
             let res = await mysApi.getData('bbsisSign')
             if (!res?.data) {
                 msgs.push(`stuid：${sks[i].stuid}，请求异常：${res.message}`)
-  		    } else {
+            } else {
                 msgs.push(`米游社通行证：${sks[i].stuid}`)
                 msgs.push(`当前米游币数量为：${res.data.total_points}，今日剩余可获取：${res.data.can_get_points}`)
             }
@@ -91,7 +99,7 @@ export class qrCode extends plugin {
     }
 
     async getStoken(e) {
-        if(e.group) return e.reply('请私聊发送指令')
+        if (e.group) return e.reply('请私聊发送指令')
         let { sks, ltuids } = await new qrcode(e).getStoken(e)
 
         let msgs = []
@@ -129,10 +137,10 @@ export class qrCode extends plugin {
         if (!Stoken || !Stuid || !Mid) return e.reply('扫码登录返回信息不完整')
 
         const ltokenData = await mysApi.getData('exchange', { token: Stoken, type: 2, mid: Mid })
-        if (!ltokenData?.data) return e.reply(`获取ltoken失败：${ltokenData?.message || "接口返回为空"}`)
+        if (!ltokenData?.data) return e.reply(`获取ltoken_v2失败：${ltokenData?.message || "接口返回为空"}`)
 
         const cookietokenData = await mysApi.getData('exchange', { token: Stoken, type: 4, mid: Mid })
-        if (!cookietokenData?.data) return e.reply(`获取cookie_token失败：${cookietokenData?.message || "接口返回为空"}`)
+        if (!cookietokenData?.data) return e.reply(`获取cookie_token_v2失败：${cookietokenData?.message || "接口返回为空"}`)
 
         e.ck = `ltoken_v2=${ltokenData.data?.token?.token};ltuid_v2=${Stuid};cookie_token_v2=${cookietokenData.data?.token?.token};account_mid_v2=${Mid};`
 
@@ -147,7 +155,6 @@ export class qrCode extends plugin {
         let info = {
             stuid: Stuid,
             stoken: Stoken,
-            ltoken: ltokenData.data?.token?.token,
             mid: Mid
         }
 
@@ -157,58 +164,163 @@ export class qrCode extends plugin {
         await new User(e).bing()
     }
 
+    /** 根据单条 stoken 记录换取最新版 v2 Cookie */
+    async exchangeCkBySk(sk) {
+        if (!sk?.stuid || !sk?.stoken || !sk?.mid) {
+            return { ok: false, reason: 'stoken信息不完整' }
+        }
+
+        let game = ''
+        if (sk.type == 'hoyolab') {
+            if (/os_/.test(sk.region)) {
+                game = 'gs'
+            } else if (/official/.test(sk.region)) {
+                game = 'sr'
+            } else if (/_us|_eu|_jp|_sg/.test(sk.region)) {
+                game = 'zzz'
+            } else {
+                game = 'gs'
+            }
+        } else {
+            if (/cn_/.test(sk.region)) {
+                game = 'gs'
+            } else if (/_cn/.test(sk.region)) {
+                game = String(sk.uid || '').length < 10 ? 'zzz' : 'sr'
+            } else {
+                game = 'bbs'
+            }
+        }
+
+        let mysApi = new MysApi(sk.uid || sk.stuid, sk.sk, { game, log: false })
+        if (sk.type == 'hoyolab') {
+            let res = await mysApi.getData('getBySToken')
+            const tokens = res?.data?.tokens
+            const ltokenV2 = tokens?.find(t => Number(t.token_type) === 2)?.token || tokens?.[0]?.token
+            const cookieTokenV2 = tokens?.find(t => Number(t.token_type) === 4)?.token || tokens?.[1]?.token
+            if (!ltokenV2 || !cookieTokenV2 || (res?.retcode != null && Number(res.retcode) !== 0)) {
+                return { ok: false, reason: res?.message || '接口返回为空' }
+            }
+            return {
+                ok: true,
+                ck: `ltoken_v2=${ltokenV2};ltuid_v2=${sk.stuid};account_id_v2=${sk.stuid};cookie_token_v2=${cookieTokenV2};ltmid_v2=${sk.mid};account_mid_v2=${sk.mid};`
+            }
+        } else {
+            let ltokenData = await mysApi.getData('exchange', { token: sk.stoken, type: 2, mid: sk.mid })
+            let cookietokenData = await mysApi.getData('exchange', { token: sk.stoken, type: 4, mid: sk.mid })
+            const ltokenV2 = ltokenData?.data?.token?.token
+            const cookieTokenV2 = cookietokenData?.data?.token?.token
+            if (!ltokenV2 || (ltokenData?.retcode != null && Number(ltokenData.retcode) !== 0)) {
+                return { ok: false, reason: ltokenData?.message || '获取ltoken_v2失败' }
+            }
+            if (!cookieTokenV2 || (cookietokenData?.retcode != null && Number(cookietokenData.retcode) !== 0)) {
+                return { ok: false, reason: cookietokenData?.message || '获取cookie_token_v2失败' }
+            }
+            return {
+                ok: true,
+                ck: `ltoken_v2=${ltokenV2};ltuid_v2=${sk.stuid};account_id_v2=${sk.stuid};cookie_token_v2=${cookieTokenV2};ltmid_v2=${sk.mid};account_mid_v2=${sk.mid};`
+            }
+        }
+    }
+
     async upCookie(e) {
         let { sks, ltuids } = await new qrcode(e).getStoken(e)
         if (!sks || !ltuids) return false
 
         for (let i of ltuids) {
-            let game = ''
-            if (sks[i].type == 'hoyolab') {
-                if (/os_/.test(sks[i].region)) {
-                    game = 'gs'
-                } else if (/official/.test(sks[i].region)) {
-                    game = 'sr'
-                } else if (/_us|_eu|_jp|_sg/.test(sks[i].region)) {
-                    game = 'zzz'
-                }
-            } else {
-                if (/cn_/.test(sks[i].region)) {
-                    game = 'gs'
-                } else if (/_cn/.test(sks[i].region)) {
-                    if (sks[i].uid.length < 10) {
-                        game = 'zzz'
+            let ret = await this.exchangeCkBySk(sks[i])
+            if (!ret.ok) {
+                await e.reply(`stuid:${sks[i].stuid},请求异常：${ret.reason}`)
+                continue
+            }
+            e.ck = ret.ck
+            await new User(e).bing()
+        }
+    }
+
+    /** 主人指令：遍历所有 stoken，将有效用户的 ck 更新至最新版 v2 ck */
+    async upAllCookie(e) {
+        if (refreshingAllCk) {
+            return e.reply('刷新全部ck任务正在进行中，请稍后再试')
+        }
+
+        let skMap = await Cfg.getsks(true, '', false)
+        let list = Object.values(skMap || {})
+        if (list.length === 0) {
+            return e.reply('暂无已绑定的stoken数据')
+        }
+
+        refreshingAllCk = true
+        const start = Date.now()
+        let successCount = 0
+        let skFailList = []
+        let bindFailList = []
+
+        try {
+            await e.reply(`开始刷新全部ck，共 ${list.length} 个stoken，请稍候...`)
+
+            for (let idx = 0; idx < list.length; idx++) {
+                let sk = list[idx]
+                try {
+                    let ret = await this.exchangeCkBySk(sk)
+                    if (!ret.ok) {
+                        skFailList.push(`QQ:${sk.userId || '未知'} (stuid:${sk.stuid}) - ${ret.reason}`)
+                        logger.warn(`[刷新全部ck] sk无效/异常 qq:${sk.userId} stuid:${sk.stuid} reason:${ret.reason}`)
+                    } else if (!sk.userId) {
+                        bindFailList.push(`stuid:${sk.stuid} - 缺少userId`)
+                        logger.warn(`[刷新全部ck] 缺少userId stuid:${sk.stuid}`)
                     } else {
-                        game = 'sr'
+                        let bindE = {
+                            user_id: sk.userId,
+                            ck: ret.ck,
+                            AutoupCookie: true,
+                            logFnc: e?.logFnc || '[刷新全部ck]'
+                        }
+                        let ok = await new User(bindE).bing()
+                        if (ok) {
+                            successCount++
+                            logger.mark(`[刷新全部ck] 更新成功 (${idx + 1}/${list.length}) qq:${sk.userId} stuid:${sk.stuid}`)
+                        } else {
+                            bindFailList.push(`QQ:${sk.userId} (stuid:${sk.stuid}) - 绑定校验失败`)
+                            logger.warn(`[刷新全部ck] 绑定校验失败 qq:${sk.userId} stuid:${sk.stuid}`)
+                        }
                     }
+                } catch (err) {
+                    bindFailList.push(`QQ:${sk.userId || '未知'} (stuid:${sk.stuid}) - ${err?.message || '未知异常'}`)
+                    logger.error(`[刷新全部ck] 处理异常 qq:${sk.userId} stuid:${sk.stuid}`, err)
+                }
+
+                if (idx < list.length - 1) {
+                    await common.sleep(1000 + Math.floor(Math.random() * 1000))
                 }
             }
 
-            let mysApi = new MysApi(sks[i].uid, sks[i].sk, { game: game })
-            if (sks[i].type == 'hoyolab') {
-                let res = await mysApi.getData('getBySToken')
-                if (!res?.data) {
-                    e.reply(`stuid:${sks[i].stuid},请求异常：${res.message || "接口返回为空"}`)
-                    continue
-                } else {
-                    e.ck = `ltoken_v2=${res?.data?.tokens[0].token};ltuid_v2=${sks[i].stuid};cookie_token_v2=${res?.data?.tokens[1].token};account_mid_v2=${sks[i].mid};`
-                    await new User(e).bing()
-                }
-            } else {
-                let ltokenData = await mysApi.getData('exchange', { token: sks[i].stoken, type: 2, mid: sks[i].mid })
-                let cookietokenData = await mysApi.getData('exchange', { token: sks[i].stoken, type: 4, mid: sks[i].mid })
-                if (!ltokenData?.data || !cookietokenData?.data) {
-                    e.reply(`stuid:${sks[i].stuid},请求异常：接口返回为空`)
-                    continue
-                } else {
-                    e.ck = `ltoken_v2=${ltokenData.data?.token?.token};ltuid_v2=${sks[i].stuid};cookie_token_v2=${cookietokenData.data?.token?.token};account_mid_v2=${sks[i].mid};`
-                    await new User(e).bing()
+            const elapsed = Cfg.countTime(Math.max(1, Math.round((Date.now() - start) / 1000)))
+            let msgs = [
+                '【刷新全部ck完成】',
+                `总计：${list.length} | 成功：${successCount} | sk失效/异常：${skFailList.length} | 绑定失败：${bindFailList.length}`,
+                `总耗时：${elapsed}`
+            ]
+
+            const appendFailList = (title, items) => {
+                if (items.length === 0) return
+                msgs.push(`\n${title}：`)
+                msgs.push(...items.slice(0, 15))
+                if (items.length > 15) {
+                    msgs.push(`...其余 ${items.length - 15} 条请查看控制台日志`)
                 }
             }
+
+            appendFailList('sk失效/异常列表', skFailList)
+            appendFailList('绑定失败列表', bindFailList)
+
+            await e.reply(msgs.join('\n'))
+        } finally {
+            refreshingAllCk = false
         }
     }
 
     async bindStoken(e) {
-        if(e.group) return e.reply('请私聊发送指令')
+        if (e.group) return e.reply('请私聊发送指令')
         let uid = await MysInfo.getUid(e, false)
         if (!uid) return e.reply('请绑定uid后再操作')
         let game = e.game
@@ -250,7 +362,6 @@ export class qrCode extends plugin {
                 this.finish('toBindStoken')
                 return false
             }
-            info.ltoken = ltokenData.data?.token?.token
             this.e.ck = `ltoken_v2=${ltokenData.data?.token?.token};ltuid_v2=${info.stuid};cookie_token_v2=${cookietokenData.data?.token?.token};account_mid_v2=${info.mid};`
         } else {
             let res = await mysApi.getData('getBySToken')
@@ -260,7 +371,6 @@ export class qrCode extends plugin {
                 return false
             }
 
-            info.ltoken = res?.data?.tokens[0]?.token
             this.e.ck = `ltoken_v2=${res?.data?.tokens[0]?.token};ltuid_v2=${info.stuid};cookie_token_v2=${res?.data?.tokens[1]?.token};account_mid_v2=${info.mid};`
         }
 
@@ -281,7 +391,7 @@ export class qrCode extends plugin {
     }
 
     async refreshGachaLog(e) {
-        if(e.group && e.msg.match('获取')) return e.reply('请私聊发送指令')
+        if (e.group && e.msg.match('获取')) return e.reply('请私聊发送指令')
         let uid = await MysInfo.getUid(e, false)
         if (!uid) return e.reply('请绑定uid后再操作')
         let game = e.game
@@ -301,12 +411,12 @@ export class qrCode extends plugin {
             let region = mysApi.getServer()
 
             let url = `https://public-operation-hk4e-sg.hoyoverse.com/gacha_info/api/getGachaLog?authkey_ver=1&sign_type=2&auth_appid=webview_gacha&init_type=301&gacha_id=1fb9ed6285b467a840231a4e839c00171550e217&timestamp=${Math.floor(Date.now() / 1000)}&lang=zh-cn&device_type=mobile&plat_type=ios&region=${region}&authkey=${encodeURIComponent(authkey)}&game_biz=hk4e_global&gacha_type=301&page=1&size=20&end_id=0`
-            if(e.msg.match('获取')) return e.reply(`UID：${uid}抽卡链接：\n${url}`)
+            if (e.msg.match('获取')) return e.reply(`UID：${uid}抽卡链接：\n${url}`)
             e.msg = url
             await new GachaLog(e).logUrl()
         } else {
-            let ltuid = ck.match(/ltuid=(\d+)|ltuid_v2=(\d+)/)
-            ltuid = ltuid[1]
+            let ltuid = ck.match(/ltuid_v2=(\d+)/)?.[1]
+            if (!ltuid) return e.reply('未找到ltuid_v2信息，请重新绑定cookie')
 
             let { sks, ltuids } = await new qrcode(e).getStoken(e, true)
 
@@ -319,8 +429,8 @@ export class qrCode extends plugin {
                     let authkey = res?.data?.authkey
                     let region = mysApi.getServer()
 
-	                let url = `https://public-operation-hk4e.mihoyo.com/gacha_info/api/getGachaLog?authkey_ver=1&sign_type=2&auth_appid=webview_gacha&init_type=301&gacha_id=fecafa7b6560db5f3182222395d88aaa6aaac1bc&timestamp=${Math.floor(Date.now() / 1000)}&lang=zh-cn&device_type=mobile&plat_type=ios&region=${region}&authkey=${encodeURIComponent(authkey)}&game_biz=hk4e_cn&gacha_type=301&page=1&size=20&end_id=0`
-                    if(e.msg.match('获取')) return e.reply(`UID：${uid}抽卡链接：\n${url}`)
+                    let url = `https://public-operation-hk4e.mihoyo.com/gacha_info/api/getGachaLog?authkey_ver=1&sign_type=2&auth_appid=webview_gacha&init_type=301&gacha_id=fecafa7b6560db5f3182222395d88aaa6aaac1bc&timestamp=${Math.floor(Date.now() / 1000)}&lang=zh-cn&device_type=mobile&plat_type=ios&region=${region}&authkey=${encodeURIComponent(authkey)}&game_biz=hk4e_cn&gacha_type=301&page=1&size=20&end_id=0`
+                    if (e.msg.match('获取')) return e.reply(`UID：${uid}抽卡链接：\n${url}`)
                     e.msg = url
                     await new GachaLog(e).logUrl()
                 }

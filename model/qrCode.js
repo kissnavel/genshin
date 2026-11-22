@@ -53,7 +53,6 @@ export default class qrCode extends base {
         datalist[info.stuid] = {
             stuid: info.stuid,
             stoken: info.stoken,
-            ltoken: info.ltoken,
             mid: info.mid,
             uid: list[0].game_uid,
             userId: e.user_id,

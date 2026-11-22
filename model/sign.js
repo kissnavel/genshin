@@ -658,7 +658,7 @@ export default class MysSign extends base {
                     logger.error(`[刷新ck]stuid:${sks[i].stuid},请求异常：${res?.message || '无返回'}`)
                     return { ok: false, reason: '刷新ck异常' }
                 } else {
-                    ck = `ltuid=${sks[i].stuid};ltoken_v2=${res?.data?.tokens[0].token};ltuid_v2=${sks[i].stuid};account_id_v2=${sks[i].stuid};cookie_token_v2=${res?.data?.tokens[1].token};ltmid_v2=${sks[i].mid};account_mid_v2=${sks[i].mid};`
+                    ck = `ltoken_v2=${res?.data?.tokens[0].token};ltuid_v2=${sks[i].stuid};account_id_v2=${sks[i].stuid};cookie_token_v2=${res?.data?.tokens[1].token};ltmid_v2=${sks[i].mid};account_mid_v2=${sks[i].mid};`
                 }
             } else {
                 let ltokenData = await mysApi.getData('exchange', { token: sks[i].stoken, type: 2, mid: sks[i].mid })
@@ -667,7 +667,7 @@ export default class MysSign extends base {
                     logger.error(`[刷新ck]stuid:${sks[i].stuid},请求异常：无返回`)
                     return { ok: false, reason: '刷新ck异常' }
                 } else {
-                    ck = `ltuid=${sks[i].stuid};ltoken_v2=${ltokenData.data?.token?.token};ltuid_v2=${sks[i].stuid};account_id_v2=${sks[i].stuid};cookie_token_v2=${cookietokenData.data?.token?.token};ltmid_v2=${sks[i].mid};account_mid_v2=${sks[i].mid};`
+                    ck = `ltoken_v2=${ltokenData.data?.token?.token};ltuid_v2=${sks[i].stuid};account_id_v2=${sks[i].stuid};cookie_token_v2=${cookietokenData.data?.token?.token};ltmid_v2=${sks[i].mid};account_mid_v2=${sks[i].mid};`
                 }
             }
 

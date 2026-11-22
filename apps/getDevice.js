@@ -50,11 +50,10 @@ export class getDevice extends plugin {
     const uid = await redis.get(`genshin:getDevice:${this.e.user_id}:uid`)
     const game = await redis.get(`genshin:getDevice:${this.e.user_id}:game`)
     let ck = await MysInfo.checkUidBing(uid, game)
-    ck = ck.ck
-    let ltuid = ck.match(/ltuid=(\d+)|ltuid_v2=(\d+)/)
-    ltuid = ltuid[1]
+    ck = ck?.ck
+    let ltuid = ck?.match(/ltuid_v2=(\d+)/)?.[1]
     if (!ltuid) {
-      this.reply('无ltuid信息，请重新绑定cookie')
+      this.reply('无ltuid_v2信息，请重新绑定cookie')
       this.finish('toBindDevice')
       return false
     }
@@ -111,9 +110,12 @@ export class getDevice extends plugin {
     if (!uid) return false
     if (/^(18|[6-9])[0-9]{8}/i.test(uid)) return false
     let ck = await MysInfo.checkUidBing(uid, e)
-    ck = ck.ck
-    let ltuid = ck.match(/ltuid=(\d+)|ltuid_v2=(\d+)/)
-    ltuid = ltuid[1]
+    ck = ck?.ck
+    let ltuid = ck?.match(/ltuid_v2=(\d+)/)?.[1]
+    if (!ltuid) {
+      await this.reply('无ltuid_v2信息，请重新绑定cookie', false, { at: true, recallMsg: 100 })
+      return false
+    }
     await redis.del(`genshin:device_fp:${ltuid}:fp`)
     await redis.del(`genshin:device_fp:${ltuid}:bind`)
     await redis.del(`genshin:device_fp:${ltuid}:id`)

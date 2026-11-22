@@ -342,7 +342,7 @@ class Cfg {
       }
 
       for (let i in sks) {
-        if (!sks[i].stoken || !sks[i].stuid || !sks[i].ltoken) continue
+        if (!sks[i].stoken || !sks[i].stuid) continue
         if (sign) {
           if (sks[i].type == 'hoyolab' || !/cn_|_cn/.test(sks[i].region)) continue
         }
@@ -352,7 +352,6 @@ class Cfg {
           [id]: {
             stuid: sks[i].stuid,
             stoken: sks[i].stoken,
-            ltoken: sks[i].ltoken,
             mid: sks[i].mid,
             uid: sks[i].uid,
             userId: sks[i].userId,
