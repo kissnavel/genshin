@@ -267,7 +267,7 @@ export default class MysApi {
         case '6':
           return isSr ? 'prod_official_usa' : 'os_usa'// 美服
         case '7':
-          return isSr ? 'prod_official_euro' : 'os_euro'// 欧服
+          return isSr ? 'prod_official_eur' : 'os_euro'// 欧服
         case '8':
         case '18':
           return isSr ? 'prod_official_asia' : 'os_asia'// 亚服
