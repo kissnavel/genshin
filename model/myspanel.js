@@ -558,6 +558,7 @@ export default class Myspanel {
                 'level': v.level,
                 'promote': pro,
                 'cons': v.rank,
+                'exCons': v.ex_ranks[0]?.id ? 1 : 0,
                 'talent': {
                     'a': a,
                     'e': e,
