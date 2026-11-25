@@ -8,6 +8,7 @@ import Cfg from './Cfg.js'
 import _ from 'lodash'
 import User from './user.js'
 import { trackGeetest } from './GeetestStats.js'
+import { sendSignTaskNotice } from './SignTaskNotice.js'
 
 let signing = false
 /** 请求中止当前签到任务 */
@@ -400,9 +401,9 @@ export default class MysSign extends base {
             /** 不再直接清锁，改为请求中止，避免两个签到任务并发跑同一批ck */
             if (manual && this?.e?.msg?.includes('重新')) {
                 abortSign = true
-                await this.e.reply('已请求中止当前签到任务，停止后请重新发送【#重新全部签到】')
+                await this.send(true, '已请求中止当前签到任务，停止后请重新发送【#重新全部签到】')
             } else if (manual) {
-                await this.e.reply('签到任务进行中，完成前请勿重复执行')
+                await this.send(true, '签到任务进行中，完成前请勿重复执行')
             }
             return
         }
@@ -421,9 +422,9 @@ export default class MysSign extends base {
             if (noSignNum <= 0 || length <= 0) {
                 if (manual)
                     if (this.white['QQ'].length > 0 || (this.white['QQ'].length == 0 && this.white.Group.length > 0))
-                        await this.e.reply('白名单中暂无ck需要签到')
+                        await this.send(true, '白名单中暂无ck需要签到')
                     else
-                        await this.e.reply('暂无ck需要签到')
+                        await this.send(true, '暂无ck需要签到')
                 return
             }
             Nosign = noSignNum
@@ -511,7 +512,7 @@ export default class MysSign extends base {
 
             if (abortSign) {
                 logger.mark(`签到任务已中止，剩余${Math.max(Nosign, 0)}个未处理`)
-                if (manual) await this.e.reply('签到任务已中止')
+                if (manual) await this.send(true, '签到任务已中止')
                 return
             }
 
@@ -570,24 +571,15 @@ export default class MysSign extends base {
     }
 
     async send(manual, msg) {
-        if (manual) {
-            this.e.reply(msg)
-        } else {
-            await common.relpyPrivate(cfg.masterQQ[0], msg)
-            if (this.white.signPush?.length > 0)
-                for (let group of this.white.signPush)
-                    try {
-                        let split = group.split(':')
-                        let group_id = Number(split[1]) || split[1]
-                        await common.sleep(1000)
-                        if (Array.isArray(Bot.uin))
-                            await Bot[split[0]].pickGroup(group_id).sendMsg(msg)
-                        else
-                            await Bot.pickGroup(group_id).sendMsg(msg)
-                    } catch (error) {
-                        logger.error(error)
-                    }
-        }
+        return sendSignTaskNotice(msg, {
+            manual,
+            event: this.e,
+            groups: this.white.signPush,
+            masterQQ: manual ? undefined : cfg.masterQQ,
+            master: manual ? undefined : cfg.master,
+            label: '游戏签到推送',
+            waitForGroup: () => common.sleep(1000)
+        })
     }
 
     async getsignNum(uids, length) {

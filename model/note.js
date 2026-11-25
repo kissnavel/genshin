@@ -7,6 +7,10 @@ import moment from 'moment'
 import Cfg from './Cfg.js'
 import _ from 'lodash'
 import { Character } from '#miao.models'
+import { resolveBoundGroup } from './SignTaskNotice.js'
+import { sendNoteReminder } from './NotePush.js'
+
+let noteTaskRunning = false
 
 export default class Note extends base {
   constructor(e) {
@@ -65,83 +69,83 @@ export default class Note extends base {
   }
 
   async NoteTask() {
-    if (!this.set.NoteTask) return
+    if (!this.set.NoteTask || noteTaskRunning) return
+    noteTaskRunning = true
+    try {
+      await this.runNoteTask()
+    } finally {
+      noteTaskRunning = false
+    }
+  }
 
-    let sendCD = this.set.sendCD * 3600;
-    let Note = Cfg.getConfig('defnote')
-    if (_.isEmpty(Note)) return
-
-    for (let bot_id in Note)
-      for (let user_id in Note[bot_id]) {
-        logger.mark(`[定时任务:检查体力推送]Bot:${bot_id};User:${user_id}`)
-        let User = Note[bot_id][user_id]
-        user_id = Number(user_id) || user_id
-        let { cks } = await Cfg.getcks(false, user_id, true)
-        let imgs = {}, Resins = {}
-        for (let group_id in User) {
-          let Group = User[group_id]
-          this.e = {
-            user_id: user_id,
-            qq: user_id,
-            msg: "体力",
-            isSr: false,
-            isZzz: false
-          }
-          let sendMsg = [segment.at(user_id), this.set.TaskMsg]
-          let length = sendMsg.length
-          this.e.reply = (msg) => { sendMsg.push(msg) }
-
-          for (let g of ['gs', 'sr', 'zzz']) {
-            this.e.isSr = g == 'sr' ?? true
-            this.e.isZzz = g == 'zzz' ?? true
-            for (let uid of Group[g]) {
-              let data = {}, Resin = Group[`${g}_Resin`]
-              let sendkey = `${group_id}:${bot_id}:${g}_NoteTask:${uid}`
-              if (await redis.get(sendkey)) continue
-
-              if (imgs[`${g}_${uid}`]) {
-                if (Number(Resins[`${g}_${uid}`]) < Number(Resin)) continue
-                logger.mark(`[体力推送]Bot:${bot_id};Group:${group_id};QQ:${user_id};${`${g}_UID`}:${uid}`)
-
-                await redis.set(sendkey, "1", { EX: sendCD })
-                await this.e.reply(imgs[`${g}_${uid}`])
-                continue
-              }
-
-              if (!cks[g][uid]) continue
-              let ck = cks[g][uid]
-
-              let { Data, Sign } = await this.noteData(ck, g)
-              if (Data?.retcode !== 0 || _.isEmpty(Sign)) continue
-
-              Resins[`${g}_${uid}`] = this.e.isZzz ? Data?.data.energy.progress.current : Data?.data[`current_${this.e.isSr ? 'stamina' : 'resin'}`]
-              if (Number(Resins[`${g}_${uid}`]) >= Number(Resin)) {
-                logger.mark(`[体力推送]Bot:${bot_id};Group:${group_id};QQ:${user_id};${`${g}_UID`}:${uid}`)
-
-                data = this.e.isZzz ? await this.noteZzz(Data, uid) : this.e.isSr ? await this.noteSr(Data, uid) : await this.notegs(Data, uid)
-                data = {
-                  quality: 80,
-                  ...this.screenNote,
-                  ...data,
-                  ...Sign
-                }
-                imgs[`${g}_${uid}`] = await puppeteer.screenshot(`${data.gstempFile}dailyNote`, data)
-              }
-
-              if (imgs[`${g}_${uid}`]) {
-                await redis.set(sendkey, "1", { EX: sendCD })
-                await this.e.reply(imgs[`${g}_${uid}`])
-              }
+  async runNoteTask() {
+    const sendCD = this.set.sendCD * 3600
+    const subscriptions = Cfg.getConfig('defnote')
+    for (const [botId, users] of Object.entries(subscriptions ?? {})) {
+      for (const [userId, groups] of Object.entries(users ?? {})) {
+        const numericId = Number(userId)
+        const user = Number.isSafeInteger(numericId) && String(numericId) === userId ? numericId : userId
+        const images = new Map()
+        let cks
+        for (const [groupId, group] of Object.entries(groups ?? {})) {
+          const label = `[体力推送]Bot:${botId};Group:${groupId};User:${userId}`
+          let attempted = false
+          try {
+            if (!resolveBoundGroup(botId, groupId)) {
+              logger.warn(`${label} 订阅机器人不可用，已跳过`)
+              continue
             }
-          }
-          if (sendMsg.length > length) {
-            Bot[bot_id].pickGroup(group_id).sendMsg(sendMsg)
-            await common.sleep(5000)
+            cks ??= (await Cfg.getcks(false, user, true)).cks
+            const entries = await this.collectNoteReminders(cks, images, botId, user, groupId, group)
+            if (!entries.length) continue
+
+            // 查询和出图期间可能已掉线或重连，发消息前重新解析原账号。
+            const route = resolveBoundGroup(botId, groupId)
+            if (!route) throw new Error('订阅机器人不可用，已跳过')
+            attempted = true
+            await sendNoteReminder(route.account.pickGroup(route.key), [segment.at(user), this.set.TaskMsg, ...entries.map(entry => entry.image)])
+            for (const { key } of entries) await redis.set(key, '1', { EX: sendCD })
+            logger.mark(`${label} 已发送 ${entries.length} 条体力提醒`)
+          } catch (error) {
+            logger.warn(`${label} ${error?.message ?? error}`)
+          } finally {
+            if (attempted) await common.sleep(5000)
           }
         }
       }
+    }
+  }
 
-    return
+  async collectNoteReminders(cks, images, botId, user, groupId, group) {
+    const entries = new Map()
+    this.e = { user_id: user, qq: user, msg: '体力', reply: () => {} }
+    for (const game of ['gs', 'sr', 'zzz']) {
+      this.e.isSr = game === 'sr'
+      this.e.isZzz = game === 'zzz'
+      for (const uid of group?.[game] ?? []) {
+        const key = `${groupId}:${botId}:${game}_NoteTask:${uid}`
+        if (entries.has(key) || await redis.get(key)) continue
+        const threshold = Number(group[`${game}_Resin`])
+        const cacheKey = `${game}_${uid}`
+        let info = images.get(cacheKey)
+        if (!info) {
+          const ck = cks?.[game]?.[uid]
+          if (!ck) continue
+          const { Data, Sign } = await this.noteData(ck, game) || {}
+          if (Data?.retcode !== 0 || _.isEmpty(Sign)) continue
+          const resin = this.e.isZzz ? Data.data?.energy?.progress?.current : Data.data?.[this.e.isSr ? 'current_stamina' : 'current_resin']
+          if (!(Number(resin) >= threshold)) continue
+          const detail = this.e.isZzz ? await this.noteZzz(Data, uid) : this.e.isSr ? await this.noteSr(Data, uid) : await this.notegs(Data, uid)
+          const data = { quality: 80, ...this.screenNote, ...detail, ...Sign }
+          const image = await puppeteer.screenshot(`${data.gstempFile}dailyNote`, data)
+          if (!image) continue
+          info = { resin: Number(resin), image }
+          images.set(cacheKey, info)
+        }
+        if (info.resin >= threshold) entries.set(key, info.image)
+      }
+    }
+    return Array.from(entries, ([key, image]) => ({ key, image }))
   }
 
   async getData(ck, game) {

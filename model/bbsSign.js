@@ -5,6 +5,7 @@ import base from './base.js'
 import Data from "./Data.js"
 import Cfg from './Cfg.js'
 import { trackGeetest } from './GeetestStats.js'
+import { sendSignTaskNotice } from './SignTaskNotice.js'
 import moment from 'moment'
 import _ from 'lodash'
 import puppeteer from '../../../lib/puppeteer/puppeteer.js'
@@ -252,23 +253,29 @@ export default class BBsSign extends base {
     async bbsTask(manual) {
         if (!this.set.AutobbsSign && !manual) return
 
-        if (this?.e?.msg?.includes('重新'))
-            signing = false, Nosign = 0
-
         if (signing) {
-            if (manual) await this.e.reply('米币签到任务进行中，完成前请勿重复执行')
+            if (manual) await this.send(true, '米币签到任务进行中，完成前请勿重复执行')
             return
         }
 
+        signing = true
+        try {
+            await this.runBbsTask(manual)
+        } finally {
+            signing = false
+            Nosign = 0
+        }
+    }
+
+    async runBbsTask(manual) {
         let { sks, ltuids } = await Cfg.signSk()
         let { noSignNum } = await this.getsignNum(ltuids)
 
         if (noSignNum <= 0 || ltuids.length <= 0) {
-            if (manual) await this.e.reply('暂无sk需要签到')
+            if (manual) await this.send(true, '暂无sk需要签到')
             return
         }
         Nosign = noSignNum
-        signing = true
 
         const START = moment().unix()
         let tips = ['【开始社区签到任务】']
@@ -360,29 +367,17 @@ export default class BBsSign extends base {
         }
 
         await this.send(manual, msg)
-        signing = false
-        Nosign = 0
-
     }
 
     async send(manual, msg) {
-        if (manual) {
-            this.e.reply(msg)
-        } else {
-            await common.relpyPrivate(cfg.masterQQ[0], msg)
-            if (this.white.bbsPush?.length > 0)
-                for (let group of this.white.bbsPush)
-                    try {
-                        let split = group.split(':')
-                        let group_id = Number(split[1]) || split[1]
-                        if (Array.isArray(Bot.uin))
-                            await Bot[split[0]].pickGroup(group_id).sendMsg(msg)
-                        else
-                            await Bot.pickGroup(group_id).sendMsg(msg)
-                    } catch (error) {
-                        logger.error(error)
-                    }
-        }
+        return sendSignTaskNotice(msg, {
+            manual,
+            event: this.e,
+            groups: this.white.bbsPush,
+            masterQQ: manual ? undefined : cfg.masterQQ,
+            master: manual ? undefined : cfg.master,
+            label: '社区签到推送'
+        })
     }
 
     async result(res, userId) {

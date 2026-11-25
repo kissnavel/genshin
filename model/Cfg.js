@@ -7,6 +7,7 @@ import fs from 'node:fs'
 import yaml from 'yaml'
 import _ from 'lodash'
 import GT_Manual from './GT-Manual/GT-Manual.js'
+import { createSignWhitelistMatcher } from './SignTaskNotice.js'
 let sqlite3
 try {
   sqlite3 = (await import('sqlite3')).default
@@ -84,30 +85,16 @@ class Cfg {
       let signck = _.fromPairs(config.game.map((game) => [game, {}]))
       let signuid = _.fromPairs(config.game.map((game) => [game, {}]))
 
-      if (config.whiteGroup)
-        if (white.Group?.length > 0) {
-          logger.mark('[自动签到]查询群白名单ck')
-          let { cks } = await this.getcks(true)
-          for (let g of config.game)
-            cks: for (let i in cks[g])
-              for (let group of white.Group) {
-                if (signck[g][i]) continue cks
-                let user_id = Number(cks[g][i].qq) || String(cks[g][i].qq)
-                let split = group.split(':')
-                let group_id = Number(split[1]) || split[1]
-                try {
-                  if (Array.isArray(Bot.uin)) {
-                    if (!Bot[split[0]].pickMember(group_id, user_id).nickname) continue
-                  } else {
-                    if (!Bot.pickMember(group_id, user_id).card) continue
-                  }
-
-                  signck[g] = Object.assign({}, signck[g], { [i]: cks[g][i] })
-                } catch (error) {
-                  logger.error(error)
-                }
-              }
+      if (config.whiteGroup && white.Group?.length > 0) {
+        logger.mark('[自动签到]查询群白名单ck')
+        let { cks } = await this.getcks(true)
+        const isGroupMember = createSignWhitelistMatcher(white.Group)
+        for (const g of config.game) {
+          for (const [i, ck] of Object.entries(cks[g])) {
+            if (isGroupMember(ck.qq)) signck[g][i] = ck
+          }
         }
+      }
 
       if (white['QQ']?.length > 0) {
         logger.mark('[自动签到]查询QQ白名单ck')
@@ -272,28 +259,14 @@ class Cfg {
     let config = this.getConfig('config')
     if (white.bbsQQ?.length > 0 || white.Group?.length > 0) {
       let signSks = {}
-      if (config.whiteGroup)
-        if (white.Group?.length > 0) {
-          logger.mark('[社区自动签到]查询群白名单sk')
-          let sks = await this.getsks(true, '', true)
-          sks: for (let i in sks)
-            for (let group of white.Group) {
-              if (signSks[sks[i].id]) continue sks
-              let user_id = Number(sks[i].userId) || String(sks[i].userId)
-              let split = group.split(':')
-              let group_id = Number(split[1]) || split[1]
-              try {
-                if (Array.isArray(Bot.uin)) {
-                  if (!Bot[split[0]].pickMember(group_id, user_id).nickname) continue
-                } else {
-                  if (!Bot.pickMember(group_id, user_id).card) continue
-                }
-                signSks = Object.assign({}, signSks, { [i]: sks[i] })
-              } catch (error) {
-                logger.error(error)
-              }
-            }
+      if (config.whiteGroup && white.Group?.length > 0) {
+        logger.mark('[社区自动签到]查询群白名单sk')
+        let sks = await this.getsks(true, '', true)
+        const isGroupMember = createSignWhitelistMatcher(white.Group)
+        for (const [i, sk] of Object.entries(sks)) {
+          if (isGroupMember(sk.userId)) signSks[i] = sk
         }
+      }
 
       if (white.bbsQQ?.length > 0) {
         logger.mark('[社区自动签到]查询QQ白名单sk')

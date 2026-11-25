@@ -3,6 +3,7 @@ import common from '../../../lib/common/common.js'
 import BBsSign from '../model/bbsSign.js'
 import MysSign from '../model/sign.js'
 import Cfg from '../model/Cfg.js'
+import { isSignWhitelistGroup } from '../model/SignTaskNotice.js'
 import moment from 'moment'
 
 let START
@@ -98,12 +99,14 @@ export class sign extends plugin {
 
     async checkwhite(e) {
         if (e.isMaster) return true
-        if (this.config.whiteSign){
-            if (Array.isArray(this.white.Group) && this.white.Group.length > 0)
-                if (!this.white.Group.includes(`${e.self_id}:${e.group_id}`)) {
-                    e.reply('本群不可签到')
-                    return false
-                }
+        if (this.config.whiteSign && Array.isArray(this.white.Group) && this.white.Group.length > 0 &&
+            !isSignWhitelistGroup(this.white.Group, e)) {
+            try {
+                await e.reply('本群不可签到')
+            } catch (error) {
+                logger.warn(`[genshin][签到群白名单] 拒绝提示发送失败：${error?.message ?? error}`)
+            }
+            return false
         }
         return true
     }
