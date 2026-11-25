@@ -12,6 +12,20 @@ import { sendNoteReminder } from './NotePush.js'
 
 let noteTaskRunning = false
 
+function getRecoveryTime (value, now = new Date()) {
+  const seconds = Number(value)
+  if (!Number.isFinite(seconds) || seconds <= 0) return
+  const date = new Date(now.getTime() + seconds * 1000)
+  if (!Number.isFinite(date.getTime())) return
+
+  // 比较本地日历日期，不用经过的小时数判定今天、明天或后天。
+  const dayStart = d => Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())
+  const daysAhead = (dayStart(date) - dayStart(now)) / 86400000
+  const sameYear = date.getFullYear() === now.getFullYear()
+  const dateLabel = moment(date).format(sameYear ? 'M月D日' : 'YYYY年M月D日')
+  return { seconds, date, daysAhead, dateLabel, clock: moment(date).format('HH:mm') }
+}
+
 export default class Note extends base {
   constructor(e) {
     super(e)
@@ -137,7 +151,7 @@ export default class Note extends base {
           if (!(Number(resin) >= threshold)) continue
           const detail = this.e.isZzz ? await this.noteZzz(Data, uid) : this.e.isSr ? await this.noteSr(Data, uid) : await this.notegs(Data, uid)
           const data = { quality: 80, ...this.screenNote, ...detail, ...Sign }
-          const image = await puppeteer.screenshot(`${data.gstempFile}dailyNote`, data)
+          const image = await this.screenshotDailyNote(data)
           if (!image) continue
           info = { resin: Number(resin), image }
           images.set(cacheKey, info)
@@ -167,8 +181,12 @@ export default class Note extends base {
       ...data,
       ...res.Sign
     }
-    let img = await puppeteer.screenshot(`${data.gstempFile}dailyNote`, data)
+    let img = await this.screenshotDailyNote(data)
     if (img) return await this.e.reply(img)
+  }
+
+  screenshotDailyNote (data) {
+    return puppeteer.screenshot(`${data.gstempFile}dailyNote`, { ...data, imgType: 'png', omitBackground: true })
   }
 
   async noteData(ck, game) {
@@ -195,24 +213,7 @@ export default class Note extends base {
     let { data } = res
     const ImgData = {}
 
-    const nowDay = moment(new Date()).format('DD')
-    if (data.energy.restore > 0) {
-      let resinMaxTime = new Date().getTime() + data.energy.restore * 1000
-      let maxDate = new Date(resinMaxTime)
-
-      resinMaxTime = moment(maxDate).format('HH:mm')
-      let timeDay = await this.dateTime_(maxDate)
-      ImgData.resinMaxTimeMb2 = timeDay + moment(maxDate).format('hh:mm')
-
-      if (moment(maxDate).format('DD') !== nowDay) {
-        ImgData.resinMaxTimeMb2Day = '明天'
-        resinMaxTime = `明天 ${resinMaxTime}`
-      } else {
-        ImgData.resinMaxTimeMb2Day = '今天'
-        resinMaxTime = ` ${resinMaxTime}`
-      }
-      ImgData.resinMaxTime = resinMaxTime
-    }
+    Object.assign(ImgData, await this.resinRecoveryFields(data.energy.restore))
     ImgData.sale_state = /Doing/.test(data.vhs_sale.sale_state) ? '正在营业' : '未营业'
     ImgData.card = /Done/.test(data.card_sign) ? '已完成' : '未完成'
 
@@ -228,39 +229,17 @@ export default class Note extends base {
   async noteSr(res, uid) {
     let { data } = res
 
-    /** 树脂 */
+    const recovery = getRecoveryTime(data.stamina_recover_time)
     let resinMaxTime
-    if (data.stamina_recover_time > 0) {
-      let d = moment.duration(data.stamina_recover_time, 'seconds')
-      let day = Math.floor(d.asDays())
-      let hours = d.hours()
-      let minutes = d.minutes()
-      let seconds = d.seconds()
-      resinMaxTime = hours + '小时' + minutes + '分钟' + seconds + '秒'
-      //精确到秒。。。。
-      if (day > 0) {
-        resinMaxTime = day + '天' + hours + '小时' + minutes + '分钟' + seconds + '秒'
-      } else if (hours > 0) {
-        resinMaxTime = hours + '小时' + minutes + '分钟' + seconds + '秒'
-      } else if (minutes > 0) {
-        resinMaxTime = minutes + '分钟' + seconds + '秒'
-      } else if (seconds > 0) {
-        resinMaxTime = seconds + '秒'
-      }
-      if ((day > 0) || (hours > 0) || (seconds > 0)) {
-        let total_seconds = 3600 * hours + 60 * minutes + seconds
-        const now = new Date()
-        const dateTimes = now.getTime() + total_seconds * 1000
-        const date = new Date(dateTimes)
-        const dayDiff = date.getDate() - now.getDate()
-        const str = dayDiff === 0 ? '今日' : '明日'
-        const timeStr = `${date.getHours().toString().padStart(2, '0')}:${date
-          .getMinutes()
-          .toString()
-          .padStart(2, '0')}`
-        let recoverTimeStr = ` | [${str}]${timeStr}`
-        resinMaxTime += recoverTimeStr
-      }
+    if (recovery) {
+      const total = Math.ceil(recovery.seconds)
+      const day = Math.floor(total / 86400)
+      const hours = Math.floor(total / 3600) % 24
+      const minutes = Math.floor(total / 60) % 60
+      const seconds = total % 60
+      const countdown = `${day ? `${day}天` : ''}${day || hours ? `${hours}小时` : ''}${day || hours || minutes ? `${minutes}分钟` : ''}${seconds}秒`
+      const label = ['今日', '明日', '后日'][recovery.daysAhead] ?? recovery.dateLabel
+      resinMaxTime = `${countdown} | [${label}]${recovery.clock}`
     }
     data.bfStamina = data.current_stamina / data.max_stamina * 100 + '%'
     // 头像
@@ -293,23 +272,8 @@ export default class Note extends base {
     let { data } = res
 
     /** 树脂 */
-    let nowDay = moment(new Date()).format('DD')
-    let resinMaxTime, resinMaxTimeMb2, resinMaxTimeMb2Day
-    if (data.resin_recovery_time > 0) {
-      resinMaxTime = new Date().getTime() + data.resin_recovery_time * 1000
-      let maxDate = new Date(resinMaxTime)
-      resinMaxTime = moment(maxDate).format('HH:mm')
-      let timeDay = await this.dateTime_(maxDate)
-      resinMaxTimeMb2 = timeDay + moment(maxDate).format('hh:mm')
-
-      if (moment(maxDate).format('DD') !== nowDay) {
-        resinMaxTimeMb2Day = '明天'
-        resinMaxTime = `明天 ${resinMaxTime}`
-      } else {
-        resinMaxTimeMb2Day = '今天'
-        resinMaxTime = ` ${resinMaxTime}`
-      }
-    }
+    const nowDay = moment().format('YYYY-MM-DD')
+    const { resinMaxTime, resinMaxTimeMb2, resinMaxTimeMb2Day } = await this.resinRecoveryFields(data.resin_recovery_time)
 
     /** 派遣 */
     let remainedTime = ''
@@ -328,7 +292,7 @@ export default class Note extends base {
             let remainedDate = moment.unix(remainedTime)
             remainedTime = remainedDate.format("HH:mm")
 
-            if (remainedDate.date() != nowDay) {
+            if (remainedDate.format('YYYY-MM-DD') !== nowDay) {
               remainedTime = `明天 ${remainedTime}`
             } else {
               remainedTime = `今天 ${remainedTime}`
@@ -359,7 +323,7 @@ export default class Note extends base {
         coinTimeMb2 = timeDay + moment(coinDate).format('hh:mm')
       } else {
         coinTimeMb2 = moment(coinDate).format('hh:mm')
-        if (moment(coinDate).format('DD') !== nowDay) {
+        if (moment(coinDate).format('YYYY-MM-DD') !== nowDay) {
           coinTimeMb2Day = '明天'
           coinTime = `明天 ${moment(coinDate).format('hh:mm')}`
         } else {
@@ -382,6 +346,20 @@ export default class Note extends base {
       dayMb2: moment(new Date()).format('yyyy年MM月DD日 HH:mm') + ' ' + this.week[new Date().getDay()],
       day: moment().format('MM-DD HH:mm') + ' ' + this.week[moment().day()],
       ...data
+    }
+  }
+
+  async resinRecoveryFields (value) {
+    const recovery = getRecoveryTime(value)
+    if (!recovery) return {}
+
+    const { date, daysAhead, dateLabel, clock } = recovery
+    const label = ['今天', '明天', '后天'][daysAhead] ?? dateLabel
+    const timeDay = await this.dateTime_(date)
+    return {
+      resinMaxTime: `${label} ${clock}`,
+      resinMaxTimeMb2: timeDay + moment(date).format('hh:mm'),
+      resinMaxTimeMb2Day: label
     }
   }
 
