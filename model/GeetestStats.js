@@ -5,13 +5,14 @@ const games = {
 }
 const pageSize = 24
 const dayRetention = 7 * 86400
+const monthRetention = 32 * 86400
 
 function dayKey (now = new Date()) {
   return new Date(now.getTime() + 8 * 3600 * 1000).toISOString().slice(0, 10)
 }
 
 function keys (game, day) {
-  return [`${prefix}:${game}:all`, `${prefix}:${game}:${day}`]
+  return [`${prefix}:${game}:month:${day.slice(0, 7)}`, `${prefix}:${game}:${day}`]
 }
 
 function getLtuid (cookie) {
@@ -27,7 +28,7 @@ function getLtuid (cookie) {
 export async function trackGeetest (api, run, game = api?.game) {
   const ltuid = getLtuid(api?.cookie)
   if (!ltuid) return await run(() => {})
-  const [allKey, todayKey] = keys(Object.hasOwn(games, game) ? game : 'other', dayKey())
+  const [monthKey, todayKey] = keys(Object.hasOwn(games, game) ? game : 'other', dayKey())
   let success = false
   try {
     return await run(() => { success = true })
@@ -35,7 +36,8 @@ export async function trackGeetest (api, run, game = api?.game) {
     const field = `${ltuid}:${success ? 'success' : 'fail'}`
     try {
       await redis.multi()
-        .hIncrBy(allKey, field, 1)
+        .hIncrBy(monthKey, field, 1)
+        .expire(monthKey, monthRetention)
         .hIncrBy(todayKey, field, 1)
         .expire(todayKey, dayRetention)
         .exec()
@@ -60,23 +62,23 @@ export async function getGeetestStats (requestedPage = 1, now = new Date()) {
   }
   const hashes = await query.exec()
   const today = empty()
-  const all = empty()
+  const month = empty()
   const sections = Object.entries(games).map(([game, name], i) => {
     const rows = new Map()
-    const section = { game, name, today: empty(), all: empty() }
-    for (const [period, fields, summary] of [['all', hashes[i * 2], all], ['today', hashes[i * 2 + 1], today]]) {
+    const section = { game, name, today: empty(), month: empty() }
+    for (const [period, fields, summary] of [['month', hashes[i * 2], month], ['today', hashes[i * 2 + 1], today]]) {
       for (const [field, raw] of Object.entries(fields || {})) {
         const match = /^(\d+):(success|fail)$/.exec(field)
         const value = Number(raw)
         if (!match || !Number.isSafeInteger(value) || value <= 0) continue
         const [, ltuid, outcome] = match
-        if (!rows.has(ltuid)) rows.set(ltuid, { ltuid, today: empty(), all: empty() })
+        if (!rows.has(ltuid)) rows.set(ltuid, { ltuid, today: empty(), month: empty() })
         add(rows.get(ltuid)[period], outcome, value)
         add(section[period], outcome, value)
         add(summary, outcome, value)
       }
     }
-    section.rows = [...rows.values()].sort((a, b) => b.today.total - a.today.total || b.all.total - a.all.total || a.ltuid.localeCompare(b.ltuid))
+    section.rows = [...rows.values()].sort((a, b) => b.today.total - a.today.total || b.month.total - a.month.total || a.ltuid.localeCompare(b.ltuid))
     return section
   }).filter(section => section.rows.length)
   const pages = Math.max(1, ...sections.map(section => Math.ceil(section.rows.length / pageSize)))
@@ -86,5 +88,5 @@ export async function getGeetestStats (requestedPage = 1, now = new Date()) {
     section.userCount = section.rows.length
     section.rows = section.rows.slice(offset, offset + pageSize)
   }
-  return { day, today, all, sections, page, pages }
+  return { day, today, month, sections, page, pages }
 }

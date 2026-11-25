@@ -13,7 +13,7 @@
           <strong>过码使用统计</strong>
           <div class="stats-summary">
             <div><div class="sign-count">今日：<span class="count-num">{{today.total}}</span> 次</div><div>成功 {{today.success}} · 失败 {{today.fail}}</div></div>
-            <div><div class="sign-count">累计：<span class="count-num">{{all.total}}</span> 次</div><div>成功 {{all.success}} · 失败 {{all.fail}}</div></div>
+            <div><div class="sign-count">本月累计：<span class="count-num">{{month.total}}</span> 次</div><div>成功 {{month.success}} · 失败 {{month.fail}}</div></div>
           </div>
           <div class="stats-date">{{day}} · UTC+8{{if pages > 1}} · 第 {{page}} / {{pages}} 页{{/if}}</div>
         </div>
@@ -24,11 +24,11 @@
       {{each sections section}}
       {{if section.rows.length}}
       <div class="game-section">
-        <div class="game-name">{{section.name}} <small>· {{section.userCount}} 个账号 · 今日 {{section.today.total}} 次 · 累计 {{section.all.total}} 次</small></div>
+        <div class="game-name">{{section.name}} <small>· {{section.userCount}} 个账号 · 今日 {{section.today.total}} 次 · 本月累计 {{section.month.total}} 次</small></div>
         <div class="table-container">
           <table class="sign-table">
             <thead>
-              <tr><th>ltuid</th><th>今日成功</th><th>今日失败</th><th>累计成功</th><th>累计失败</th></tr>
+              <tr><th>ltuid</th><th>今日成功</th><th>今日失败</th><th>本月累计成功</th><th>本月累计失败</th></tr>
             </thead>
             <tbody>
               {{each section.rows row}}
@@ -36,8 +36,8 @@
                 <td>{{row.ltuid}}</td>
                 <td class="stats-success">{{row.today.success}}</td>
                 <td class="stats-fail">{{row.today.fail}}</td>
-                <td class="stats-success">{{row.all.success}}</td>
-                <td class="stats-fail">{{row.all.fail}}</td>
+                <td class="stats-success">{{row.month.success}}</td>
+                <td class="stats-fail">{{row.month.fail}}</td>
               </tr>
               {{/each}}
             </tbody>
