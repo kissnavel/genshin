@@ -6,6 +6,7 @@ import MysUser from './MysUser.js'
 import DailyCache from './DailyCache.js'
 import getDeviceFp from '../getDeviceFp.js'
 import Cfg from '../Cfg.js'
+import { trackGeetest } from '../GeetestStats.js'
 import common from '../../../../lib/common/common.js'
 
 export default class MysInfo {
@@ -542,6 +543,11 @@ export default class MysInfo {
     let res = await mysApi.getData(type, data)
     if (res?.retcode == 0 || (type == 'detail' && res?.retcode == -1002)) return res
 
+    return trackGeetest(mysApi, passed => this.runGeetest(type, mysApi, data, retcode, api, passed))
+  }
+
+  async runGeetest(type, mysApi, data, retcode, api, passed) {
+    let res
     if (data?.headers) delete data.headers
     try {
       let vali = new MysApi(mysApi.uid, mysApi.cookie, mysApi.option, '', '', 'all')
@@ -600,6 +606,7 @@ export default class MysInfo {
       }
 
       if (res?.data?.challenge) {
+        passed()
         res = await mysApi.getData(type, {
           headers: {
             "x-rpc-challenge": res?.data?.challenge,

@@ -3,6 +3,7 @@ import getDeviceFp from './getDeviceFp.js'
 import MysApi from './mys/mysApi.js'
 import fetch from 'node-fetch'
 import Cfg from './Cfg.js'
+import { trackGeetest } from './GeetestStats.js'
 
 export default class Handler {
   constructor() {
@@ -43,9 +44,17 @@ export default class Handler {
   }
 
   async geetest (e, data, retcode = 1034) {
+    const game = e?.game || data.game
+    return trackGeetest(data, async (passed) => {
+      const res = await this.runGeetest(e, data, retcode, game)
+      if (res?.data?.challenge) passed()
+      return res
+    }, game)
+  }
+
+  async runGeetest (e, data, retcode, game) {
     let res
-    let { uid, cookie, game } = data
-    if (e?.game) game = e?.game
+    let { uid, cookie } = data
     let vali = new MysApi(uid, cookie, data.option || {}, '', '', 'all')
 
     try {

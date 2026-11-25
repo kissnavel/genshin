@@ -7,6 +7,7 @@ import GsCfg from '../model/gsCfg.js'
 import MysInfo from '../model/mys/mysInfo.js'
 import MysUser from '../model/mys/MysUser.js'
 import { MysUserDB, UserDB } from '../model/db/index.js'
+import { getGeetestStats } from '../model/GeetestStats.js'
 
 /** 解析 Cookie 字符串为键值对（兼容 token 值内包含 =） */
 function parseCookie(ck = '') {
@@ -114,6 +115,10 @@ export class user extends plugin {
         fnc: 'userAdmin',
         permission: "master",
       }, {
+        reg: '^#过码统计(?:\\s*[1-9]\\d*)?$',
+        fnc: 'geetestStats',
+        permission: 'master'
+      }, {
         reg: '^#(刷新|重置)用户(缓存|统计|ck|Ck|CK)$',
         fnc: 'resetCache',
         permission: "master",
@@ -144,6 +149,18 @@ export class user extends plugin {
 
     /** 生成图片 */
     this.reply([await this.renderImg('genshin', 'html/admin/userAdmin', data, { retType: "base64" }), this.button])
+  }
+
+  /** #过码统计 [页码] */
+  async geetestStats () {
+    const page = Number(this.e.msg.replace('#过码统计', '').trim()) || 1
+    let data
+    try {
+      data = await getGeetestStats(page)
+    } catch {
+      return this.reply('读取过码统计失败，请稍后再试')
+    }
+    return this.reply(await this.renderImg('genshin', 'html/admin/geetestStats', data, { retType: 'base64' }))
   }
 
   /** #刷新用户缓存 / #重置用户缓存 */

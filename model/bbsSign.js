@@ -4,6 +4,7 @@ import MysApi from './mys/mysApi.js'
 import base from './base.js'
 import Data from "./Data.js"
 import Cfg from './Cfg.js'
+import { trackGeetest } from './GeetestStats.js'
 import moment from 'moment'
 import _ from 'lodash'
 import puppeteer from '../../../lib/puppeteer/puppeteer.js'
@@ -150,9 +151,9 @@ export default class BBsSign extends base {
                     res = await mysApi.getData("bbsSign", forum)
                     if (res?.retcode == 1034) {
                         let retry = 0
-                        challenge = await this.bbsGeetest(mysApi)
+                        challenge = await this.bbsGeetest(mysApi, forum)
                         while (!challenge && retry < this.set.bbsRetry) {
-                            challenge = await this.bbsGeetest(mysApi)
+                            challenge = await this.bbsGeetest(mysApi, forum)
                             retry++
                         }
                         if (challenge) {
@@ -205,7 +206,7 @@ export default class BBsSign extends base {
                         await common.sleep(1000)
                         res = await mysApi.getData("bbsPostFull", data)
                         if (res?.retcode == 1034)
-                            res = await this.bbsGeetest(mysApi, "bbsPostFull", data)
+                            res = await this.bbsGeetest(mysApi, forum, "bbsPostFull", data)
                         if (res?.message && res?.retcode == 0) trueDetail++
                     }
 
@@ -213,7 +214,7 @@ export default class BBsSign extends base {
                         await common.sleep(1000)
                         res = await mysApi.getData("bbsVotePost", data)
                         if (res?.retcode == 1034)
-                            res = await this.bbsGeetest(mysApi, "bbsVotePost", data)
+                            res = await this.bbsGeetest(mysApi, forum, "bbsVotePost", data)
                         if (res?.message && res?.retcode == 0) Vote++
                     }
 
@@ -221,7 +222,7 @@ export default class BBsSign extends base {
                         await common.sleep(1000)
                         res = await mysApi.getData("bbsShareConf", data)
                         if (res?.retcode == 1034)
-                            res = await this.bbsGeetest(mysApi, "bbsShareConf", data)
+                            res = await this.bbsGeetest(mysApi, forum, "bbsShareConf", data)
                         if (res?.message && res?.retcode == 0) trueShare++
                     }
 
@@ -413,7 +414,12 @@ export default class BBsSign extends base {
         return JSON.stringify([{ insert: Replymsg }])
     }
 
-    async bbsGeetest(mysApi, type = "", data = {}) {
+    async bbsGeetest(mysApi, forum, type = "", data = {}) {
+        const game = forum?.otherName?.[0]
+        return trackGeetest(mysApi, passed => this.runBbsGeetest(mysApi, type, data, passed), game)
+    }
+
+    async runBbsGeetest(mysApi, type, data, passed) {
         let api = Cfg.getConfig('api')
         let vall = new MysApi(mysApi.uid, mysApi.cookie, {}, '', '', 'all')
         let headers = { 'x-rpc-device_fp': this.device_fp }
@@ -455,6 +461,7 @@ export default class BBsSign extends base {
         try {
             if (res?.data?.validate || res?.request?.geetest_validate) {
                 res = await mysApi.getData("bbsCaptchaVerify", res?.data || res?.request)
+                if (res?.data?.challenge) passed()
                 if (type) {
                     if (res?.["data"]?.["challenge"])
                         return await mysApi.getData(type, {

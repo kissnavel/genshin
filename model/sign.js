@@ -7,6 +7,7 @@ import moment from 'moment'
 import Cfg from './Cfg.js'
 import _ from 'lodash'
 import User from './user.js'
+import { trackGeetest } from './GeetestStats.js'
 
 let signing = false
 /** 请求中止当前签到任务 */
@@ -317,65 +318,7 @@ export default class MysSign extends base {
         }
 
         if (sign.data?.gt) {
-            this.signMsg = '验证码失败'
-            sign.message = '验证码失败'
-
-            let vall = new MysApi(this.mysApi.uid, this.mysApi.cookie, {}, '', '', 'all')
-            let res; let retry = 0; let test_nine = sign
-            if (api.type == 0) {
-                res = await vall.getData('test_nine', sign?.data)
-                if (res?.data?.validate) res = {
-                    data: {
-                        challenge: test_nine?.data?.challenge,
-                        validate: res?.data?.validate
-                    }
-                }
-            } else if (api.type == 1) {
-                res = await vall.getData('recognize', sign.data)
-                if (res?.resultid) {
-                    let results = res
-                    await common.sleep(5000)
-                    res = await vall.getData('results', results)
-                    while ((res?.status == 2) && retry < 10) {
-                        await common.sleep(5000)
-                        res = await vall.getData('results', results)
-                        retry++
-                    }
-                }
-            } else if (api.type == 2) {
-                res = await vall.getData('in', sign.data)
-                if (res?.request) {
-                    let request = res
-                    await common.sleep(5000)
-                    res = await vall.getData('res', request)
-                    while ((res?.request == 'CAPCHA_NOT_READY') && retry < 10) {
-                        await common.sleep(5000)
-                        res = await vall.getData('res', request)
-                        retry++
-                    }
-                }
-            }
-
-            try {
-                if (res?.data?.validate || res?.request?.geetest_validate) {
-                    sign = await this.mysApi.getData('sign', res?.data || res?.request, false)
-
-                    if (sign.data?.gt) {
-                        logger.mark(`[${name}签到失败]${this.log}：${sign.message} 第${this.ckNum}个`)
-                        return false
-                    } else {
-                        this.signMsg = '验证码成功'
-                        logger.mark(`[${name}签到成功]${this.log}:验证码成功 第${this.ckNum}个`)
-                        return true
-                    }
-                } else {
-                    logger.mark(`[${name}签到失败]${this.log}：${res.msg} 第${this.ckNum}个`)
-                    return false
-                }
-            } catch (error) {
-                logger.error('签到异常：' + error)
-                return false
-            }
+            return trackGeetest(this.mysApi, passed => this.signGeetest(name, sign, api, passed))
         }
 
         if (sign.retcode === 0 && (sign?.data?.success === 0 || sign?.message === 'OK')) {
@@ -385,6 +328,69 @@ export default class MysSign extends base {
 
         logger.mark(`[${name}签到失败]${this.log}：${sign.message} 第${this.ckNum}个`)
         return false
+    }
+
+    async signGeetest(name, sign, api, passed) {
+        this.signMsg = '验证码失败'
+        sign.message = '验证码失败'
+
+        let vall = new MysApi(this.mysApi.uid, this.mysApi.cookie, {}, '', '', 'all')
+        let res; let retry = 0; let test_nine = sign
+        if (api.type == 0) {
+            res = await vall.getData('test_nine', sign?.data)
+            if (res?.data?.validate) res = {
+                data: {
+                    challenge: test_nine?.data?.challenge,
+                    validate: res?.data?.validate
+                }
+            }
+        } else if (api.type == 1) {
+            res = await vall.getData('recognize', sign.data)
+            if (res?.resultid) {
+                let results = res
+                await common.sleep(5000)
+                res = await vall.getData('results', results)
+                while ((res?.status == 2) && retry < 10) {
+                    await common.sleep(5000)
+                    res = await vall.getData('results', results)
+                    retry++
+                }
+            }
+        } else if (api.type == 2) {
+            res = await vall.getData('in', sign.data)
+            if (res?.request) {
+                let request = res
+                await common.sleep(5000)
+                res = await vall.getData('res', request)
+                while ((res?.request == 'CAPCHA_NOT_READY') && retry < 10) {
+                    await common.sleep(5000)
+                    res = await vall.getData('res', request)
+                    retry++
+                }
+            }
+        }
+
+        try {
+            if (res?.data?.validate || res?.request?.geetest_validate) {
+                sign = await this.mysApi.getData('sign', res?.data || res?.request, false)
+
+                if (sign.data?.gt) {
+                    logger.mark(`[${name}签到失败]${this.log}：${sign.message} 第${this.ckNum}个`)
+                    return false
+                } else {
+                    if ([0, -5003].includes(sign?.retcode)) passed()
+                    this.signMsg = '验证码成功'
+                    logger.mark(`[${name}签到成功]${this.log}:验证码成功 第${this.ckNum}个`)
+                    return true
+                }
+            } else {
+                logger.mark(`[${name}签到失败]${this.log}：${res.msg} 第${this.ckNum}个`)
+                return false
+            }
+        } catch (error) {
+            logger.error('签到异常：' + error)
+            return false
+        }
     }
 
     async signTask(manual) {

@@ -1,0 +1,36 @@
+.geetest-stats .stats-summary {
+  display: flex;
+  justify-content: center;
+  gap: 36px;
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+.geetest-stats .stats-date {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #f0f6fb;
+}
+
+.geetest-stats .game-name small {
+  margin-left: 6px;
+  font-size: 12px;
+}
+
+.geetest-stats .sign-table th {
+  width: 18%;
+}
+
+.geetest-stats .sign-table th:first-child {
+  width: 28%;
+}
+
+.geetest-stats .stats-success { color: #176137; }
+.geetest-stats .stats-fail { color: #a22936; }
+
+.geetest-stats .stats-empty,
+.geetest-stats .stats-next {
+  padding: 14px;
+  text-align: center;
+  background: #f8f9fa;
+}

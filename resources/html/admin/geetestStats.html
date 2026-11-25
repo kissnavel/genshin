@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <link rel="stylesheet" href="{{pluResPath}}MysSign/html/sign/sign.css"/>
+  <link rel="stylesheet" href="{{pluResPath}}html/admin/geetestStats.css"/>
+</head>
+<body>
+  <div class="container geetest-stats" id="container">
+    <div class="page">
+      <div class="header">
+        <div class="header-content">
+          <strong>过码使用统计</strong>
+          <div class="stats-summary">
+            <div><div class="sign-count">今日：<span class="count-num">{{today.total}}</span> 次</div><div>成功 {{today.success}} · 失败 {{today.fail}}</div></div>
+            <div><div class="sign-count">累计：<span class="count-num">{{all.total}}</span> 次</div><div>成功 {{all.success}} · 失败 {{all.fail}}</div></div>
+          </div>
+          <div class="stats-date">{{day}} · UTC+8{{if pages > 1}} · 第 {{page}} / {{pages}} 页{{/if}}</div>
+        </div>
+      </div>
+      {{if !sections.length}}
+      <div class="table-container stats-empty">暂无过码记录</div>
+      {{/if}}
+      {{each sections section}}
+      {{if section.rows.length}}
+      <div class="game-section">
+        <div class="game-name">{{section.name}} <small>· {{section.userCount}} 个账号 · 今日 {{section.today.total}} 次 · 累计 {{section.all.total}} 次</small></div>
+        <div class="table-container">
+          <table class="sign-table">
+            <thead>
+              <tr><th>ltuid</th><th>今日成功</th><th>今日失败</th><th>累计成功</th><th>累计失败</th></tr>
+            </thead>
+            <tbody>
+              {{each section.rows row}}
+              <tr>
+                <td>{{row.ltuid}}</td>
+                <td class="stats-success">{{row.today.success}}</td>
+                <td class="stats-fail">{{row.today.fail}}</td>
+                <td class="stats-success">{{row.all.success}}</td>
+                <td class="stats-fail">{{row.all.fail}}</td>
+              </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {{/if}}
+      {{/each}}
+      {{if page < pages}}<div class="stats-next">下一页：#过码统计 {{page + 1}}</div>{{/if}}
+    </div>
+  </div>
+</body>
+</html>
