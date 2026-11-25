@@ -127,10 +127,12 @@ export async function sendSignTaskNotice (msg, {
   async function send (target, action) {
     try {
       const result = await sendWithTimeout(action, timeoutMs)
-      // 部分宿主的 event.reply 不返回回执；签到通知仍兼容 undefined。
+      // 部分宿主的发送接口不返回回执；签到通知仍兼容 undefined。
       if (result === false || result === null) throw new Error('消息发送失败')
+      return true
     } catch (error) {
       log?.warn?.(`[genshin][${label}] ${target}：${error?.message ?? error}`)
+      return false
     }
   }
 
@@ -159,10 +161,11 @@ export async function sendSignTaskNotice (msg, {
     }
   }
 
+  // 优先按 masterQQ 的顺序尝试，补上只在账号映射中配置的主人 ID；成功即停止私聊回退。
   const masterIds = new Set([...asList(masterQQ).map(textId).filter(usableId), ...bindings.keys()])
   for (const userId of masterIds) {
-    await send(`主人 ${userId}`, () => {
-      const binding = bindings.get(userId)
+    const binding = bindings.get(userId)
+    const sent = await send(`主人 ${userId}`, () => {
       const candidates = accounts(bot, multiple).filter(([id, account]) =>
         (!binding || binding.has(id)) && available(account) && typeof (account.pickFriend ?? account.pickUser) === 'function')
       for (const [, account] of candidates) {
@@ -174,6 +177,7 @@ export async function sendSignTaskNotice (msg, {
       if (!account) throw new Error('没有可用的主人通知账号，已跳过')
       return sendTo((account.pickFriend ?? account.pickUser).call(account, pickerId(userId)))
     })
+    if (sent) break
   }
 
   for (const target of asList(groups)) {
