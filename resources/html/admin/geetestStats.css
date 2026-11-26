@@ -17,16 +17,42 @@
   font-size: 12px;
 }
 
-.geetest-stats .sign-table th {
-  width: 18%;
+.geetest-stats .stats-legend {
+  margin: 0 0 12px;
+  text-align: center;
 }
 
-.geetest-stats .sign-table th:first-child {
-  width: 28%;
+.geetest-stats .stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  list-style: none;
 }
 
+.geetest-stats .stats-account {
+  display: grid;
+  grid-template-columns: minmax(28px, max-content) minmax(0, 1fr) minmax(28px, max-content);
+  align-items: stretch;
+  border: 1px solid #dce5eb;
+  border-radius: 6px;
+  background: #f8fafc;
+  overflow: hidden;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.geetest-stats .stats-account span {
+  display: grid;
+  place-items: center;
+  padding: 7px 4px;
+  overflow-wrap: anywhere;
+}
+
+.geetest-stats .stats-ltuid { color: #273b4d; }
 .geetest-stats .stats-success { color: #176137; }
 .geetest-stats .stats-fail { color: #a22936; }
+.geetest-stats .stats-account .stats-success { background: #e4f4e9; }
+.geetest-stats .stats-account .stats-fail { background: #fae8eb; }
 
 .geetest-stats .stats-empty,
 .geetest-stats .stats-next {

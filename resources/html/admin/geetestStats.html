@@ -19,30 +19,23 @@
         </div>
       </div>
       {{if !sections.length}}
-      <div class="table-container stats-empty">暂无过码记录</div>
+      <div class="table-container stats-empty">今日暂无过码记录</div>
+      {{else}}
+      <div class="stats-legend">今日账号明细 · <span class="stats-success">左侧成功</span> / <span class="stats-fail">右侧失败</span></div>
       {{/if}}
       {{each sections section}}
       {{if section.rows.length}}
       <div class="game-section">
-        <div class="game-name">{{section.name}} <small>· {{section.userCount}} 个账号 · 今日 {{section.today.total}} 次 · 本月累计 {{section.month.total}} 次</small></div>
-        <div class="table-container">
-          <table class="sign-table">
-            <thead>
-              <tr><th>ltuid</th><th>今日成功</th><th>今日失败</th><th>本月累计成功</th><th>本月累计失败</th></tr>
-            </thead>
-            <tbody>
-              {{each section.rows row}}
-              <tr>
-                <td>{{row.ltuid}}</td>
-                <td class="stats-success">{{row.today.success}}</td>
-                <td class="stats-fail">{{row.today.fail}}</td>
-                <td class="stats-success">{{row.month.success}}</td>
-                <td class="stats-fail">{{row.month.fail}}</td>
-              </tr>
-              {{/each}}
-            </tbody>
-          </table>
-        </div>
+        <div class="game-name">{{section.name}} <small>· {{section.userCount}} 个账号 · 今日 {{section.today.total}} 次</small></div>
+        <ul class="stats-grid">
+          {{each section.rows row}}
+          <li class="stats-account">
+            <span class="stats-success">{{row.today.success}}</span>
+            <span class="stats-ltuid">{{row.ltuid}}</span>
+            <span class="stats-fail">{{row.today.fail}}</span>
+          </li>
+          {{/each}}
+        </ul>
       </div>
       {{/if}}
       {{/each}}

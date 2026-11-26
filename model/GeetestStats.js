@@ -65,20 +65,21 @@ export async function getGeetestStats (requestedPage = 1, now = new Date()) {
   const month = empty()
   const sections = Object.entries(games).map(([game, name], i) => {
     const rows = new Map()
-    const section = { game, name, today: empty(), month: empty() }
+    const section = { game, name, today: empty() }
     for (const [period, fields, summary] of [['month', hashes[i * 2], month], ['today', hashes[i * 2 + 1], today]]) {
       for (const [field, raw] of Object.entries(fields || {})) {
         const match = /^(\d+):(success|fail)$/.exec(field)
         const value = Number(raw)
         if (!match || !Number.isSafeInteger(value) || value <= 0) continue
         const [, ltuid, outcome] = match
-        if (!rows.has(ltuid)) rows.set(ltuid, { ltuid, today: empty(), month: empty() })
-        add(rows.get(ltuid)[period], outcome, value)
-        add(section[period], outcome, value)
         add(summary, outcome, value)
+        if (period !== 'today') continue
+        if (!rows.has(ltuid)) rows.set(ltuid, { ltuid, today: empty() })
+        add(rows.get(ltuid).today, outcome, value)
+        add(section.today, outcome, value)
       }
     }
-    section.rows = [...rows.values()].sort((a, b) => b.today.total - a.today.total || b.month.total - a.month.total || a.ltuid.localeCompare(b.ltuid))
+    section.rows = [...rows.values()].sort((a, b) => b.today.total - a.today.total || a.ltuid.localeCompare(b.ltuid))
     return section
   }).filter(section => section.rows.length)
   const pages = Math.max(1, ...sections.map(section => Math.ceil(section.rows.length / pageSize)))
