@@ -408,8 +408,10 @@ export default class MysApi {
 
     if (cached) this.cache(res, cacheKey)
 
+    /** 社区签到使用 SK，不能换成 CK 重试；保留原始登录失效结果 */
+    const isBbsSk = this.game === 'bbs' && /(?:^|;)\s*stoken\s*=/.test(reqCk)
     /** ck失效：自动刷新后重试一次，成功则继续查询 */
-    if (!refreshed && !/exchange|getBySToken/.test(type) && MysApi.isLoginError(res)) {
+    if (!isBbsSk && !refreshed && !/exchange|getBySToken/.test(type) && MysApi.isLoginError(res)) {
       let refresh = await MysApi.refreshCk(reqCk, this.uid, this.game)
       if (refresh.ok && refresh.ck !== reqCk) {
         this.cookie = refresh.ck
